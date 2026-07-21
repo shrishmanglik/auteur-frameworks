@@ -5,7 +5,7 @@ import path from "node:path";
 
 const root = process.cwd();
 const npmCli = process.env.npm_execpath;
-const allowedRoots = ["dist/", "docs/", "examples/", "schemas/"];
+const allowedRoots = ["dist/", "docs/", "examples/", "schemas/", "src/"];
 const allowedRootFiles = new Set([
   "CONTRIBUTING.md",
   "CHANGELOG.md",

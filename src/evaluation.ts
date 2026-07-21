@@ -88,6 +88,9 @@ export function compareRenderCycles(previousInput: unknown, currentInput: unknow
     currentScore: current.score,
     absoluteGain,
     relativeImprovementPercent,
-    meetsTenPercentThreshold: relativeImprovementPercent !== null && relativeImprovementPercent >= 10,
+    meetsTenPercentThreshold: relativeImprovementPercent !== null
+      && relativeImprovementPercent >= 10
+      && current.grade !== "blocked"
+      && current.criticalDefects === 0,
   };
 }

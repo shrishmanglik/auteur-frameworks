@@ -26,6 +26,7 @@ describe("expert creator fixtures", () => {
       expect(compiled.shots).toHaveLength(packet.shots.length);
       expect(compiled.shots.every((shot) => shot.videoPrompt.includes("TEMPORAL PLAN"))).toBe(true);
       expect(compiled.shots.every((shot) => shot.negativePrompt.length > 30)).toBe(true);
+      expect(compiled.shots.every((shot) => shot.compactVideoPrompt.length <= shot.videoPrompt.length * 0.8)).toBe(true);
     });
   }
 

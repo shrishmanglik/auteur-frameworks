@@ -33,14 +33,33 @@ try {
   ], { cwd: temp, encoding: "utf8" }).trim();
 
   const cli = path.join(temp, "node_modules", "auteur-frameworks", "dist", "cli.js");
-  const example = path.join(temp, "node_modules", "auteur-frameworks", "examples", "product-film.json");
+  const installedRoot = path.join(temp, "node_modules", "auteur-frameworks");
+  const example = path.join(installedRoot, "examples", "product-film.json");
   const help = execFileSync(process.execPath, [cli, "help"], { cwd: temp, encoding: "utf8" });
   const compiled = JSON.parse(execFileSync(process.execPath, [cli, "compile", example], { cwd: temp, encoding: "utf8" }));
 
   if (!help.includes("develop <request.json>") || compiled.shots.length !== 1 || !compiled.preflight.passed) {
     throw new Error("Packed CLI smoke returned an unexpected result");
   }
-  console.log(JSON.stringify({ passed: true, frameworks: Number(importProof), compiledShots: compiled.shots.length }));
+
+  const readme = fs.readFileSync(path.join(installedRoot, "README.md"), "utf8");
+  const localLinks = [...readme.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)]
+    .map((match) => match[1]?.trim())
+    .filter((target) => target && !/^(?:https?:|mailto:|#)/.test(target));
+  const missingLinks = localLinks.filter((target) => {
+    const withoutAnchor = target.split("#", 1)[0];
+    return withoutAnchor && !fs.existsSync(path.resolve(installedRoot, decodeURIComponent(withoutAnchor)));
+  });
+  if (missingLinks.length) {
+    throw new Error("Packed README contains missing local links: " + missingLinks.join(", "));
+  }
+
+  console.log(JSON.stringify({
+    passed: true,
+    frameworks: Number(importProof),
+    compiledShots: compiled.shots.length,
+    packedReadmeLinks: localLinks.length,
+  }));
 } finally {
   const resolved = path.resolve(temp);
   const tempRoot = path.resolve(os.tmpdir()) + path.sep;

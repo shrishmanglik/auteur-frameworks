@@ -40,4 +40,16 @@ describe("render evaluation", () => {
     const otherShot = { ...observation, shotId: "shot-2" };
     expect(() => compareRenderCycles(observation, otherShot)).toThrow("same shotId");
   });
+
+  it("never passes a blocked result even when the numeric score improves", () => {
+    const blocked = structuredClone(observation);
+    blocked.cycleId = "cycle-blocked";
+    blocked.scores.promptAdherence = 5;
+    blocked.scores.temporalCompletion = 5;
+    blocked.defects = [{ severity: "critical" as const, description: "The hero object disappears." }];
+    const comparison = compareRenderCycles(observation, blocked);
+    expect(comparison.relativeImprovementPercent).toBeGreaterThanOrEqual(10);
+    expect(scoreRender(blocked).grade).toBe("blocked");
+    expect(comparison.meetsTenPercentThreshold).toBe(false);
+  });
 });
