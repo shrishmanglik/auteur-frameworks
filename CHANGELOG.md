@@ -2,6 +2,24 @@
 
 All notable public changes are recorded here. The project follows semantic versioning while the API matures; versions below `1.0.0` may contain documented breaking changes.
 
+## 0.5.0 - 2026-07-21
+
+### Fixed
+
+- Replaced the label-only generic shot compiler with distinct corpus-derived architectures for cinematic prose, act/shot master specifications, JSON scene contracts, temporal evolution, timed social sequences, practical stunts, continuous takes, and audio-first work.
+- Made compact prompts preserve the selected framework structure and report `frameworkPreserved`; high-stakes handoff guidance now rejects truncated blocks or omitted safeguards.
+- Made repair and render-observed continuation fail closed through the generic shot compiler so they cannot be claimed without observed-defect or final-frame evidence.
+- Canonicalized exact dialogue so the framework prompt contains the approved line once even when the source action also names it.
+
+### Added
+
+- Machine-readable compiler-surface and architecture-style metadata for every framework.
+- Optional capture-stack fields for sensor format, recording format, rig, frame rate, shutter angle, and resolution intent; existing packets hydrate with an empty capture object.
+- Explicit development-request routes for practical choreography, machine-readable scene contracts, and audio-first production.
+- Explicit route and QC contracts for multi-subject dynamics, measurable spatial clearance, and frame-accurate action/audio synchronization; tightened mechanical-assembly inference so clothing and seated performers do not trigger a false route.
+- Cross-framework regression tests proving that one shot compiles into materially different prompt structures.
+- Public architecture guide and a correction limiting the pre-0.5 Flow matrix to routing and QC evidence.
+
 ## 0.4.0 - 2026-07-21
 
 ### Added

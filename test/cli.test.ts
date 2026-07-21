@@ -50,7 +50,8 @@ describe("CLI", () => {
     expect(runCli(["kit", packetPath], kit.io)).toBe(0);
     const kitResult = JSON.parse(kit.output().stdout);
     expect(kitResult.exportManifest.deliverables).toContain("visual storyboard");
-    expect(kitResult.shotList[0].prompts.videoPrompt).toContain("FRAMEWORK:");
+    expect(kitResult.shotList[0].prompts.promptFidelity).toBe("FRAMEWORK_NATIVE");
+    expect(kitResult.shotList[0].prompts.videoPrompt).toContain("PREMISE:");
   });
 
   it("returns an actionable error for bad commands and malformed packets", () => {

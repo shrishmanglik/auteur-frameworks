@@ -20,7 +20,7 @@ Rules for agents:
 - Do not invent provider limits, pricing, audio support, or API behavior.
 - Keep global exclusions and continuity locks attached to every shot.
 - Declare shot characterIds and generationRisks explicitly; preserve missing cast ownership as UNKNOWN.
-- Inspect compactPromptReport before dispatch; omitted safeguards remain required production intent.
+- Submit the framework-native videoPrompt by default. Use compactVideoPrompt only when compactPromptReport confirms frameworkPreserved=true with no truncated sections or omitted safeguards.
 - Follow each shot's route advice; do not force high-risk assembly, contact, or exact fluid counts through text-only mode.
 - Use one constrained repair per observed defect.
 - Compile extensions from observed final-frame state, a first-motion deadline, and a physical spatial bridge.
@@ -30,6 +30,7 @@ Documentation:
 - README.md
 - docs/quickstart.md
 - docs/architecture.md
+- docs/framework-architectures.md
 - docs/llm-integration.md
 - docs/provider-handoff.md
 - docs/evaluation.md
@@ -38,6 +39,7 @@ Documentation:
 Public API modules:
 - src/schemas.ts
 - src/frameworks.ts
+- src/framework-prompt.ts
 - src/development.ts
 - src/compiler.ts
 - src/continuation.ts

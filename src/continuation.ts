@@ -1,4 +1,4 @@
-import { depthOfFieldCharacter } from "./compiler.js";
+import { depthOfFieldCharacter } from "./optics.js";
 import { ContinuationInputSchema, type ContinuationInput } from "./schemas.js";
 
 export interface CompiledContinuation {

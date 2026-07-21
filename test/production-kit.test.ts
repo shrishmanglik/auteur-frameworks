@@ -158,11 +158,57 @@ describe("route advisor", () => {
     }
   });
 
+  it("does not misclassify a wearable cap near a seated person as mechanical assembly", () => {
+    const shot = structuredClone(baseShot);
+    shot.subject = "a surgeon in scrubs walking toward a seated husband";
+    shot.action = "the surgeon removes her cloth cap, walks three steps, and stops";
+    shot.physics = ["the cloth cap folds naturally in one hand"];
+    shot.continuityLocks = ["one cloth cap remains in her hand"];
+    shot.beats = [
+      { startSeconds: 0, endSeconds: 2, action: "she removes the cloth cap" },
+      { startSeconds: 2, endSeconds: 6, action: "she walks toward the seated husband" },
+      { startSeconds: 6, endSeconds: 8, action: "both people stop" },
+    ];
+    shot.generationRisks = [];
+    shot.characterIds = [];
+    shot.exclusions = ["no extra people"];
+    delete shot.dialogue;
+    delete shot.audioTrack.spokenText;
+    delete shot.onScreenText;
+
+    const advice = assessShotRoute(shot);
+    expect(advice.risks.some((risk) => risk.code === "PRECISE_MECHANICAL_ASSEMBLY")).toBe(false);
+    expect(advice.recommendedMode).toBe("text-only");
+  });
+
   it("honors an explicit structured risk marker without guessing provider support", () => {
     const shot = structuredClone(baseShot);
     shot.generationRisks = ["PRECISE_MECHANICAL_ASSEMBLY"];
     const advice = assessShotRoute(shot);
     expect(advice.recommendedMode).toBe("first-last-frame");
     expect(advice.providerCapabilityStatus).toBe("UNKNOWN");
+  });
+
+  it("routes multi-subject dynamics and precise clearance without calling them assembly", () => {
+    const shot = structuredClone(baseShot);
+    shot.generationRisks = ["MULTI_SUBJECT_DYNAMICS", "PRECISE_SPATIAL_CLEARANCE"];
+    const advice = assessShotRoute(shot);
+
+    expect(advice.recommendedMode).toBe("first-last-frame");
+    expect(advice.risks.map((risk) => risk.code)).toEqual([
+      "MULTI_SUBJECT_DYNAMICS",
+      "PRECISE_SPATIAL_CLEARANCE",
+    ]);
+    expect(advice.acceptanceChecks.join(" ")).toContain("Measure the declared terminal clearance");
+  });
+
+  it("adds a frame-accurate QC gate for synchronized sound and action", () => {
+    const shot = structuredClone(baseShot);
+    shot.generationRisks = ["AUDIO_ACTION_SYNCHRONIZATION"];
+    const advice = assessShotRoute(shot);
+
+    expect(advice.risks.map((risk) => risk.code)).toContain("AUDIO_ACTION_SYNCHRONIZATION");
+    expect(advice.requiredAssets).toContain("approved action-to-audio cue sheet");
+    expect(advice.acceptanceChecks.join(" ")).toContain("align at the intended frame");
   });
 });

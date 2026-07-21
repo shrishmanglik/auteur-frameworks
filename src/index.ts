@@ -1,5 +1,6 @@
 export * from "./schemas.js";
 export * from "./frameworks.js";
+export * from "./framework-prompt.js";
 export * from "./compiler.js";
 export * from "./continuation.js";
 export * from "./qc.js";

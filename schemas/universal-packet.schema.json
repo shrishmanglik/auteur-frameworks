@@ -266,11 +266,14 @@
               "enum": [
                 "CAUSAL_CONTACT_CHOREOGRAPHY",
                 "PRECISE_MECHANICAL_ASSEMBLY",
+                "MULTI_SUBJECT_DYNAMICS",
+                "PRECISE_SPATIAL_CLEARANCE",
                 "EXACT_FLUID_COUNT",
                 "BRAND_OR_TEXT_CONTROL",
                 "IDENTITY_OR_PERFORMANCE",
                 "TRANSFORMATION_PHASES",
-                "EXACT_DIALOGUE_AUDIO"
+                "EXACT_DIALOGUE_AUDIO",
+                "AUDIO_ACTION_SYNCHRONIZATION"
               ]
             }
           },
@@ -347,6 +350,39 @@
                   "subjectDistanceMeters"
                 ],
                 "additionalProperties": false
+              },
+              "capture": {
+                "default": {},
+                "type": "object",
+                "properties": {
+                  "sensorFormat": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "recordingFormat": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "rig": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "frameRateFps": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "maximum": 1000
+                  },
+                  "shutterAngleDegrees": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "maximum": 360
+                  },
+                  "resolutionIntent": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "additionalProperties": false
               }
             },
             "required": [
@@ -354,7 +390,8 @@
               "movement",
               "framing",
               "focusBehavior",
-              "optics"
+              "optics",
+              "capture"
             ],
             "additionalProperties": false
           },

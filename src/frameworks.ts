@@ -1,4 +1,6 @@
 export type EvidenceClass = "PROMPT_CORPUS" | "RENDER_VALIDATED" | "COMBINED";
+export type CompilerSurface = "shot" | "repair" | "continuation";
+export type PromptArchitectureStyle = "structured-prose" | "json-contract" | "continuous-prose";
 
 export interface FrameworkDefinition {
   id: string;
@@ -7,6 +9,8 @@ export interface FrameworkDefinition {
   bestFor: string[];
   requiredBlocks: string[];
   evidenceClass: EvidenceClass;
+  compilerSurface: CompilerSurface;
+  architectureStyle: PromptArchitectureStyle;
 }
 
 export const FRAMEWORKS: readonly FrameworkDefinition[] = [
@@ -15,56 +19,70 @@ export const FRAMEWORKS: readonly FrameworkDefinition[] = [
     name: "Cinematic Prose Stack",
     purpose: "Compile one premium shot from premise through optics, physical reality, temporal action, sound, and exclusions.",
     bestFor: ["product-film", "ad", "b-roll", "character-scene"],
-    requiredBlocks: ["premise", "reality", "camera", "temporal", "lighting", "physics", "audio", "exclusions"],
+    requiredBlocks: ["premise", "reality-anchor", "optics-and-camera", "sequence", "expression-and-exclusions"],
     evidenceClass: "COMBINED",
+    compilerSurface: "shot",
+    architectureStyle: "structured-prose",
   },
   {
     id: "act-shot-master-spec",
     name: "Act and Shot Master Spec",
     purpose: "Compose a multi-beat sequence with escalation, payoff, and continuity across shots.",
     bestFor: ["short-film", "music-video", "sequence", "ad"],
-    requiredBlocks: ["story", "master-spec", "shots", "continuity", "audio", "payoff"],
+    requiredBlocks: ["core-visual-concept", "themes", "technical-master-specifications", "act-shot", "continuity-spine", "audio", "payoff"],
     evidenceClass: "PROMPT_CORPUS",
+    compilerSurface: "shot",
+    architectureStyle: "structured-prose",
   },
   {
     id: "json-scene-contract",
     name: "JSON Scene Contract",
     purpose: "Represent a production as parseable, versionable, provider-neutral structured data.",
     bestFor: ["short-film", "ad", "sequence", "animation"],
-    requiredBlocks: ["metadata", "scene", "camera", "lighting", "timeline", "constraints"],
+    requiredBlocks: ["metadata", "scene", "subject", "camera", "lighting", "timeline", "audio", "constraints", "compiled-prompt"],
     evidenceClass: "PROMPT_CORPUS",
+    compilerSurface: "shot",
+    architectureStyle: "json-contract",
   },
   {
     id: "temporal-evolution",
     name: "Temporal Evolution Framework",
     purpose: "Control transformations by declaring initial state, visible phases, immutable locks, and final state.",
     bestFor: ["vfx", "animation", "sequence", "product-film"],
-    requiredBlocks: ["initial-state", "phases", "immutable-locks", "physics", "final-state"],
+    requiredBlocks: ["transformation-goal", "initial-state", "final-state", "immutable-continuity-keys", "phase-plan", "physics-temporal-rules", "fail-closed-negatives"],
     evidenceClass: "COMBINED",
+    compilerSurface: "shot",
+    architectureStyle: "structured-prose",
   },
   {
     id: "timed-social-sequence",
     name: "Timed Social Sequence",
     purpose: "Build a short-form hook, escalation, reveal, payoff, and audio rhythm inside a strict duration.",
     bestFor: ["reel", "ad", "music-video"],
-    requiredBlocks: ["hook", "timeline", "camera", "reveal", "audio", "platform"],
+    requiredBlocks: ["platform-goal", "hook", "beat-timeline", "visual-language", "retention-share-payoff", "audio-editing", "negatives"],
     evidenceClass: "PROMPT_CORPUS",
+    compilerSurface: "shot",
+    architectureStyle: "structured-prose",
   },
   {
     id: "practical-stunt-contract",
     name: "Practical Stunt Contract",
     purpose: "Anchor action in mass, friction, contact, momentum, camera choreography, and practical image behavior.",
     bestFor: ["vfx", "short-film", "ad"],
-    requiredBlocks: ["acquisition", "reality", "choreography", "image-science", "audio", "exclusions"],
+    requiredBlocks: ["core-concept", "acquisition-stack", "reality-anchor", "continuous-camera-move", "contact-mass-momentum", "image-science", "synchronized-audio", "hard-exclusions"],
     evidenceClass: "COMBINED",
+    compilerSurface: "shot",
+    architectureStyle: "structured-prose",
   },
   {
     id: "continuous-take",
     name: "Continuous Take",
     purpose: "Express one unbroken action with a clear start, middle, end, and stable subject identity.",
     bestFor: ["a-roll", "character-scene", "b-roll", "product-film"],
-    requiredBlocks: ["duration", "identity", "camera", "action-arc", "lighting", "audio", "exclusions"],
+    requiredBlocks: ["duration", "identity-continuity", "camera-relationship", "action-arc", "lighting-image-behavior", "audio", "exclusions"],
     evidenceClass: "COMBINED",
+    compilerSurface: "shot",
+    architectureStyle: "continuous-prose",
   },
   {
     id: "repair-pass",
@@ -73,14 +91,18 @@ export const FRAMEWORKS: readonly FrameworkDefinition[] = [
     bestFor: ["vfx", "animation", "product-film", "character-scene", "other"],
     requiredBlocks: ["defect", "correction", "preserve", "forbid"],
     evidenceClass: "COMBINED",
+    compilerSurface: "repair",
+    architectureStyle: "structured-prose",
   },
   {
     id: "audio-contract",
     name: "Audio Contract",
     purpose: "Specify dialogue, source hierarchy, sync points, acoustic space, and mix intent without inventing unsupported capability.",
     bestFor: ["a-roll", "short-film", "ad", "music-video"],
-    requiredBlocks: ["primary-source", "ambience", "sync", "space", "music-boundary", "exclusions"],
+    requiredBlocks: ["primary-source", "visible-sync-map", "ambience-acoustic-space", "mix-hierarchy", "music-boundary", "exclusions"],
     evidenceClass: "PROMPT_CORPUS",
+    compilerSurface: "shot",
+    architectureStyle: "structured-prose",
   },
   {
     id: "render-observed-continuation",
@@ -89,6 +111,8 @@ export const FRAMEWORKS: readonly FrameworkDefinition[] = [
     bestFor: ["short-film", "sequence", "ad", "character-scene", "vfx"],
     requiredBlocks: ["observed-final-frame", "preserve", "first-motion", "spatial-bridge", "physics", "handoff"],
     evidenceClass: "RENDER_VALIDATED",
+    compilerSurface: "continuation",
+    architectureStyle: "structured-prose",
   },
 ] as const;
 

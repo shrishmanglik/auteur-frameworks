@@ -128,11 +128,11 @@ const extension = compileContinuationPrompt(yourRenderObservedContinuation);
 
 ## What ships
 
-- **Universal Packet and continuation JSON Schemas** for story, scenes, shots, characters, optics, lighting, materials, physics, timing, audio, continuity, exclusions, and render-observed handoffs.
+- **Universal Packet and continuation JSON Schemas** for story, scenes, shots, characters, capture stack, optics, lighting, materials, physics, timing, audio, continuity, exclusions, and render-observed handoffs.
 - **Development contract** that turns a brief into model instructions plus JSON Schema.
-- **Deterministic compiler** for full and compact video, frame, audio, and negative prompt surfaces.
+- **Framework-native deterministic compiler** whose prose, JSON, timing, stunt, transformation, continuous-take, and audio architectures change with the selected framework; the full surface preserves that structure and the compact surface reports whenever budgeting degrades it.
 - **Complete production-kit compiler** that projects story, scenes, bibles, storyboard, shot list, sound, references, continuity, prompts, QC, repairs, and exports in one call.
-- **Risk-aware route advisor** that directs causal contact and mechanical assembly to first/last-frame workflows, exact fluid counts to split passes, and identity or brand control to reference-first workflows. Provider support remains `UNKNOWN` until the host verifies it.
+- **Risk-aware route advisor** that directs causal contact, mechanical assembly, multi-subject dynamics, and precise spatial clearance to first/last-frame workflows; exact fluid counts to split passes; and identity or brand control to reference-first workflows. It also adds forensic gates for exact dialogue and action/audio synchronization. Provider support remains `UNKNOWN` until the host verifies it.
 - **Storyboard projection** with ordered panels, action, camera, duration, continuity, audio, and frame-generation instructions.
 - **Pre-flight QC** for temporal coverage, production duration, scene ownership, continuity, audio, typography risk, and realism anchors.
 - **Repair engine** for identity drift, anatomy, topology, object loss, broken physics, lip sync, branding, material drift, and other recurring defects.
@@ -161,6 +161,8 @@ List the machine-readable registry:
 ```bash
 npx auteur-frameworks frameworks
 ```
+
+The framework ID is executable structure, not a display tag. See [Framework-Native Prompt Architectures](docs/framework-architectures.md) for the exact block order, routing rules, compact-prompt fidelity gate, and evidence-specific repair/continuation boundary.
 
 ## Creator test matrix
 
@@ -209,7 +211,7 @@ At handoff time:
 
 1. select one compiled shot;
 2. set aspect ratio and duration explicitly in the provider UI or adapter;
-3. submit `videoPrompt`;
+3. submit the framework-native `videoPrompt`; use `compactVideoPrompt` only after its report confirms no required section or safeguard was lost;
 4. use `framePrompt` for a reference frame when the workflow supports it;
 5. keep `negativePrompt` and continuity locks attached to the job record;
 6. for an extension, describe the actual final frame and compile a render-observed continuation;

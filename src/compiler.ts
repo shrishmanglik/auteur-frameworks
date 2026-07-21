@@ -1,11 +1,20 @@
-import type { Optics, Shot, UniversalPacket } from "./schemas.js";
+import type { Shot, UniversalPacket } from "./schemas.js";
 import { parseUniversalPacket, ShotSchema } from "./schemas.js";
-import { getFramework } from "./frameworks.js";
+import {
+  compileFrameworkVideoPrompt,
+  type FrameworkPromptContext,
+} from "./framework-prompt.js";
+import { opticsToProse } from "./optics.js";
 import { preflightPacket, preflightShot, type PreflightIssue } from "./qc.js";
+
+export { depthOfFieldCharacter, opticsToProse } from "./optics.js";
 
 export interface CompiledShot {
   shotId: string;
   frameworkId: string;
+  frameworkName: string;
+  frameworkArchitecture: readonly string[];
+  promptFidelity: "FRAMEWORK_NATIVE";
   videoPrompt: string;
   compactVideoPrompt: string;
   compactPromptReport: CompactPromptReport;
@@ -19,12 +28,14 @@ export const TOOLKIT_COMPACT_PROMPT_BUDGET = 4000;
 
 export interface CompactPromptOptions {
   maxCharacters?: number;
+  context?: FrameworkPromptContext;
 }
 
 export interface CompactPromptReport {
   toolkitBudget: number;
   characterCount: number;
   wasCompacted: boolean;
+  frameworkPreserved: boolean;
   omittedExclusions: string[];
   truncatedSections: string[];
 }
@@ -40,43 +51,6 @@ export interface CompiledPackage {
   shots: CompiledShot[];
   preflight: ReturnType<typeof preflightPacket>;
 }
-
-export function depthOfFieldCharacter(optics: Optics): string {
-  const shallowScore = (optics.focalLengthMm / 50) * (2.8 / optics.tStop) * (3 / optics.subjectDistanceMeters);
-  if (shallowScore >= 2.2) return "very shallow depth of field with rapid falloff";
-  if (shallowScore >= 1.0) return "shallow depth of field with controlled subject separation";
-  if (shallowScore >= 0.45) return "moderate depth of field with readable environment";
-  return "deep focus with foreground-to-background legibility";
-}
-
-export function opticsToProse(optics: Optics): string {
-  const body = optics.cameraBody ? "Shot on " + optics.cameraBody : "Shot on a cinema camera";
-  const lens = optics.lensModel ? optics.lensModel + ", " : "";
-  return body + " with " + lens + optics.focalLengthMm + "mm optics at T" + optics.tStop
-    + ", camera " + optics.subjectDistanceMeters + "m from subject, "
-    + depthOfFieldCharacter(optics) + ".";
-}
-
-const timedBeats = (shot: Shot): string => shot.beats
-  .map((beat) => "[" + beat.startSeconds + "-" + beat.endSeconds + "s] " + beat.action)
-  .join(" ");
-
-const sentence = (value: string): string => {
-  const trimmed = value.trim();
-  return /[.!?]$/.test(trimmed) ? trimmed : trimmed + ".";
-};
-
-const compactList = (values: readonly string[]): string => values.join("; ");
-const firstTwo = (values: readonly string[]): readonly string[] => values.slice(0, 2);
-const firstOne = (values: readonly string[]): readonly string[] => values.slice(0, 1);
-
-const compactOptics = (optics: Optics): string => [
-  optics.cameraBody,
-  optics.lensModel ?? optics.focalLengthMm + "mm lens",
-  "T" + optics.tStop,
-  optics.subjectDistanceMeters + "m from subject",
-  depthOfFieldCharacter(optics).replace("depth of field", "DOF"),
-].filter(Boolean).join(", ");
 
 const clipSection = (value: string, maxCharacters: number): string => {
   if (value.length <= maxCharacters) return value;
@@ -98,7 +72,6 @@ export function compileCompactVideoPromptWithReport(
   if (!Number.isInteger(toolkitBudget) || toolkitBudget < 1000) {
     throw new Error("Compact prompt maxCharacters must be an integer of at least 1000.");
   }
-  const spokenText = shot.dialogue ?? shot.audioTrack.spokenText;
   const shotSpecificExclusions = shot.exclusions.filter(
     (exclusion) => !globalExclusions.includes(exclusion),
   );
@@ -111,64 +84,78 @@ export function compileCompactVideoPromptWithReport(
     ...shotSpecificExclusions,
     ...globalExclusions,
   ])].filter((exclusion) => !mandatoryExclusions.includes(exclusion));
-  const audio = [
-    spokenText ? "spoken: " + spokenText : null,
-    shot.audioTrack.soundDesignDirectives.length
-      ? compactList(firstOne(shot.audioTrack.soundDesignDirectives))
-      : null,
-    shot.audioTrack.musicDirective,
-  ].filter((part): part is string => Boolean(part)).join("; ");
 
-  const rawSections = [
-    "Intent: " + sentence(shot.intent),
-    "Scene: " + sentence(shot.subject + " in " + shot.environment),
-    shot.materials.length ? "Materials: " + compactList(firstTwo(shot.materials)) + "." : null,
-    globalStyle.length ? "Style: " + compactList(firstTwo(globalStyle)) + "." : null,
-    "Camera: " + compactOptics(shot.camera.optics) + "; " + compactList([
-      shot.camera.movement,
-      shot.camera.framing,
-      shot.camera.focusBehavior,
-    ]) + ".",
-    "Beats: " + timedBeats(shot) + ".",
-    "Light: " + shot.lighting.primarySource + "; motivated by " + shot.lighting.motivation
-      + ".",
-    "Physics: " + compactList(firstOne(shot.physics)) + ".",
-    "Lock: " + compactList(firstTwo(shot.continuityLocks)) + ".",
-    shot.imperfectionAnchors.length ? "Reality: " + compactList(firstOne(shot.imperfectionAnchors)) + "." : null,
-    audio ? "Audio: " + audio + "." : "Audio: visual-only; no invented dialogue.",
-    shot.onScreenText ? "Reserve clean space for post-composited text: " + shot.onScreenText + "." : null,
-  ].filter((part): part is string => Boolean(part));
-  const compose = (sections: string[], exclusions: string[]): string => [
-    ...sections,
-    "Avoid: " + compactList(exclusions) + ".",
-  ].join(" ");
-  let sections = rawSections;
-  const truncatedSections: string[] = [];
-  if (compose(sections, mandatoryExclusions).length > toolkitBudget) {
-    const perSectionBudget = Math.max(48, Math.floor((toolkitBudget - 320) / rawSections.length));
-    sections = rawSections.map((section) => {
-      const clipped = clipSection(section, perSectionBudget);
-      if (clipped !== section) truncatedSections.push(section.split(":", 1)[0]!);
-      return clipped;
-    });
-  }
-  if (compose(sections, mandatoryExclusions).length > toolkitBudget) {
-    throw new Error("Compact prompt minimum contract exceeds the toolkit-owned character budget.");
+  const compactContext: FrameworkPromptContext = {
+    ...options.context,
+    globalExclusions: [],
+    globalStyle,
+  };
+  const compileWith = (exclusions: readonly string[]): string => {
+    const candidateShot = ShotSchema.parse({ ...shot, exclusions });
+    const result = compileFrameworkVideoPrompt(candidateShot, compactContext);
+    if (result.frameworkId === "json-scene-contract") {
+      return JSON.stringify(JSON.parse(result.prompt));
+    }
+    return result.prompt.replace(/\s*\n+\s*/g, " ").replace(/\s{2,}/g, " ").trim();
+  };
+
+  const allOptionalPrompt = compileWith(candidateExclusions);
+  if (allOptionalPrompt.length <= toolkitBudget) {
+    return {
+      prompt: allOptionalPrompt,
+      toolkitBudget,
+      characterCount: allOptionalPrompt.length,
+      wasCompacted: allOptionalPrompt.includes("\n"),
+      frameworkPreserved: true,
+      omittedExclusions: [],
+      truncatedSections: [],
+    };
   }
 
   const selectedExclusions: string[] = [];
   const omittedExclusions: string[] = [];
-  for (const exclusion of candidateExclusions) {
-    const candidate = [...selectedExclusions, exclusion, ...mandatoryExclusions];
-    if (compose(sections, candidate).length <= toolkitBudget) selectedExclusions.push(exclusion);
-    else omittedExclusions.push(exclusion);
+  let prompt = compileWith(selectedExclusions);
+  const truncatedSections: string[] = [];
+  if (prompt.length > toolkitBudget) {
+    if (shot.frameworkId === "json-scene-contract") {
+      throw new Error(
+        "Compact JSON Scene Contract exceeds the toolkit-owned character budget. ACTION: use the full videoPrompt or reduce the shot contract without deleting safeguards.",
+      );
+    }
+    const rawSections = compileFrameworkVideoPrompt(
+      ShotSchema.parse({ ...shot, exclusions: [] }),
+      compactContext,
+    ).prompt.split(/\n{2,}/);
+    const perSectionBudget = Math.max(64, Math.floor((toolkitBudget - 80) / rawSections.length));
+    const sections = rawSections.map((section) => {
+      const flattened = section.replace(/\s*\n+\s*/g, " ");
+      const clipped = clipSection(flattened, perSectionBudget);
+      if (clipped !== flattened) truncatedSections.push(section.split(":", 1)[0]!);
+      return clipped;
+    });
+    prompt = sections.join(" ");
+    if (prompt.length > toolkitBudget) {
+      throw new Error("Compact framework contract exceeds the toolkit-owned character budget.");
+    }
   }
-  const prompt = compose(sections, [...selectedExclusions, ...mandatoryExclusions]);
+
+  for (const exclusion of candidateExclusions) {
+    const candidate = [...selectedExclusions, exclusion];
+    const candidatePrompt = compileWith(candidate);
+    if (!truncatedSections.length && candidatePrompt.length <= toolkitBudget) {
+      selectedExclusions.push(exclusion);
+      prompt = candidatePrompt;
+    } else {
+      omittedExclusions.push(exclusion);
+    }
+  }
+
   return {
     prompt,
     toolkitBudget,
     characterCount: prompt.length,
-    wasCompacted: truncatedSections.length > 0 || omittedExclusions.length > 0,
+    wasCompacted: true,
+    frameworkPreserved: truncatedSections.length === 0,
     omittedExclusions,
     truncatedSections,
   };
@@ -187,9 +174,9 @@ export function compileShot(
   input: Shot,
   globalExclusions: readonly string[] = [],
   globalStyle: readonly string[] = [],
+  context: FrameworkPromptContext = {},
 ): CompiledShot {
   const shot = ShotSchema.parse(input);
-  const framework = getFramework(shot.frameworkId);
   const optics = opticsToProse(shot.camera.optics);
   const spokenText = shot.dialogue ?? shot.audioTrack.spokenText;
   const audioParts = [
@@ -206,27 +193,15 @@ export function compileShot(
     "no geometry morphing",
     "no unplanned logos",
   ])];
-  const compact = compileCompactVideoPromptWithReport(shot, globalExclusions, globalStyle);
+  const frameworkPrompt = compileFrameworkVideoPrompt(shot, {
+    ...context,
+    globalExclusions,
+    globalStyle,
+  });
+  const compact = compileCompactVideoPromptWithReport(shot, globalExclusions, globalStyle, {
+    context,
+  });
   const { prompt: compactVideoPrompt, ...compactPromptReport } = compact;
-
-  const videoPrompt = [
-    "FRAMEWORK: " + framework.name + ".",
-    globalStyle.length ? "STYLE: " + globalStyle.join("; ") + "." : null,
-    "SHOT INTENT: " + sentence(shot.intent),
-    "REALITY: " + sentence(shot.subject + " in " + shot.environment)
-      + (shot.materials.length ? " Materials: " + shot.materials.join(", ") + "." : ""),
-    "CAMERA: " + optics + " " + shot.camera.movement + "; " + shot.camera.shotType + "; " + shot.camera.framing
-      + "; focus behavior: " + shot.camera.focusBehavior + ".",
-    "TEMPORAL PLAN: " + timedBeats(shot) + ".",
-    "LIGHTING: " + shot.lighting.primarySource + ", motivated by " + shot.lighting.motivation
-      + "; palette " + shot.lighting.paletteBase.join(", ") + ".",
-    "PHYSICS: " + shot.physics.join("; ") + ".",
-    "CONTINUITY LOCKS: " + shot.continuityLocks.join("; ") + ".",
-    shot.imperfectionAnchors.length ? "REALISM ANCHORS: " + shot.imperfectionAnchors.join("; ") + "." : null,
-    audioParts.length ? "AUDIO: " + audioParts.join(" ") : "AUDIO: visual-only; do not invent dialogue.",
-    shot.onScreenText ? "TEXT HANDOFF: reserve clean negative space for post-composited copy: " + shot.onScreenText + "." : null,
-    "EXCLUSIONS: " + exclusions.join("; ") + ".",
-  ].filter((part): part is string => Boolean(part)).join("\n");
 
   const framePrompt = [
     shot.subject + " in " + shot.environment + ".",
@@ -241,8 +216,11 @@ export function compileShot(
 
   return {
     shotId: shot.id,
-    frameworkId: framework.id,
-    videoPrompt,
+    frameworkId: frameworkPrompt.frameworkId,
+    frameworkName: frameworkPrompt.frameworkName,
+    frameworkArchitecture: frameworkPrompt.architecture,
+    promptFidelity: "FRAMEWORK_NATIVE",
+    videoPrompt: frameworkPrompt.prompt,
     compactVideoPrompt,
     compactPromptReport,
     framePrompt,
@@ -258,7 +236,21 @@ export function compilePacket(input: unknown): CompiledPackage {
     schemaVersion: "1.0.0",
     title: packet.metadata.title,
     providerTarget: packet.metadata.providerTarget,
-    shots: packet.shots.map((shot) => compileShot(shot, packet.globalExclusions, packet.globalStyle)),
+    shots: packet.shots.map((shot, shotIndex) => {
+      const scene = packet.scenes.find((candidate) => candidate.id === shot.sceneId);
+      return compileShot(shot, packet.globalExclusions, packet.globalStyle, {
+        aspectRatio: packet.metadata.aspectRatio,
+        audience: packet.metadata.audience,
+        contentFormat: packet.metadata.format,
+        dramaticQuestion: packet.story.dramaticQuestion,
+        productionTitle: packet.metadata.title,
+        providerTarget: packet.metadata.providerTarget,
+        ...(scene ? { scenePurpose: scene.purpose, sceneTitle: scene.title } : {}),
+        shotCount: packet.shots.length,
+        shotIndex,
+        storyLogline: packet.story.logline,
+      });
+    }),
     preflight: preflightPacket(packet),
   };
 }

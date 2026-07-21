@@ -101,6 +101,8 @@ This smoke does **not** prove a permanent Flow capability, exact frame-zero matc
 
 On 2026-07-21, maintainers submitted ten separately compiled eight-second generations through an authenticated Google Flow interface showing `Veo 3.1 - Fast`, one variation at a time. The visible submission cost was 10 credits per generation. Runs 1-2 used 9:16; runs 3-10 used 16:9. Every prompt came from the public compact compiler. Each returned asset was downloaded, sampled at one frame per second, and reviewed against its shot contract. Exact A-roll speech was additionally checked with local `faster-whisper` transcription. The sanitized, session-scoped evidence manifest is [`flow-rapid-matrix-2026-07-21.json`](evidence/flow-rapid-matrix-2026-07-21.json).
 
+**Architecture correction:** those ten runs used the pre-0.5 compact compiler, which flattened every `frameworkId` into the same generic `Intent / Scene / Camera / Beats / Light / Physics / Lock / Audio / Avoid` envelope. The runs remain valid evidence for returned-media defects, route advice, and QC rules, but they do not validate framework-native prompting. Version 0.5 replaces that label-only behavior with distinct framework compilers and regression tests; new provider validation must submit the corrected `videoPrompt` surface.
+
 | Run | Production lens | Result | Evidence-led decision |
 | ---: | --- | --- | --- |
 | 1 | Vertical comedy baseline | Blocked | Stable actor and board, but the requested door-to-board contact was replaced by a static pose and exaggerated reaction. |

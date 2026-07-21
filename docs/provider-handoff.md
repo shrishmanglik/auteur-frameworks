@@ -13,15 +13,15 @@ The core package is provider-neutral. This guide describes a safe manual handoff
 
 ## Prompt surfaces
 
-- **videoPrompt**: motion, temporal beats, optics, lighting, physics, continuity, audio intent, and exclusions.
-- **compactVideoPrompt**: the same production categories in a concise, single-line handoff for provider fields that handle long rich-text input poorly.
+- **videoPrompt**: the canonical framework-native architecture, including its required ordering and production blocks.
+- **compactVideoPrompt**: a whitespace-flattened, budgeted attempt for provider fields that handle long rich-text input poorly; its report states whether the selected framework architecture survived intact.
 - **framePrompt**: a reference-frame or image-generation description without temporal choreography.
 - **audioPrompt**: spoken performance, sound design, and music boundary when present.
 - **negativePrompt**: exclusions for systems or adapters that expose a separate negative field.
 
 The `videoPrompt` already contains exclusions. Do not append the same negative list twice.
 
-`compactVideoPrompt` uses a toolkit-owned 4,000-character ceiling; this is not a provider limit. Inspect `compactPromptReport` before dispatch. If it lists omitted exclusions or truncated sections, use the full prompt, reduce the shot safely, or pass omitted safeguards through a supported separate negative field.
+`compactVideoPrompt` uses a toolkit-owned 4,000-character ceiling; this is not a provider limit. Inspect `compactPromptReport` before dispatch. `frameworkPreserved` must be true, and high-stakes generation requires empty `omittedExclusions` and `truncatedSections`. Otherwise use the full prompt, reduce the shot safely, or pass omitted safeguards through a supported separate negative field.
 
 ## Manual Flow-style smoke
 
@@ -29,7 +29,7 @@ For a single-shot video workflow:
 
 1. set the configured duration to the shot's `durationSeconds` when available;
 2. set the packet's aspect ratio;
-3. paste `videoPrompt`, or `compactVideoPrompt` when the provider field needs a concise handoff, into the creation field;
+3. paste `videoPrompt`; use `compactVideoPrompt` only when the provider field needs it and the compact report proves that no required section or safeguard was lost;
 4. submit one variation first;
 5. evaluate action completion, geometry, physical behavior, identity, audio, and final state;
 6. use `buildRepairPrompt` for one observed defect at a time.

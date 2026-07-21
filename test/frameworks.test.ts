@@ -19,7 +19,9 @@ const example = JSON.parse(fs.readFileSync(new URL("../examples/product-film.jso
 
 describe("universal packet", () => {
   it("parses the synthetic product-film example", () => {
-    expect(UniversalPacketSchema.parse(example).shots).toHaveLength(1);
+    const packet = UniversalPacketSchema.parse(example);
+    expect(packet.shots).toHaveLength(1);
+    expect(packet.shots[0]?.camera.capture).toEqual({});
   });
 
   it("ships a distinct provider-neutral framework registry", () => {
@@ -60,6 +62,23 @@ describe("development contract", () => {
     expect(contract.framework.id).toBe("temporal-evolution");
   });
 
+  it("routes explicit production problems to their native framework architectures", () => {
+    const base = {
+      idea: "An original production problem with one observable action and a measurable final state.",
+      format: "other" as const,
+      targetDurationSeconds: 8,
+      aspectRatio: "16:9" as const,
+      audience: "professional filmmakers",
+      tone: ["specific", "physical"],
+    };
+    expect(buildDevelopmentContract({ ...base, requiresPracticalChoreography: true }).framework.id)
+      .toBe("practical-stunt-contract");
+    expect(buildDevelopmentContract({ ...base, requiresMachineReadableSceneContract: true }).framework.id)
+      .toBe("json-scene-contract");
+    expect(buildDevelopmentContract({ ...base, audioFirst: true }).framework.id)
+      .toBe("audio-contract");
+  });
+
   it("builds a development contract for every public content format", () => {
     const expectedRoutes = {
       "short-film": "act-shot-master-spec",
@@ -97,16 +116,90 @@ describe("compiler", () => {
     const shot = UniversalPacketSchema.parse(example).shots[0]!;
     const compiled = compileShot(shot);
     expect(compiled.videoPrompt.indexOf("100mm")).toBeLessThan(compiled.videoPrompt.indexOf("slider"));
-    expect(compiled.compactVideoPrompt.length).toBeLessThan(compiled.videoPrompt.length);
+    expect(compiled.promptFidelity).toBe("FRAMEWORK_NATIVE");
+    expect(compiled.frameworkName).toBe("Cinematic Prose Stack");
     expect(compiled.compactVideoPrompt).toContain("[0-2s]");
     expect(compiled.compactVideoPrompt).toContain("100mm");
-    expect(compiled.compactVideoPrompt).toContain("Physics:");
-    expect(compiled.compactVideoPrompt).toContain("Lock:");
-    expect(compiled.compactVideoPrompt).toContain("Audio:");
+    expect(compiled.compactVideoPrompt).toContain("PREMISE:");
+    expect(compiled.compactVideoPrompt).toContain("REALITY ANCHOR:");
+    expect(compiled.compactVideoPrompt).toContain("OPTICS AND CAMERA:");
+    expect(compiled.compactVideoPrompt).toContain("SEQUENCE:");
+    expect(compiled.compactVideoPrompt).toContain("EXPRESSION AND EXCLUSIONS:");
     expect(compiled.compactVideoPrompt).toContain("no identity drift");
+    expect(compiled.compactPromptReport.frameworkPreserved).toBe(true);
     expect(compiled.framePrompt).toContain("tiny trapped bubbles");
     expect(compiled.audioPrompt).toContain("liquid pour");
     expect(compiled.negativePrompt).toContain("no identity drift");
+  });
+
+  it("compiles genuinely distinct corpus architectures instead of relabeling one template", () => {
+    const baseShot = structuredClone(UniversalPacketSchema.parse(example).shots[0]!);
+    const expectedSignatures = {
+      "cinematic-prose-stack": "PREMISE:",
+      "act-shot-master-spec": "TECHNICAL MASTER SPECIFICATIONS:",
+      "json-scene-contract": "\"metadata\"",
+      "temporal-evolution": "INITIAL STATE (0.0s):",
+      "timed-social-sequence": "HOOK (FIRST 2 SECONDS):",
+      "practical-stunt-contract": "CONTINUOUS CAMERA MOVE (8000ms):",
+      "continuous-take": "A single unbroken 8-second take",
+      "audio-contract": "PRIMARY SOURCE AND PERFORMANCE:",
+    } as const;
+    const prompts = Object.entries(expectedSignatures).map(([frameworkId, signature]) => {
+      const shot = structuredClone(baseShot);
+      shot.frameworkId = frameworkId;
+      if (frameworkId === "practical-stunt-contract") {
+        shot.camera.capture = {
+          sensorFormat: "Super 35 digital cinema sensor",
+          recordingFormat: "log acquisition",
+          rig: "low tracking vehicle rig",
+          frameRateFps: 24,
+          shutterAngleDegrees: 180,
+          resolutionIntent: "4K finish",
+        };
+      }
+      const compiled = compileShot(shot, example.globalExclusions, example.globalStyle, {
+        aspectRatio: "16:9",
+        audience: "filmmakers",
+        contentFormat: "product-film",
+        productionTitle: "Architecture fidelity test",
+        shotCount: 1,
+        shotIndex: 0,
+      });
+      expect(compiled.videoPrompt, frameworkId).toContain(signature);
+      expect(compiled.compactVideoPrompt, frameworkId).toContain(signature);
+      expect(compiled.frameworkArchitecture.length, frameworkId).toBeGreaterThanOrEqual(5);
+      expect(compiled.compactPromptReport.frameworkPreserved).toBe(true);
+      if (frameworkId === "practical-stunt-contract") {
+        expect(compiled.videoPrompt).toContain("24fps");
+        expect(compiled.videoPrompt).toContain("180-degree shutter");
+      }
+      return compiled.videoPrompt;
+    });
+    expect(new Set(prompts).size).toBe(Object.keys(expectedSignatures).length);
+  });
+
+  it("fails closed when evidence-specific frameworks are used through the generic shot compiler", () => {
+    const baseShot = structuredClone(UniversalPacketSchema.parse(example).shots[0]!);
+    const repairShot = structuredClone(baseShot);
+    repairShot.frameworkId = "repair-pass";
+    expect(() => compileShot(repairShot)).toThrow("use buildRepairPrompt");
+
+    const continuationShot = structuredClone(baseShot);
+    continuationShot.frameworkId = "render-observed-continuation";
+    expect(() => compileShot(continuationShot)).toThrow("use compileContinuationPrompt");
+  });
+
+  it("emits exact dialogue once even when action and beat text repeat it", () => {
+    for (const frameworkId of ["continuous-take", "audio-contract"]) {
+      const shot = structuredClone(UniversalPacketSchema.parse(example).shots[0]!);
+      shot.frameworkId = frameworkId;
+      shot.dialogue = "Hold the frame.";
+      shot.audioTrack.spokenText = "Hold the frame.";
+      shot.action = "the craftsperson says Hold the frame. and steadies the glass";
+      shot.beats[2]!.action = "the craftsperson says Hold the frame. while the liquid settles";
+      const compiled = compileShot(shot);
+      expect(compiled.videoPrompt.match(/Hold the frame\./g), frameworkId).toHaveLength(1);
+    }
   });
 
   it("offers a deterministic compact handoff without losing production categories", () => {
@@ -150,6 +243,7 @@ describe("compiler", () => {
     const result = compileCompactVideoPromptWithReport(shot);
     expect(result.prompt.length).toBeLessThanOrEqual(result.toolkitBudget);
     expect(result.wasCompacted).toBe(true);
+    expect(result.frameworkPreserved).toBe(result.truncatedSections.length === 0);
     expect(result.omittedExclusions.length).toBeGreaterThan(0);
     expect(result.prompt).toContain("no identity drift");
     expect(result.prompt).toContain("no geometry morphing");
@@ -181,6 +275,7 @@ describe("compiler", () => {
     const result = compilePacket(twoShotExample);
     expect(result.shots).toHaveLength(2);
     expect(result.preflight.passed).toBe(true);
+    expect(result.shots[0]?.videoPrompt).toContain("16:9");
     for (const shot of result.shots) {
       for (const exclusion of twoShotExample.globalExclusions) {
         expect(shot.negativePrompt.split(exclusion)).toHaveLength(2);

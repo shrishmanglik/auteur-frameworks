@@ -15,7 +15,10 @@ export interface DevelopmentContract {
 }
 
 export function selectFramework(request: DevelopmentRequest): FrameworkDefinition {
+  if (request.audioFirst) return getFramework("audio-contract");
+  if (request.requiresMachineReadableSceneContract) return getFramework("json-scene-contract");
   if (request.requiresTransformation || request.format === "vfx") return getFramework("temporal-evolution");
+  if (request.requiresPracticalChoreography) return getFramework("practical-stunt-contract");
   if (request.format === "reel") return getFramework("timed-social-sequence");
   if (request.format === "short-film" || request.format === "music-video" || request.format === "sequence") {
     return getFramework("act-shot-master-spec");
@@ -35,10 +38,12 @@ export function buildDevelopmentContract(input: unknown): DevelopmentContract {
     "Build humor, emotion, and originality through observable behavior, reversals, timing, and consequences.",
     "Each shot must have one dominant action, a complete temporal plan, physical behavior, optics, lighting motivation, continuity locks, realism anchors, audio intent, and exclusions.",
     "Assign explicit characterIds to every shot; use an empty list only when no cast member appears.",
-    "Declare generationRisks when a shot depends on causal contact, mechanical assembly, exact fluid counts, brand or text control, identity or performance, transformation phases, or exact dialogue audio.",
+    "Declare generationRisks when a shot depends on causal contact, mechanical assembly, multi-subject dynamics, precise spatial clearance, exact fluid counts, brand or text control, identity or performance, transformation phases, exact dialogue audio, or frame-accurate audio/action synchronization.",
     "Use references as craft properties, never as instructions to imitate a living artist.",
     "Do not invent provider capabilities, duration limits, prices, or API behavior.",
-    "Framework route: " + framework.name + ". Required blocks: " + framework.requiredBlocks.join(", ") + ".",
+    "Primary framework route: " + framework.name + ". Required blocks: " + framework.requiredBlocks.join(", ") + ".",
+    "Assign the primary frameworkId to ordinary shots. Override a shot only when its production problem requires a more specific architecture: practical-stunt-contract for contact/mass/momentum choreography; temporal-evolution for visible state change; continuous-take for one unbroken performance; timed-social-sequence for retention-led short form; audio-contract for audio-first work; json-scene-contract for machine-readable handoff.",
+    "Never assign repair-pass without an observed defect, and never assign render-observed-continuation without the accepted render's actual final-frame evidence.",
   ].join("\n");
   const userBrief = [
     "IDEA: " + request.idea,
@@ -52,6 +57,9 @@ export function buildDevelopmentContract(input: unknown): DevelopmentContract {
     request.avoidCliches.length ? "AVOID CLICHES: " + request.avoidCliches.join("; ") : "AVOID CLICHES: generic montage; empty spectacle; unearned sentiment",
     "DIALOGUE: " + (request.hasDialogue ? "required where dramatically useful" : "not required"),
     "AUDIO: " + (request.audioRequired ? "explicit contract required" : "optional"),
+    "PRACTICAL CHOREOGRAPHY: " + (request.requiresPracticalChoreography ? "required" : "not specifically required"),
+    "MACHINE-READABLE SCENE CONTRACT: " + (request.requiresMachineReadableSceneContract ? "required" : "not specifically required"),
+    "AUDIO-FIRST: " + (request.audioFirst ? "yes" : "no"),
     request.constraints.length ? "CONSTRAINTS: " + request.constraints.join("; ") : "CONSTRAINTS: none supplied",
   ].join("\n");
 

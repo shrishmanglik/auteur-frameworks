@@ -35,26 +35,16 @@ describe("expert creator fixtures", () => {
       expect(kit.storyboard).toHaveLength(packet.shots.length);
       expect(kit.promptPackage).toEqual(compiled);
       expect(kit.preflight).toEqual(report);
-      expect(compiled.shots.every((shot) => shot.videoPrompt.includes("TEMPORAL PLAN"))).toBe(true);
+      expect(compiled.shots.every((shot) => shot.promptFidelity === "FRAMEWORK_NATIVE")).toBe(true);
+      expect(compiled.shots.every((shot) => shot.frameworkArchitecture.length >= 5)).toBe(true);
       expect(compiled.shots.every((shot) => shot.negativePrompt.length > 30)).toBe(true);
-      expect(compiled.shots.every((shot) => shot.compactVideoPrompt.length <= shot.videoPrompt.length * 0.8)).toBe(true);
+      expect(compiled.shots.every((shot) => shot.compactVideoPrompt.length <= 4000)).toBe(true);
+      expect(compiled.shots.every((shot) => shot.compactPromptReport.frameworkPreserved)).toBe(true);
       for (const shot of compiled.shots) {
-        for (const label of [
-          "Intent:",
-          "Scene:",
-          "Materials:",
-          "Style:",
-          "Camera:",
-          "Beats:",
-          "Light:",
-          "Physics:",
-          "Lock:",
-          "Reality:",
-          "Audio:",
-          "Avoid:",
-        ]) {
-          expect(shot.compactVideoPrompt, `${persona.name} missing ${label}`).toContain(label);
-        }
+        expect(shot.videoPrompt, `${persona.name} missing camera specificity`).toMatch(/CAMERA|Camera|camera/);
+        expect(shot.videoPrompt, `${persona.name} missing temporal specificity`).toMatch(/SEQUENCE|BEAT|Beat|0-/);
+        expect(shot.videoPrompt, `${persona.name} missing audio contract`).toMatch(/AUDIO|Audio|audio/);
+        expect(shot.videoPrompt, `${persona.name} missing exclusions`).toMatch(/DO NOT RENDER|NEGATIVES|EXCLUSIONS|no identity drift/);
       }
     });
   }

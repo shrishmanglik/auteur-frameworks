@@ -21,11 +21,14 @@ export const ContinuityStrictnessSchema = z.enum(["relaxed", "standard", "strict
 export const GenerationRiskCodeSchema = z.enum([
   "CAUSAL_CONTACT_CHOREOGRAPHY",
   "PRECISE_MECHANICAL_ASSEMBLY",
+  "MULTI_SUBJECT_DYNAMICS",
+  "PRECISE_SPATIAL_CLEARANCE",
   "EXACT_FLUID_COUNT",
   "BRAND_OR_TEXT_CONTROL",
   "IDENTITY_OR_PERFORMANCE",
   "TRANSFORMATION_PHASES",
   "EXACT_DIALOGUE_AUDIO",
+  "AUDIO_ACTION_SYNCHRONIZATION",
 ]);
 
 export const DevelopmentRequestSchema = z.object({
@@ -41,6 +44,9 @@ export const DevelopmentRequestSchema = z.object({
   avoidCliches: z.array(z.string().min(1)).default([]),
   hasDialogue: z.boolean().default(false),
   requiresTransformation: z.boolean().default(false),
+  requiresPracticalChoreography: z.boolean().default(false),
+  requiresMachineReadableSceneContract: z.boolean().default(false),
+  audioFirst: z.boolean().default(false),
   audioRequired: z.boolean().default(false),
 });
 
@@ -62,12 +68,22 @@ export const OpticsSchema = z.object({
   subjectDistanceMeters: z.number().positive().max(10000),
 });
 
+export const CaptureSchema = z.object({
+  sensorFormat: z.string().min(1).optional(),
+  recordingFormat: z.string().min(1).optional(),
+  rig: z.string().min(1).optional(),
+  frameRateFps: z.number().positive().max(1000).optional(),
+  shutterAngleDegrees: z.number().positive().max(360).optional(),
+  resolutionIntent: z.string().min(1).optional(),
+}).default({});
+
 export const CameraSchema = z.object({
   shotType: z.string().min(1),
   movement: z.string().min(1),
   framing: z.string().min(1),
   focusBehavior: z.string().min(1),
   optics: OpticsSchema,
+  capture: CaptureSchema,
 });
 
 export const LightingSchema = z.object({
@@ -245,6 +261,7 @@ export type ContentFormat = z.infer<typeof ContentFormatSchema>;
 export type GenerationRiskCode = z.infer<typeof GenerationRiskCodeSchema>;
 export type DevelopmentRequest = z.infer<typeof DevelopmentRequestSchema>;
 export type Optics = z.infer<typeof OpticsSchema>;
+export type Capture = z.infer<typeof CaptureSchema>;
 export type Shot = z.infer<typeof ShotSchema>;
 export type ContinuationContract = z.infer<typeof ContinuationContractSchema>;
 export type ContinuationInput = z.infer<typeof ContinuationInputSchema>;

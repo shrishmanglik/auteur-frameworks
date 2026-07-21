@@ -61,7 +61,7 @@ export function assessShotRoute(input: Shot): ShotRouteAdvice {
 
   const mechanicalAssembly = explicitRisks.has("PRECISE_MECHANICAL_ASSEMBLY") || contains(
     productionText,
-    /\b(?:cap|lid|component|part|module|piece)\b[^.]{0,96}\b(?:assembles?|assembled|seats|seated|seating|inserts?|inserted|attaches?|attached|detaches?|detached|lowers?|lowered)\b|\b(?:assembles?|assembled|inserts?|inserted|attaches?|attached|detaches?|detached)\b[^.]{0,96}\b(?:cap|lid|component|part|module|piece)\b/,
+    /\b(?:cap|lid)\b[^.;]{0,48}\b(?:lowers?\s+(?:and\s+)?seats?|seats?\s+(?:on|onto|into|within|against)|inserts?|attaches?|detaches?)\b|\b(?:component|mechanical part|machine part|module|rigid piece)\b[^.;]{0,64}\b(?:assembles?|seats?|inserts?|attaches?|detaches?)\b|\b(?:assembles?|inserts?|attaches?|detaches?)\b[^.;]{0,64}\b(?:cap|lid|component|mechanical part|machine part|module|rigid piece)\b/,
   );
   if (mechanicalAssembly) {
     risks.push({
@@ -73,6 +73,29 @@ export function assessShotRoute(input: Shot): ShotRouteAdvice {
     requiredAssets.add("hero object reference with fixed geometry and orientation");
     requiredAssets.add("terminal assembly-state frame");
     acceptanceChecks.add("Count every part and verify one continuous path from separated to assembled state.");
+  }
+
+  if (explicitRisks.has("MULTI_SUBJECT_DYNAMICS")) {
+    risks.push({
+      code: "MULTI_SUBJECT_DYNAMICS",
+      level: "high",
+      reason: "Multiple independently moving subjects can merge, swap identity, collide, or lose their declared paths.",
+      mitigation: "Lock each subject's inventory and trajectory, preserve visible separation, and compare opening and terminal states.",
+    });
+    requiredAssets.add("opening-state frame with every moving subject identified");
+    requiredAssets.add("terminal-state frame with final trajectories and separation visible");
+    acceptanceChecks.add("Track every moving subject through the shot; reject merges, swaps, collisions, or undeclared path changes.");
+  }
+
+  if (explicitRisks.has("PRECISE_SPATIAL_CLEARANCE")) {
+    risks.push({
+      code: "PRECISE_SPATIAL_CLEARANCE",
+      level: "high",
+      reason: "The shot depends on a measurable final gap that text generation can visually collapse or exaggerate.",
+      mitigation: "Declare the terminal distance, keep both surfaces visible, and measure the accepted terminal frame.",
+    });
+    requiredAssets.add("terminal-state frame with both clearance surfaces visible");
+    acceptanceChecks.add("Measure the declared terminal clearance in the accepted frame; reject contact or an unreadable gap.");
   }
 
   const exactFluidCount = explicitRisks.has("EXACT_FLUID_COUNT") || contains(
@@ -142,6 +165,17 @@ export function assessShotRoute(input: Shot): ShotRouteAdvice {
     acceptanceChecks.add("Transcribe the rendered speech and compare it word-for-word with the approved line.");
   }
 
+  if (explicitRisks.has("AUDIO_ACTION_SYNCHRONIZATION")) {
+    risks.push({
+      code: "AUDIO_ACTION_SYNCHRONIZATION",
+      level: "medium",
+      reason: "The dramatic beat depends on a visible action and an audible event sharing the same frame-accurate cue.",
+      mitigation: "Declare the synchronization cue once and inspect waveform and frames together before acceptance.",
+    });
+    requiredAssets.add("approved action-to-audio cue sheet");
+    acceptanceChecks.add("Verify the declared visual action and audio cue align at the intended frame without an early or repeated event.");
+  }
+
   const riskLevel: RouteRiskLevel = risks.some((risk) => risk.level === "high")
     ? "high"
     : risks.length
@@ -151,6 +185,7 @@ export function assessShotRoute(input: Shot): ShotRouteAdvice {
   const recommendedMode: GenerationMode = codes.has("EXACT_FLUID_COUNT")
     ? "split-pass"
     : codes.has("PRECISE_MECHANICAL_ASSEMBLY") || codes.has("CAUSAL_CONTACT_CHOREOGRAPHY")
+      || codes.has("MULTI_SUBJECT_DYNAMICS") || codes.has("PRECISE_SPATIAL_CLEARANCE")
       ? "first-last-frame"
       : codes.has("BRAND_OR_TEXT_CONTROL") || codes.has("IDENTITY_OR_PERFORMANCE") || codes.has("TRANSFORMATION_PHASES")
         ? "reference-first"
