@@ -96,6 +96,14 @@ export const LightingSchema = z.object({
 
 export const AudioTrackSchema = z.object({
   spokenText: z.string().min(1).optional(),
+  spokenWindow: z.object({
+    startSeconds: z.number().min(0),
+    endSeconds: z.number().positive(),
+  }).superRefine((window, ctx) => {
+    if (window.endSeconds <= window.startSeconds) {
+      ctx.addIssue({ code: "custom", message: "spokenWindow.endSeconds must be greater than startSeconds" });
+    }
+  }).optional(),
   soundDesignDirectives: z.array(z.string().min(1)).default([]),
   musicDirective: z.string().min(1).optional(),
 });

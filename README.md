@@ -128,11 +128,11 @@ const extension = compileContinuationPrompt(yourRenderObservedContinuation);
 
 ## What ships
 
-- **Universal Packet and continuation JSON Schemas** for story, scenes, shots, characters, capture stack, optics, lighting, materials, physics, timing, audio, continuity, exclusions, and render-observed handoffs.
+- **Universal Packet and continuation JSON Schemas** for story, scenes, shots, characters, capture stack, optics, lighting, materials, physics, timing, bounded spoken-performance windows, audio, continuity, exclusions, and render-observed handoffs.
 - **Development contract** that turns a brief into model instructions plus JSON Schema.
 - **Framework-native deterministic compiler** whose prose, JSON, timing, stunt, transformation, continuous-take, and audio architectures change with the selected framework; the full surface preserves that structure and the compact surface reports whenever budgeting degrades it.
 - **Complete production-kit compiler** that projects story, scenes, bibles, storyboard, shot list, sound, references, continuity, prompts, QC, repairs, and exports in one call.
-- **Risk-aware route advisor** that directs causal contact, mechanical assembly, multi-subject dynamics, and precise spatial clearance to first/last-frame workflows; exact fluid counts to split passes; and identity or brand control to reference-first workflows. It also adds forensic gates for exact dialogue and action/audio synchronization. Provider support remains `UNKNOWN` until the host verifies it.
+- **Risk-aware route advisor** that directs causal contact, mechanical assembly, multi-subject dynamics, and precise spatial clearance to first/last-frame workflows; exact fluid counts to split passes; and identity or brand control to reference-first workflows. It adds forensic gates for exact dialogue and action/audio synchronization, plus positive blank-surface locks when marks are forbidden. Provider support remains `UNKNOWN` until the host verifies it.
 - **Storyboard projection** with ordered panels, action, camera, duration, continuity, audio, and frame-generation instructions.
 - **Pre-flight QC** for temporal coverage, production duration, scene ownership, continuity, audio, typography risk, and realism anchors.
 - **Repair engine** for identity drift, anatomy, topology, object loss, broken physics, lip sync, branding, material drift, and other recurring defects.

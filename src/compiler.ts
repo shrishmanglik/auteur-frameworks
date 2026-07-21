@@ -181,6 +181,10 @@ export function compileShot(
   const spokenText = shot.dialogue ?? shot.audioTrack.spokenText;
   const audioParts = [
     spokenText ? "Spoken performance: " + spokenText : null,
+    spokenText && shot.audioTrack.spokenWindow
+      ? "Spoken timing: " + shot.audioTrack.spokenWindow.startSeconds + "-"
+        + shot.audioTrack.spokenWindow.endSeconds + "s; no early articulation."
+      : null,
     shot.audioTrack.soundDesignDirectives.length
       ? "Sound design: " + shot.audioTrack.soundDesignDirectives.join("; ")
       : null,
@@ -211,6 +215,9 @@ export function compileShot(
     shot.lighting.primarySource + "; " + shot.lighting.paletteBase.join(", ") + ".",
     shot.materials.length ? "Materials: " + shot.materials.join(", ") + "." : null,
     shot.imperfectionAnchors.length ? "Realism anchors: " + shot.imperfectionAnchors.join("; ") + "." : null,
+    shot.generationRisks.includes("BRAND_OR_TEXT_CONTROL")
+      ? "Surface control: declared blank or unbranded surfaces are uninterrupted base material and color, without glyphs, numbers, badges, plates, logos, stickers, or decals."
+      : null,
     "Continuity: " + shot.continuityLocks.join("; ") + ".",
   ].filter((part): part is string => Boolean(part)).join(" ");
 

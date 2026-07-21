@@ -268,6 +268,24 @@
               "type": "string",
               "minLength": 1
             },
+            "spokenWindow": {
+              "type": "object",
+              "properties": {
+                "startSeconds": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "endSeconds": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                }
+              },
+              "required": [
+                "startSeconds",
+                "endSeconds"
+              ],
+              "additionalProperties": false
+            },
             "soundDesignDirectives": {
               "default": [],
               "type": "array",

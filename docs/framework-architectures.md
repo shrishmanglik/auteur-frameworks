@@ -4,6 +4,8 @@ AUTEUR frameworks are executable prompt structures, not labels. The compiler mus
 
 Use one primary framework for the production problem. Add audio, repair, or continuation through their dedicated surfaces. Do not concatenate all ten frameworks into one oversized prompt; that destroys hierarchy and makes the generation target ambiguous.
 
+Exact speech should carry `audioTrack.spokenWindow` boundaries so the compiler can forbid early articulation and pre-flight can reject out-of-range timing. Shots with `BRAND_OR_TEXT_CONTROL` compile blankness as a positive material/color state; negative logo and text lists remain necessary but are not treated as sufficient.
+
 ## Shot compilers
 
 | Framework | Prompt architecture | Use when |

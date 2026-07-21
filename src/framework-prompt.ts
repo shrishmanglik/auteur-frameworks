@@ -89,10 +89,16 @@ const allExclusions = (shot: Shot, context: FrameworkPromptContext): string[] =>
 
 const audioContract = (shot: Shot): string => {
   const spokenText = spokenTextFor(shot);
+  const spokenWindow = shot.audioTrack.spokenWindow;
   const parts = [
     spokenText
       ? "The visible speaker says exactly once, \"" + spokenText
         + "\" with restrained, intelligible, lip-synchronized delivery. No paraphrase, repetition, substitute words, or generated subtitles."
+      : null,
+    spokenText && spokenWindow
+      ? "Speech timing is locked to " + spokenWindow.startSeconds + "-" + spokenWindow.endSeconds
+        + "s: do not begin articulation before " + spokenWindow.startSeconds + "s, and complete the line by "
+        + spokenWindow.endSeconds + "s. Keep the mouth naturally closed before the cue."
       : null,
     shot.audioTrack.soundDesignDirectives.length
       ? "Synchronized sound design: " + compactList(shot.audioTrack.soundDesignDirectives) + "."
@@ -114,8 +120,12 @@ const imageBehavior = (shot: Shot, context: FrameworkPromptContext): string => {
   const imperfections = shot.imperfectionAnchors.length
     ? "Visible imperfection anchors: " + compactList(shot.imperfectionAnchors) + "."
     : "Preserve physically plausible surface variation; do not beautify materials into smooth CGI.";
+  const surfaceControl = shot.generationRisks.includes("BRAND_OR_TEXT_CONTROL")
+    ? " Positive surface control: every declared blank or unbranded surface is uninterrupted base material and color. "
+      + "No glyph, letter, number, badge, plate, wordmark, logo, sticker, or decal exists there; any invented mark fails the take."
+    : "";
   return "Image behavior: " + compactList(unique(grade))
-    + "; natural action-matched motion blur; restrained highlight roll-off. " + imperfections;
+    + "; natural action-matched motion blur; restrained highlight roll-off. " + imperfections + surfaceControl;
 };
 
 const realityAnchor = (shot: Shot): string => [

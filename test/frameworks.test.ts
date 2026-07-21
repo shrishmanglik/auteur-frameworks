@@ -28,6 +28,14 @@ describe("universal packet", () => {
     expect(FRAMEWORKS.length).toBeGreaterThanOrEqual(9);
     expect(new Set(FRAMEWORKS.map((item) => item.id)).size).toBe(FRAMEWORKS.length);
   });
+
+  it("keeps published JSON schemas aligned with spoken timing windows", () => {
+    for (const filename of ["universal-packet.schema.json", "continuation-input.schema.json"]) {
+      const schema = fs.readFileSync(new URL(`../schemas/${filename}`, import.meta.url), "utf8");
+      expect(schema, filename).toContain('"spokenWindow"');
+      expect(schema, filename).toContain('"additionalProperties": false');
+    }
+  });
 });
 
 describe("development contract", () => {
@@ -195,11 +203,24 @@ describe("compiler", () => {
       shot.frameworkId = frameworkId;
       shot.dialogue = "Hold the frame.";
       shot.audioTrack.spokenText = "Hold the frame.";
+      shot.audioTrack.spokenWindow = { startSeconds: 6, endSeconds: 8 };
       shot.action = "the craftsperson says Hold the frame. and steadies the glass";
       shot.beats[2]!.action = "the craftsperson says Hold the frame. while the liquid settles";
       const compiled = compileShot(shot);
       expect(compiled.videoPrompt.match(/Hold the frame\./g), frameworkId).toHaveLength(1);
+      expect(compiled.videoPrompt, frameworkId).toContain("do not begin articulation before 6s");
+      expect(compiled.audioPrompt, frameworkId).toContain("Spoken timing: 6-8s");
     }
+  });
+
+  it("compiles brand control as a positive blank-surface state", () => {
+    const shot = structuredClone(UniversalPacketSchema.parse(example).shots[0]!);
+    shot.generationRisks = ["BRAND_OR_TEXT_CONTROL"];
+    const compiled = compileShot(shot);
+
+    expect(compiled.videoPrompt).toContain("Positive surface control:");
+    expect(compiled.videoPrompt).toContain("any invented mark fails the take");
+    expect(compiled.framePrompt).toContain("declared blank or unbranded surfaces");
   });
 
   it("offers a deterministic compact handoff without losing production categories", () => {
@@ -317,6 +338,21 @@ describe("storyboard and QC", () => {
     };
     const report = preflightPacket(UniversalPacketSchema.parse(spokenOnly));
     expect(report.issues.some((issue) => issue.code === "AUDIO_CONTRACT_MISSING")).toBe(false);
+  });
+
+  it("preflights exact dialogue timing windows without breaking legacy packets", () => {
+    const timed = structuredClone(example);
+    timed.shots[0].dialogue = "Hold the frame.";
+    timed.shots[0].audioTrack.spokenText = "Hold the frame.";
+    timed.shots[0].audioTrack.spokenWindow = { startSeconds: 6, endSeconds: 9 };
+    timed.shots[0].generationRisks = ["EXACT_DIALOGUE_AUDIO"];
+    const outOfRange = preflightPacket(UniversalPacketSchema.parse(timed));
+    expect(outOfRange.issues.some((issue) => issue.code === "SPOKEN_WINDOW_OUT_OF_RANGE")).toBe(true);
+
+    delete timed.shots[0].audioTrack.spokenWindow;
+    const legacy = preflightPacket(UniversalPacketSchema.parse(timed));
+    expect(legacy.issues.some((issue) => issue.code === "SPOKEN_WINDOW_UNKNOWN")).toBe(true);
+    expect(legacy.issues.some((issue) => issue.severity === "error" && issue.code.startsWith("SPOKEN_WINDOW"))).toBe(false);
   });
 
   it("blocks duplicate shot identifiers", () => {

@@ -96,6 +96,38 @@ export function preflightShot(shot: Shot, audioRequired = false): PreflightIssue
     });
   }
 
+  if (shot.audioTrack.spokenWindow && !(shot.dialogue ?? shot.audioTrack.spokenText)) {
+    issues.push({
+      code: "SPOKEN_WINDOW_WITHOUT_TEXT",
+      severity: "error",
+      shotId: shot.id,
+      message: "A spoken timing window exists without an approved spoken performance.",
+      action: "Add spokenText/dialogue or remove the spoken timing window.",
+    });
+  }
+
+  if (shot.audioTrack.spokenWindow?.endSeconds && shot.audioTrack.spokenWindow.endSeconds > shot.durationSeconds) {
+    issues.push({
+      code: "SPOKEN_WINDOW_OUT_OF_RANGE",
+      severity: "error",
+      shotId: shot.id,
+      message: "The spoken timing window extends beyond the shot duration.",
+      action: "End audioTrack.spokenWindow at or before durationSeconds.",
+    });
+  }
+
+  if ((shot.dialogue ?? shot.audioTrack.spokenText)
+    && shot.generationRisks.includes("EXACT_DIALOGUE_AUDIO")
+    && !shot.audioTrack.spokenWindow) {
+    issues.push({
+      code: "SPOKEN_WINDOW_UNKNOWN",
+      severity: "warning",
+      shotId: shot.id,
+      message: "Exact dialogue has no explicit performance window, so the provider may speak early or late.",
+      action: "Set audioTrack.spokenWindow to the intended beat boundaries.",
+    });
+  }
+
   if (shot.continuityLocks.length < 2) {
     issues.push({
       code: "CONTINUITY_UNDERSPECIFIED",

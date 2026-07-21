@@ -43,6 +43,7 @@ export function buildDevelopmentContract(input: unknown): DevelopmentContract {
     "Do not invent provider capabilities, duration limits, prices, or API behavior.",
     "Primary framework route: " + framework.name + ". Required blocks: " + framework.requiredBlocks.join(", ") + ".",
     "Assign the primary frameworkId to ordinary shots. Override a shot only when its production problem requires a more specific architecture: practical-stunt-contract for contact/mass/momentum choreography; temporal-evolution for visible state change; continuous-take for one unbroken performance; timed-social-sequence for retention-led short form; audio-contract for audio-first work; json-scene-contract for machine-readable handoff.",
+    "When exact dialogue is required, set audioTrack.spokenWindow to the intended beat boundaries. When brand or text control is required, describe the intended blank surface as a positive material/color state as well as excluding invented marks.",
     "Never assign repair-pass without an observed defect, and never assign render-observed-continuation without the accepted render's actual final-frame evidence.",
   ].join("\n");
   const userBrief = [

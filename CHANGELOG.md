@@ -2,6 +2,17 @@
 
 All notable public changes are recorded here. The project follows semantic versioning while the API matures; versions below `1.0.0` may contain documented breaking changes.
 
+## 0.5.1 - 2026-07-21
+
+### Added
+
+- Optional `audioTrack.spokenWindow` boundaries, compiler timing language, and pre-flight checks for early or out-of-range dialogue.
+- Positive blank-surface production-design locks for shots carrying `BRAND_OR_TEXT_CONTROL`, supplementing negative text/logo exclusions.
+
+### Evidence
+
+- A framework-native authenticated Flow run completed as one continuous eight-second take with exact speech, but invented cab lettering and began speech 0.83 seconds early. The render was rejected; these two generalized repairs came from that observed media rather than provider assumptions.
+
 ## 0.5.0 - 2026-07-21
 
 ### Fixed
