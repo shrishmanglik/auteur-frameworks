@@ -216,7 +216,7 @@ export function compileShot(
     shot.materials.length ? "Materials: " + shot.materials.join(", ") + "." : null,
     shot.imperfectionAnchors.length ? "Realism anchors: " + shot.imperfectionAnchors.join("; ") + "." : null,
     shot.generationRisks.includes("BRAND_OR_TEXT_CONTROL")
-      ? "Surface control: declared blank or unbranded surfaces are uninterrupted base material and color, without glyphs, numbers, badges, plates, logos, stickers, or decals."
+      ? "Production design lock: declared clean surfaces remain uninterrupted base material, color, finish, and geometry."
       : null,
     "Continuity: " + shot.continuityLocks.join("; ") + ".",
   ].filter((part): part is string => Boolean(part)).join(" ");

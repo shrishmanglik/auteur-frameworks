@@ -1,6 +1,6 @@
 {
   "name": "auteur-frameworks",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Provider-neutral AI video production framework for story, storyboards, assets, prompts, routing, continuity, QC, and repair.",
   "type": "module",
   "license": "Apache-2.0",

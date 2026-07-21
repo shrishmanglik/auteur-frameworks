@@ -174,6 +174,7 @@ describe("compiler", () => {
         shotIndex: 0,
       });
       expect(compiled.videoPrompt, frameworkId).toContain(signature);
+      expect(compiled.videoPrompt, frameworkId).toContain("Temporal boundary rule:");
       expect(compiled.compactVideoPrompt, frameworkId).toContain(signature);
       expect(compiled.frameworkArchitecture.length, frameworkId).toBeGreaterThanOrEqual(5);
       expect(compiled.compactPromptReport.frameworkPreserved).toBe(true);
@@ -218,9 +219,10 @@ describe("compiler", () => {
     shot.generationRisks = ["BRAND_OR_TEXT_CONTROL"];
     const compiled = compileShot(shot);
 
-    expect(compiled.videoPrompt).toContain("Positive surface control:");
-    expect(compiled.videoPrompt).toContain("any invented mark fails the take");
-    expect(compiled.framePrompt).toContain("declared blank or unbranded surfaces");
+    expect(compiled.videoPrompt).toContain("Production design lock:");
+    expect(compiled.videoPrompt).toContain("uninterrupted base material, color, finish, and geometry");
+    expect(compiled.videoPrompt).not.toContain("No glyph, letter, number");
+    expect(compiled.framePrompt).toContain("declared clean surfaces remain uninterrupted");
   });
 
   it("offers a deterministic compact handoff without losing production categories", () => {

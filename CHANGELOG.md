@@ -2,6 +2,18 @@
 
 All notable public changes are recorded here. The project follows semantic versioning while the API matures; versions below `1.0.0` may contain documented breaking changes.
 
+## 0.5.2 - 2026-07-21
+
+### Fixed
+
+- Compiled a no-anticipation temporal boundary rule across all eight shot architectures so later actions, dialogue, and terminal states cannot begin before their declared beat.
+- Replaced forbidden-token enumeration inside the positive surface-control block with affirmative material, color, finish, and geometry continuity.
+- Kept dialogue instructions in the audio domain and described the image as a clean picture plate to reduce visual transcription leakage.
+
+### Evidence
+
+- The first timing/surface repair produced exact audio but still spoke 0.70 seconds early, closed a locked-open door, retained vehicle pseudo-lettering, and added visible dialogue subtitles. It scored 81/100 versus the prior 92/100 and was rejected; v0.5.2 addresses those generalized failures without claiming provider compliance.
+
 ## 0.5.1 - 2026-07-21
 
 ### Added

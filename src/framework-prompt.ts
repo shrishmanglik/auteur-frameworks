@@ -69,6 +69,10 @@ const timedBeats = (shot: Shot): string => shot.beats
     + withoutDuplicateDialogue(beat.action, spokenTextFor(shot)))
   .join("\n");
 
+const temporalBoundaryRule = (): string => (
+  "Temporal boundary rule: each beat begins only at its declared start time; no later action, dialogue, or terminal state may appear early."
+);
+
 const millisecondBeats = (shot: Shot): string => shot.beats
   .map((beat) => Math.round(beat.startSeconds * 1000) + "-" + Math.round(beat.endSeconds * 1000)
     + "ms: " + withoutDuplicateDialogue(beat.action, spokenTextFor(shot)))
@@ -93,7 +97,7 @@ const audioContract = (shot: Shot): string => {
   const parts = [
     spokenText
       ? "The visible speaker says exactly once, \"" + spokenText
-        + "\" with restrained, intelligible, lip-synchronized delivery. No paraphrase, repetition, substitute words, or generated subtitles."
+        + "\" with restrained, intelligible, lip-synchronized delivery. Dialogue exists only as production audio; preserve a clean live-action picture plate. No paraphrase, repetition, or substitute words."
       : null,
     spokenText && spokenWindow
       ? "Speech timing is locked to " + spokenWindow.startSeconds + "-" + spokenWindow.endSeconds
@@ -121,8 +125,7 @@ const imageBehavior = (shot: Shot, context: FrameworkPromptContext): string => {
     ? "Visible imperfection anchors: " + compactList(shot.imperfectionAnchors) + "."
     : "Preserve physically plausible surface variation; do not beautify materials into smooth CGI.";
   const surfaceControl = shot.generationRisks.includes("BRAND_OR_TEXT_CONTROL")
-    ? " Positive surface control: every declared blank or unbranded surface is uninterrupted base material and color. "
-      + "No glyph, letter, number, badge, plate, wordmark, logo, sticker, or decal exists there; any invented mark fails the take."
+    ? " Production design lock: declared clean surfaces remain uninterrupted base material, color, finish, and geometry from first frame to final frame."
     : "";
   return "Image behavior: " + compactList(unique(grade))
     + "; natural action-matched motion blur; restrained highlight roll-off. " + imperfections + surfaceControl;
@@ -181,7 +184,8 @@ const compileCinematicProse = (
     "REALITY ANCHOR:\n" + realityAnchor(shot),
     "OPTICS AND CAMERA:\n" + cameraContract(shot) + " Format: " + shot.durationSeconds + " seconds, "
       + contextValue(context.aspectRatio, "aspect ratio set at provider handoff") + ".",
-    "SEQUENCE:\n" + timedBeats(shot) + "\nEND FRAME: " + sentence(finalBeat(shot)),
+    "SEQUENCE:\n" + timedBeats(shot) + "\n" + temporalBoundaryRule()
+      + "\nEND FRAME: " + sentence(finalBeat(shot)),
     "EXPRESSION AND EXCLUSIONS:\n" + expression(shot, context, exclusions),
   ].join("\n\n");
 };
@@ -217,7 +221,7 @@ const compileActShotMaster = (
       + " Color profile: " + compactList(shot.lighting.paletteBase) + ".",
     "ACT / SHOT - " + sequencePhase(context) + ":\nPurpose: " + sentence(shot.intent)
       + "\nShot " + shotNumber + " (" + shot.durationSeconds + "s), " + shot.camera.shotType + ": "
-      + sentence(action) + "\nTIMED BEATS:\n" + timedBeats(shot)
+      + sentence(action) + "\nTIMED BEATS:\n" + timedBeats(shot) + "\n" + temporalBoundaryRule()
       + "\nLighting and atmosphere: " + shot.lighting.primarySource + "; " + shot.lighting.motivation + ".",
     "CONTINUITY SPINE AND TRANSITION LOGIC:\n" + compactList(shot.continuityLocks)
       + ". The final composition is reached through the declared action and camera move, not a hidden coverage cut."
@@ -291,6 +295,7 @@ const compileJsonSceneContract = (
     constraints: {
       physics_rules: shot.physics,
       realism_anchors: shot.imperfectionAnchors,
+      temporal_boundary_rule: temporalBoundaryRule(),
       must_avoid: exclusions,
     },
     compiled_prompt: sentenceStart(shot.subject + " in " + shot.environment) + " " + sentenceStart(action)
@@ -320,7 +325,7 @@ const compileTemporalEvolution = (
       + ".\n- Camera: " + shot.camera.movement + "; " + shot.camera.framing + ".\n- Lighting direction: "
       + shot.lighting.primarySource + ".\n- Color and material: " + compactList(shot.lighting.paletteBase)
       + "; " + compactList(shot.materials) + ".",
-    "PHASE PLAN:\n" + timedBeats(shot),
+    "PHASE PLAN:\n" + timedBeats(shot) + "\n" + temporalBoundaryRule(),
     "PHYSICS AND TEMPORAL RULES:\n" + compactList(shot.physics)
       + ". Each phase begins from the visible result of the previous phase; no reset, teleport, or unexplained substitution. "
       + imageBehavior(shot, context),
@@ -344,7 +349,7 @@ const compileTimedSocialSequence = (
       + " Text rule: " + (shot.onScreenText
         ? "reserve clean space for exact post-composited copy; do not generate lettering"
         : "no generated text; add copy in post if needed") + ".",
-    "BEAT TIMELINE:\n" + timedBeats(shot),
+    "BEAT TIMELINE:\n" + timedBeats(shot) + "\n" + temporalBoundaryRule(),
     "VISUAL LANGUAGE:\nSubject: " + sentence(shot.subject) + " Environment: " + sentence(shot.environment)
       + " Camera: " + cameraContract(shot) + " Lighting and color: " + shot.lighting.primarySource + "; "
       + compactList(shot.lighting.paletteBase) + ".",
@@ -371,7 +376,8 @@ const compilePracticalStunt = (
       + contextValue(context.aspectRatio, "set at provider handoff")
       + ". One physically traceable camera path; no hidden coverage cut.",
     "REALITY ANCHOR:\n" + realityAnchor(shot),
-    "CONTINUOUS CAMERA MOVE (" + Math.round(shot.durationSeconds * 1000) + "ms):\n" + millisecondBeats(shot),
+    "CONTINUOUS CAMERA MOVE (" + Math.round(shot.durationSeconds * 1000) + "ms):\n" + millisecondBeats(shot)
+      + "\n" + temporalBoundaryRule(),
     "CONTACT, MASS, AND MOMENTUM RULES:\n" + compactList(shot.physics)
       + ". Every reaction begins at visible contact; bodies and objects retain mass, inertia, friction, balance, and recovery time."
       + " No impact without contact and no contact without a physically propagated result.",
@@ -399,7 +405,7 @@ const compileContinuousTake = (
       + sentenceStart(shot.subject + " in " + shot.environment) + " " + sentenceStart(action)
       + " Identity and continuity remain locked: " + compactList(shot.continuityLocks) + ".",
     cameraContract(shot) + " The camera relationship stays physically continuous from the first frame to the last; every new composition is reached through the declared move.",
-    beats + " The exact end-frame success condition is: " + sentence(finalBeat(shot)),
+    beats + " " + temporalBoundaryRule() + " The exact end-frame success condition is: " + sentence(finalBeat(shot)),
     "Lighting is " + shot.lighting.primarySource + ", motivated by " + shot.lighting.motivation + "; palette "
       + compactList(shot.lighting.paletteBase) + ". Materials remain " + compactList(shot.materials)
       + ". Physical behavior: " + compactList(shot.physics) + ". " + imageBehavior(shot, context),
@@ -417,14 +423,14 @@ const compileAudioFramework = (
   const action = withoutDuplicateDialogue(shot.action, spokenText);
   return [
     "PRIMARY SOURCE AND PERFORMANCE:\n" + audioContract(shot),
-    "VISIBLE SYNC MAP:\n" + timedBeats(shot),
+    "VISIBLE SYNC MAP:\n" + timedBeats(shot) + "\n" + temporalBoundaryRule(),
     "SECONDARY AMBIENCE AND ACOUSTIC SPACE:\nEnvironment: " + sentence(shot.environment)
       + " Reflections, distance, reverb, and occlusion must follow the visible space and camera distance.",
     "MIX HIERARCHY:\nExact speech, when present, stays intelligible in the foreground. Causal transients follow visible actions. "
       + "Environmental bed supports rather than masks the primary source. Avoid generic trailer impacts unless explicitly requested.",
     "VISUAL REFERENCE FOR SYNC:\n" + sentence(shot.subject + " " + action) + " " + cameraContract(shot)
       + " " + imageBehavior(shot, context),
-    "AUDIO EXCLUSIONS:\nNo unrelated score, no unsynchronized transient, no repeated or paraphrased dialogue, no generated subtitles. "
+    "AUDIO EXCLUSIONS:\nNo unrelated score, no unsynchronized transient, no repeated or paraphrased dialogue. Keep dialogue in the sound track and preserve a clean picture plate. "
       + compactList(exclusions) + ".",
   ].join("\n\n");
 };

@@ -6,6 +6,8 @@ Use one primary framework for the production problem. Add audio, repair, or cont
 
 Exact speech should carry `audioTrack.spokenWindow` boundaries so the compiler can forbid early articulation and pre-flight can reject out-of-range timing. Shots with `BRAND_OR_TEXT_CONTROL` compile blankness as a positive material/color state; negative logo and text lists remain necessary but are not treated as sufficient.
 
+Every timed architecture also compiles the same no-anticipation invariant: a later action, dialogue cue, or terminal state cannot appear before its declared beat. Positive surface locks describe the state that must remain visible; they do not enumerate forbidden mark types inside the positive block because those words can increase visual leakage.
+
 ## Shot compilers
 
 | Framework | Prompt architecture | Use when |
