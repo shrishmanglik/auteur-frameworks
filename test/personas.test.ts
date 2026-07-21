@@ -27,6 +27,24 @@ describe("expert creator fixtures", () => {
       expect(compiled.shots.every((shot) => shot.videoPrompt.includes("TEMPORAL PLAN"))).toBe(true);
       expect(compiled.shots.every((shot) => shot.negativePrompt.length > 30)).toBe(true);
       expect(compiled.shots.every((shot) => shot.compactVideoPrompt.length <= shot.videoPrompt.length * 0.8)).toBe(true);
+      for (const shot of compiled.shots) {
+        for (const label of [
+          "Intent:",
+          "Scene:",
+          "Materials:",
+          "Style:",
+          "Camera:",
+          "Beats:",
+          "Light:",
+          "Physics:",
+          "Lock:",
+          "Reality:",
+          "Audio:",
+          "Avoid:",
+        ]) {
+          expect(shot.compactVideoPrompt, `${persona.name} missing ${label}`).toContain(label);
+        }
+      }
     });
   }
 

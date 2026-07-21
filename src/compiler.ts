@@ -90,6 +90,7 @@ export function compileCompactVideoPrompt(
   return [
     "Intent: " + sentence(shot.intent),
     "Scene: " + sentence(shot.subject + " in " + shot.environment),
+    shot.materials.length ? "Materials: " + compactList(firstTwo(shot.materials)) + "." : null,
     globalStyle.length ? "Style: " + compactList(firstTwo(globalStyle)) + "." : null,
     "Camera: " + compactOptics(shot.camera.optics) + "; " + compactList([
       shot.camera.movement,
