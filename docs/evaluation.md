@@ -65,3 +65,20 @@ Warnings may pass pre-flight when they describe an explicit production choice, s
 ## Provider smoke
 
 Provider smoke tests are separate from deterministic package tests. They must record the account boundary, provider/model label, visible cost, duration/aspect settings, submitted shot, result, and limitations of the evidence. One provider result cannot prove universal model performance.
+
+## Render refinement rubric
+
+Record each observed result as a `RenderObservation` and score six criteria from 0 to 5:
+
+| Criterion | Weight |
+| --- | ---: |
+| Prompt adherence | 20% |
+| Temporal completion | 20% |
+| Continuity | 15% |
+| Physical and material realism | 20% |
+| Cinematography | 15% |
+| Audio | 10% |
+
+Use `auteur-frameworks score-render observation.json` for the weighted score. Use `auteur-frameworks compare-renders before.json after.json` to calculate relative improvement. A refinement cycle meets the project threshold only when the measured score rises by at least 10% relative to the immediately preceding render of the same shot. A critical defect always blocks the result regardless of score.
+
+Scores are observations, not model capability claims. Preserve the provider/model label visible at runtime and state whether review was human, vision-assisted, or both in `evidenceNote`.

@@ -7,6 +7,7 @@ import {
   buildStoryboard,
   buildDevelopmentContract,
   compilePacket,
+  compileCompactVideoPrompt,
   compileShot,
   depthOfFieldCharacter,
   preflightPacket,
@@ -63,9 +64,23 @@ describe("compiler", () => {
     const shot = UniversalPacketSchema.parse(example).shots[0]!;
     const compiled = compileShot(shot);
     expect(compiled.videoPrompt.indexOf("100mm")).toBeLessThan(compiled.videoPrompt.indexOf("slider"));
+    expect(compiled.compactVideoPrompt.length).toBeLessThan(compiled.videoPrompt.length);
+    expect(compiled.compactVideoPrompt).toContain("[0-2s]");
+    expect(compiled.compactVideoPrompt).toContain("100mm");
+    expect(compiled.compactVideoPrompt).toContain("Physics:");
+    expect(compiled.compactVideoPrompt).toContain("Lock:");
+    expect(compiled.compactVideoPrompt).toContain("Audio:");
+    expect(compiled.compactVideoPrompt).toContain("no identity drift");
     expect(compiled.framePrompt).toContain("tiny trapped bubbles");
     expect(compiled.audioPrompt).toContain("liquid pour");
     expect(compiled.negativePrompt).toContain("no identity drift");
+  });
+
+  it("offers a deterministic compact handoff without losing production categories", () => {
+    const shot = UniversalPacketSchema.parse(example).shots[0]!;
+    const compact = compileCompactVideoPrompt(shot, example.globalExclusions);
+    expect(compact).toBe(compileCompactVideoPrompt(shot, example.globalExclusions));
+    expect(compact.split("\n")).toHaveLength(1);
   });
 
   it("derives depth-of-field character from optics", () => {

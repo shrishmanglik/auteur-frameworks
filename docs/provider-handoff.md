@@ -13,6 +13,7 @@ The core package is provider-neutral. This guide describes a safe manual handoff
 ## Prompt surfaces
 
 - **videoPrompt**: motion, temporal beats, optics, lighting, physics, continuity, audio intent, and exclusions.
+- **compactVideoPrompt**: the same production categories in a concise, single-line handoff for provider fields that handle long rich-text input poorly.
 - **framePrompt**: a reference-frame or image-generation description without temporal choreography.
 - **audioPrompt**: spoken performance, sound design, and music boundary when present.
 - **negativePrompt**: exclusions for systems or adapters that expose a separate negative field.
@@ -25,7 +26,7 @@ For a single-shot video workflow:
 
 1. set the configured duration to the shot's `durationSeconds` when available;
 2. set the packet's aspect ratio;
-3. paste `videoPrompt` into the creation field;
+3. paste `videoPrompt`, or `compactVideoPrompt` when the provider field needs a concise handoff, into the creation field;
 4. submit one variation first;
 5. evaluate action completion, geometry, physical behavior, identity, audio, and final state;
 6. use `buildRepairPrompt` for one observed defect at a time.

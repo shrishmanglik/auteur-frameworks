@@ -7,6 +7,7 @@ export interface CompiledShot {
   shotId: string;
   frameworkId: string;
   videoPrompt: string;
+  compactVideoPrompt: string;
   framePrompt: string;
   audioPrompt: string | null;
   negativePrompt: string;
@@ -45,6 +46,51 @@ const sentence = (value: string): string => {
   const trimmed = value.trim();
   return /[.!?]$/.test(trimmed) ? trimmed : trimmed + ".";
 };
+
+const compactList = (values: readonly string[]): string => values.join("; ");
+
+export function compileCompactVideoPrompt(
+  input: Shot,
+  globalExclusions: readonly string[] = [],
+): string {
+  const shot = ShotSchema.parse(input);
+  const spokenText = shot.dialogue ?? shot.audioTrack.spokenText;
+  const exclusions = [...new Set([
+    ...globalExclusions,
+    ...shot.exclusions,
+    "no identity drift",
+    "no geometry morphing",
+    "no unplanned logos",
+  ])];
+  const audio = [
+    spokenText ? "spoken: " + spokenText : null,
+    shot.audioTrack.soundDesignDirectives.length
+      ? compactList(shot.audioTrack.soundDesignDirectives)
+      : null,
+    shot.audioTrack.musicDirective,
+  ].filter((part): part is string => Boolean(part)).join("; ");
+
+  return [
+    sentence(shot.intent),
+    "Subject: " + sentence(shot.subject + " in " + shot.environment),
+    shot.materials.length ? "Materials: " + compactList(shot.materials) + "." : null,
+    "Camera: " + opticsToProse(shot.camera.optics) + " " + compactList([
+      shot.camera.movement,
+      shot.camera.shotType,
+      shot.camera.framing,
+      shot.camera.focusBehavior,
+    ]) + ".",
+    "Beats: " + timedBeats(shot) + ".",
+    "Light: " + shot.lighting.primarySource + "; motivated by " + shot.lighting.motivation
+      + "; " + compactList(shot.lighting.paletteBase) + ".",
+    "Physics: " + compactList(shot.physics) + ".",
+    "Lock: " + compactList(shot.continuityLocks) + ".",
+    shot.imperfectionAnchors.length ? "Reality: " + compactList(shot.imperfectionAnchors) + "." : null,
+    audio ? "Audio: " + audio + "." : "Audio: visual-only; no invented dialogue.",
+    shot.onScreenText ? "Reserve clean space for post-composited text: " + shot.onScreenText + "." : null,
+    "Avoid: " + compactList(exclusions) + ".",
+  ].filter((part): part is string => Boolean(part)).join(" ");
+}
 
 export function compileShot(input: Shot, globalExclusions: readonly string[] = []): CompiledShot {
   const shot = ShotSchema.parse(input);
@@ -98,6 +144,7 @@ export function compileShot(input: Shot, globalExclusions: readonly string[] = [
     shotId: shot.id,
     frameworkId: framework.id,
     videoPrompt,
+    compactVideoPrompt: compileCompactVideoPrompt(shot, globalExclusions),
     framePrompt,
     audioPrompt: audioParts.length ? audioParts.join(" ") : null,
     negativePrompt: exclusions.join(", "),

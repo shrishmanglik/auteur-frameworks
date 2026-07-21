@@ -9,6 +9,7 @@ import { preflightPacket } from "./qc.js";
 import { parseUniversalPacket } from "./schemas.js";
 import { buildStoryboard } from "./storyboard.js";
 import { PACKAGE_VERSION } from "./version.js";
+import { compareRenderCycles, scoreRender } from "./evaluation.js";
 
 export interface CliIo {
   stdout: (value: string) => void;
@@ -35,6 +36,8 @@ Commands:
   preflight <packet.json> Run continuity, timing, audio, and realism checks
   storyboard <packet.json> Project ordered storyboard panels
   compile <packet.json>   Compile video, frame, audio, and negative prompts
+  score-render <observation.json>  Score an observed provider result
+  compare-renders <before.json> <after.json>  Measure cycle improvement
   help                    Show this guide
   version                 Print the package version
 
@@ -88,7 +91,15 @@ export function runCli(args: string[], io: CliIo = defaultIo): number {
       return 0;
     }
 
-    const inputCommands = new Set(["compile", "develop", "preflight", "storyboard", "validate"]);
+    const inputCommands = new Set([
+      "compare-renders",
+      "compile",
+      "develop",
+      "preflight",
+      "score-render",
+      "storyboard",
+      "validate",
+    ]);
     if (!inputCommands.has(command)) {
       io.stderr(`AUTEUR_ERROR: Unknown command "${rawCommand}".\nACTION: Run auteur-frameworks help.\n`);
       return 2;
@@ -104,9 +115,20 @@ export function runCli(args: string[], io: CliIo = defaultIo): number {
 
     const input = readJson(inputPath);
     let output: unknown;
-    if (command === "compile") output = compilePacket(input);
+    if (command === "compare-renders") {
+      const inputPaths = rest.filter((value, index) => (
+        value !== "--out" && !(outIndex >= 0 && index === outIndex + 1)
+      ));
+      if (inputPaths.length < 2) {
+        io.stderr("AUTEUR_ERROR: compare-renders requires before and after observation files.\nACTION: Pass two render-observation JSON paths.\n");
+        return 2;
+      }
+      output = compareRenderCycles(input, readJson(inputPaths[1]!));
+    }
+    else if (command === "compile") output = compilePacket(input);
     else if (command === "develop") output = buildDevelopmentContract(input);
     else if (command === "preflight") output = preflightPacket(parseUniversalPacket(input));
+    else if (command === "score-render") output = scoreRender(input);
     else if (command === "storyboard") output = buildStoryboard(input);
     else output = parseUniversalPacket(input);
     writeJson(output, outputPath, io);

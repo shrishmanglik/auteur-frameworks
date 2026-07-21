@@ -41,7 +41,7 @@ npx auteur-frameworks compile \
   --out prompt-package.json
 ```
 
-The output contains one record per shot with `videoPrompt`, `framePrompt`, `audioPrompt`, `negativePrompt`, and QC findings.
+The output contains one record per shot with `videoPrompt`, `compactVideoPrompt`, `framePrompt`, `audioPrompt`, `negativePrompt`, and QC findings.
 
 > npm registry publication is intentionally deferred while the public API stabilizes. Git installs run the package build automatically.
 
@@ -81,6 +81,8 @@ auteur-frameworks validate <packet.json> [--out result.json]
 auteur-frameworks preflight <packet.json> [--out result.json]
 auteur-frameworks storyboard <packet.json> [--out result.json]
 auteur-frameworks compile <packet.json> [--out result.json]
+auteur-frameworks score-render <observation.json> [--out result.json]
+auteur-frameworks compare-renders <before.json> <after.json> [--out result.json]
 auteur-frameworks help
 auteur-frameworks version
 ```
@@ -120,10 +122,11 @@ const repair = buildRepairPrompt({
 
 - **Universal Packet schema** for story, scenes, shots, characters, optics, lighting, materials, physics, timing, audio, continuity, and exclusions.
 - **Development contract** that turns a brief into model instructions plus JSON Schema.
-- **Deterministic compiler** for video, frame, audio, and negative prompt surfaces.
+- **Deterministic compiler** for full and compact video, frame, audio, and negative prompt surfaces.
 - **Storyboard projection** with ordered panels, action, camera, duration, continuity, audio, and frame-generation instructions.
 - **Pre-flight QC** for temporal coverage, production duration, scene ownership, continuity, audio, typography risk, and realism anchors.
 - **Repair engine** for identity drift, anatomy, topology, object loss, broken physics, lip sync, branding, material drift, and other recurring defects.
+- **Measured refinement loop** with a typed render-observation schema, weighted scoring, and a relative-improvement gate.
 - **Four executable creator fixtures** covering a product film, short film, vertical reel, and A-roll monologue.
 - **CLI and typed API** designed for local tools, agents, desktop apps, servers, and CI.
 

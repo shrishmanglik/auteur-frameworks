@@ -7,6 +7,8 @@ All notable public changes are recorded here. The project follows semantic versi
 ### Added
 
 - Git-based installation build hook.
+- Deterministic compact provider-handoff prompt alongside the full production contract.
+- Typed render scoring and relative cycle-comparison utilities for evidence-bound refinement.
 - CLI help, version, framework registry, and raw-brief development commands.
 - Creative mandate, must-include, and cliché-avoidance request fields.
 - Short-film, vertical-reel, A-roll, and request fixtures.
