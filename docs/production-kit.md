@@ -23,9 +23,11 @@ The route advisor does not pretend that a longer text prompt can solve every pro
 | `text-only` | One readable action with low reference dependency |
 | `reference-first` | Identity, product design, brand control, or transformation geometry |
 | `first-last-frame` | Causal contact or exact mechanical assembly with measurable endpoints |
-| `split-pass` | Numerically exact fluid events or other actions that should be isolated and verified separately |
+| `split-pass` | Numerically exact fluid events or overloaded control problems that should be isolated and verified separately |
 
 Every recommendation ships with required assets and acceptance checks. The field `providerCapabilityStatus` remains `UNKNOWN`; the host must verify that its chosen provider supports the recommended reference workflow.
+
+The route advisor also returns a provider-neutral `constraintBudget`. Three-stage action, delayed exact dialogue, strict blank-surface control, identity locks, and high-risk choreography add deterministic points. A score of 6 or more is `overloaded`: pre-flight fails and the route becomes `split-pass`. This is a framework safety threshold derived from observed failure patterns, not a claimed provider limit.
 
 Use shot-level `generationRisks` for explicit route requirements. The advisor applies only narrow contextual inference when structured markers are absent; common nouns such as "plate", "seat", or "contact lens" do not create workflow requirements.
 

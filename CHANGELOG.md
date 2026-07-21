@@ -2,6 +2,17 @@
 
 All notable public changes are recorded here. The project follows semantic versioning while the API matures; versions below `1.0.0` may contain documented breaking changes.
 
+## 0.6.0 - 2026-07-21
+
+### Added
+
+- Added a deterministic shot constraint budget to route advice, with scored factors for multi-stage action, delayed exact dialogue, strict surface control, identity locks, and high-risk choreography.
+- Added a blocking `SHOT_CONSTRAINT_OVERLOAD` pre-flight issue and `COMPOUND_CONSTRAINT_OVERLOAD` split-pass route when a short shot exceeds the provider-neutral safety budget.
+
+### Evidence
+
+- A third framework-native Flow render preserved one continuous take, identity, physical materials, and exact words, but opened the door before frame one, spoke 1.32 seconds early, rendered dialogue as subtitles, and invented a roof mark. It scored 76/100 and was rejected. The repeated failure proves that route overload, not missing negative prose, is the next control problem.
+
 ## 0.5.2 - 2026-07-21
 
 ### Fixed

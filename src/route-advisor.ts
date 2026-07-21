@@ -3,7 +3,27 @@ import { ShotSchema, type GenerationRiskCode, type Shot } from "./schemas.js";
 export type RouteRiskLevel = "low" | "medium" | "high";
 export type GenerationMode = "text-only" | "reference-first" | "first-last-frame" | "split-pass";
 
-export type RouteRiskCode = GenerationRiskCode;
+export type RouteRiskCode = GenerationRiskCode | "COMPOUND_CONSTRAINT_OVERLOAD";
+
+export type ConstraintFactorCode =
+  | "MULTI_STAGE_ACTION"
+  | "DELAYED_EXACT_DIALOGUE"
+  | "STRICT_SURFACE_CONTROL"
+  | "IDENTITY_LOCK"
+  | "HIGH_RISK_CHOREOGRAPHY";
+
+export interface ShotConstraintFactor {
+  code: ConstraintFactorCode;
+  weight: number;
+  reason: string;
+}
+
+export interface ShotConstraintBudget {
+  score: number;
+  status: "within-budget" | "elevated" | "overloaded";
+  factors: ShotConstraintFactor[];
+  recommendation: string;
+}
 
 export interface RouteRisk {
   code: RouteRiskCode;
@@ -16,6 +36,7 @@ export interface ShotRouteAdvice {
   shotId: string;
   riskLevel: RouteRiskLevel;
   recommendedMode: GenerationMode;
+  constraintBudget: ShotConstraintBudget;
   risks: RouteRisk[];
   requiredAssets: string[];
   acceptanceChecks: string[];
@@ -25,8 +46,69 @@ export interface ShotRouteAdvice {
 
 const contains = (text: string, pattern: RegExp): boolean => pattern.test(text);
 
+export function assessShotConstraintBudget(input: Shot): ShotConstraintBudget {
+  const shot = ShotSchema.parse(input);
+  const explicitRisks = new Set(shot.generationRisks);
+  const factors: ShotConstraintFactor[] = [];
+  const spokenText = shot.dialogue ?? shot.audioTrack.spokenText;
+  const spokenWindow = shot.audioTrack.spokenWindow;
+
+  if (shot.beats.length >= 3) {
+    factors.push({
+      code: "MULTI_STAGE_ACTION",
+      weight: 2,
+      reason: "Three or more temporal states must remain ordered inside one generated shot.",
+    });
+  }
+  if (spokenText && spokenWindow && spokenWindow.startSeconds >= shot.durationSeconds / 2) {
+    factors.push({
+      code: "DELAYED_EXACT_DIALOGUE",
+      weight: 2,
+      reason: "Exact speech must remain unavailable until the latter half of the shot.",
+    });
+  }
+  if (explicitRisks.has("BRAND_OR_TEXT_CONTROL")) {
+    factors.push({
+      code: "STRICT_SURFACE_CONTROL",
+      weight: 2,
+      reason: "Declared surfaces must resist provider-invented markings throughout the take.",
+    });
+  }
+  if (explicitRisks.has("IDENTITY_OR_PERFORMANCE")) {
+    factors.push({
+      code: "IDENTITY_LOCK",
+      weight: 1,
+      reason: "Identity and performance amplitude must remain stable while other events unfold.",
+    });
+  }
+  if ([
+    "CAUSAL_CONTACT_CHOREOGRAPHY",
+    "PRECISE_MECHANICAL_ASSEMBLY",
+    "MULTI_SUBJECT_DYNAMICS",
+    "PRECISE_SPATIAL_CLEARANCE",
+    "EXACT_FLUID_COUNT",
+  ].some((risk) => explicitRisks.has(risk as GenerationRiskCode))) {
+    factors.push({
+      code: "HIGH_RISK_CHOREOGRAPHY",
+      weight: 2,
+      reason: "The shot contains a physical event that needs endpoint or frame-by-frame verification.",
+    });
+  }
+
+  const score = factors.reduce((sum, factor) => sum + factor.weight, 0);
+  const status = score >= 6 ? "overloaded" : score >= 4 ? "elevated" : "within-budget";
+  const recommendation = status === "overloaded"
+    ? "Split the shot at a stable handoff state and isolate delayed speech, strict surface control, or high-risk choreography before dispatch."
+    : status === "elevated"
+      ? "Use the recommended reference route and verify each declared state; simplify if the provider cannot honor the route."
+      : "The shot is suitable for its recommended single-pass route, subject to provider capability and returned-media QC.";
+
+  return { score, status, factors, recommendation };
+}
+
 export function assessShotRoute(input: Shot): ShotRouteAdvice {
   const shot = ShotSchema.parse(input);
+  const constraintBudget = assessShotConstraintBudget(shot);
   const productionText = [
     shot.subject,
     shot.action,
@@ -176,13 +258,24 @@ export function assessShotRoute(input: Shot): ShotRouteAdvice {
     acceptanceChecks.add("Verify the declared visual action and audio cue align at the intended frame without an early or repeated event.");
   }
 
+  if (constraintBudget.status === "overloaded") {
+    risks.push({
+      code: "COMPOUND_CONSTRAINT_OVERLOAD",
+      level: "high",
+      reason: "The shot combines too many independently fragile controls for a provider-neutral single pass.",
+      mitigation: constraintBudget.recommendation,
+    });
+    requiredAssets.add("split-shot plan with a stable visual handoff between isolated control problems");
+    acceptanceChecks.add("Reject a single-pass dispatch until the overloaded constraint budget is split or explicitly resolved.");
+  }
+
   const riskLevel: RouteRiskLevel = risks.some((risk) => risk.level === "high")
     ? "high"
     : risks.length
       ? "medium"
       : "low";
   const codes = new Set(risks.map((risk) => risk.code));
-  const recommendedMode: GenerationMode = codes.has("EXACT_FLUID_COUNT")
+  const recommendedMode: GenerationMode = codes.has("COMPOUND_CONSTRAINT_OVERLOAD") || codes.has("EXACT_FLUID_COUNT")
     ? "split-pass"
     : codes.has("PRECISE_MECHANICAL_ASSEMBLY") || codes.has("CAUSAL_CONTACT_CHOREOGRAPHY")
       || codes.has("MULTI_SUBJECT_DYNAMICS") || codes.has("PRECISE_SPATIAL_CLEARANCE")
@@ -195,10 +288,11 @@ export function assessShotRoute(input: Shot): ShotRouteAdvice {
     shotId: shot.id,
     riskLevel,
     recommendedMode,
+    constraintBudget,
     risks,
     requiredAssets: [...requiredAssets],
     acceptanceChecks: [...acceptanceChecks],
     providerCapabilityStatus: "UNKNOWN",
-    providerCapabilityNote: "Confirm that the selected provider supports the recommended reference workflow before dispatch.",
+    providerCapabilityNote: "Confirm that the selected provider supports the recommended route and required assets before dispatch.",
   };
 }

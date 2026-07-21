@@ -112,6 +112,18 @@ for (const required of requiredFiles) {
   if (!packedPaths.has(required)) errors.push(`${required}: required package entrypoint is missing`);
 }
 
+const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
+const citation = fs.readFileSync(path.join(root, "CITATION.cff"), "utf8");
+const citationVersion = citation.match(/^version:\s*([^\s]+)\s*$/m)?.[1];
+const sourceVersion = fs.readFileSync(path.join(root, "src", "version.ts"), "utf8")
+  .match(/PACKAGE_VERSION\s*=\s*"([^"]+)"/)?.[1];
+if (citationVersion !== packageJson.version) {
+  errors.push(`CITATION.cff: version ${citationVersion ?? "missing"} does not match package ${packageJson.version}`);
+}
+if (sourceVersion !== packageJson.version) {
+  errors.push(`src/version.ts: version ${sourceVersion ?? "missing"} does not match package ${packageJson.version}`);
+}
+
 const license = fs.readFileSync(path.join(root, "LICENSE"), "utf8");
 const licenseSha256 = crypto.createHash("sha256").update(license, "utf8").digest("hex");
 const canonicalApache20Sha256 = "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30";

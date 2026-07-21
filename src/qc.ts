@@ -1,5 +1,6 @@
 import type { Shot, UniversalPacket } from "./schemas.js";
 import { getFramework } from "./frameworks.js";
+import { assessShotConstraintBudget } from "./route-advisor.js";
 
 export type IssueSeverity = "error" | "warning";
 
@@ -29,6 +30,17 @@ const textRisk = (shot: Shot): PreflightIssue[] => shot.onScreenText
 export function preflightShot(shot: Shot, audioRequired = false): PreflightIssue[] {
   const issues: PreflightIssue[] = [];
   getFramework(shot.frameworkId);
+  const constraintBudget = assessShotConstraintBudget(shot);
+
+  if (constraintBudget.status === "overloaded") {
+    issues.push({
+      code: "SHOT_CONSTRAINT_OVERLOAD",
+      severity: "error",
+      shotId: shot.id,
+      message: `The shot carries ${constraintBudget.score} framework constraint points across ${constraintBudget.factors.length} fragile controls.`,
+      action: constraintBudget.recommendation,
+    });
+  }
 
   if (shot.imperfectionAnchors.length < 2) {
     issues.push({

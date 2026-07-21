@@ -217,7 +217,7 @@ export function buildProductionKit(input: unknown): ProductionKit {
         "continuity and preflight gates",
         "render scoring and constrained repair instructions",
       ],
-      dispatchRule: "Dispatch only shots with a passing preflight and every required high-risk reference asset attached.",
+      dispatchRule: "Dispatch only shots with a passing preflight, a non-overloaded constraint budget, and every required high-risk reference asset attached.",
       acceptanceRule: "Provider output is evidence, not success: inspect each route acceptance check before accepting or extending it.",
     },
   };

@@ -103,6 +103,12 @@ On 2026-07-21, maintainers submitted ten separately compiled eight-second genera
 
 **Architecture correction:** those ten runs used the pre-0.5 compact compiler, which flattened every `frameworkId` into the same generic `Intent / Scene / Camera / Beats / Light / Physics / Lock / Audio / Avoid` envelope. The runs remain valid evidence for returned-media defects, route advice, and QC rules, but they do not validate framework-native prompting. Version 0.5 replaces that label-only behavior with distinct framework compilers and regression tests; new provider validation must submit the corrected `videoPrompt` surface.
 
+### Framework-native rejection loop
+
+Maintainers then submitted three full `continuous-take` prompts for the same rain-cab contract. All three returned continuous eight-second H.264/AAC media with exact speech, plausible wet materials, and stable identity; all three were rejected. The first scored 92/100 but invented vehicle lettering and spoke 0.83 seconds early. The timing/surface repair scored 81/100, retained lettering, added visible subtitles, closed a locked-open door, and still spoke 0.70 seconds early. The no-anticipation/affirmative-surface repair scored 76/100: the door was already open in frame one, speech began 1.32 seconds early, subtitles remained, and a large roof mark appeared.
+
+This regression ended prompt-wording repair for that contract. Version 0.6 adds a provider-neutral constraint budget and blocks the single-pass shot because it combines three temporal stages, delayed exact dialogue, strict surface control, and identity-critical performance. The evidence supports a split/reference route decision; it does not establish a provider product limit or a universal score.
+
 | Run | Production lens | Result | Evidence-led decision |
 | ---: | --- | --- | --- |
 | 1 | Vertical comedy baseline | Blocked | Stable actor and board, but the requested door-to-board contact was replaced by a static pose and exaggerated reaction. |

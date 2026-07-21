@@ -8,6 +8,8 @@ Exact speech should carry `audioTrack.spokenWindow` boundaries so the compiler c
 
 Every timed architecture also compiles the same no-anticipation invariant: a later action, dialogue cue, or terminal state cannot appear before its declared beat. Positive surface locks describe the state that must remain visible; they do not enumerate forbidden mark types inside the positive block because those words can increase visual leakage.
 
+Prompt prose is not the final control layer. Before compilation, the route advisor scores compound constraints. A short shot that combines delayed exact dialogue, multiple temporal stages, strict surface control, identity locks, or high-risk choreography can fail pre-flight and route to a split pass. Split at a stable visual handoff instead of deleting framework blocks or adding repetitive negatives.
+
 ## Shot compilers
 
 | Framework | Prompt architecture | Use when |

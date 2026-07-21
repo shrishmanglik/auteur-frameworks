@@ -2,8 +2,10 @@ import fs from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   UniversalPacketSchema,
+  assessShotConstraintBudget,
   assessShotRoute,
   buildProductionKit,
+  preflightPacket,
 } from "../src/index.js";
 
 const example = JSON.parse(fs.readFileSync(new URL("../examples/product-film.json", import.meta.url), "utf8"));
@@ -210,5 +212,49 @@ describe("route advisor", () => {
     expect(advice.risks.map((risk) => risk.code)).toContain("AUDIO_ACTION_SYNCHRONIZATION");
     expect(advice.requiredAssets).toContain("approved action-to-audio cue sheet");
     expect(advice.acceptanceChecks.join(" ")).toContain("align at the intended frame");
+  });
+
+  it("fails closed when one short shot overloads delayed speech, staged action, surface control, and identity", () => {
+    const packet = structuredClone(example);
+    const shot = packet.shots[0];
+    shot.durationSeconds = 8;
+    shot.beats = [
+      { startSeconds: 0, endSeconds: 2, action: "the vehicle remains closed" },
+      { startSeconds: 2, endSeconds: 6, action: "the door opens and the performer exits" },
+      { startSeconds: 6, endSeconds: 8, action: "the performer says the approved line once" },
+    ];
+    shot.dialogue = "Keep the meter running.";
+    shot.audioTrack.spokenText = "Keep the meter running.";
+    shot.audioTrack.spokenWindow = { startSeconds: 6, endSeconds: 8 };
+    shot.generationRisks = ["EXACT_DIALOGUE_AUDIO", "IDENTITY_OR_PERFORMANCE", "BRAND_OR_TEXT_CONTROL"];
+
+    const parsed = UniversalPacketSchema.parse(packet);
+    const budget = assessShotConstraintBudget(parsed.shots[0]!);
+    const advice = assessShotRoute(parsed.shots[0]!);
+    const preflight = preflightPacket(parsed);
+
+    expect(budget).toMatchObject({ score: 7, status: "overloaded" });
+    expect(budget.factors.map((factor) => factor.code)).toEqual([
+      "MULTI_STAGE_ACTION",
+      "DELAYED_EXACT_DIALOGUE",
+      "STRICT_SURFACE_CONTROL",
+      "IDENTITY_LOCK",
+    ]);
+    expect(advice.recommendedMode).toBe("split-pass");
+    expect(advice.risks.some((risk) => risk.code === "COMPOUND_CONSTRAINT_OVERLOAD")).toBe(true);
+    expect(preflight.passed).toBe(false);
+    expect(preflight.issues.some((issue) => issue.code === "SHOT_CONSTRAINT_OVERLOAD")).toBe(true);
+  });
+
+  it("keeps one immediate exact line inside the single-pass budget", () => {
+    const shot = structuredClone(baseShot);
+    shot.beats = [{ startSeconds: 0, endSeconds: 8, action: "the presenter delivers one line" }];
+    shot.dialogue = "Precision is patience.";
+    shot.audioTrack.spokenText = "Precision is patience.";
+    shot.audioTrack.spokenWindow = { startSeconds: 0, endSeconds: 8 };
+    shot.generationRisks = ["EXACT_DIALOGUE_AUDIO", "IDENTITY_OR_PERFORMANCE"];
+
+    expect(assessShotConstraintBudget(shot)).toMatchObject({ score: 1, status: "within-budget" });
+    expect(assessShotRoute(shot).recommendedMode).toBe("reference-first");
   });
 });
