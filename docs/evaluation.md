@@ -82,3 +82,17 @@ Record each observed result as a `RenderObservation` and score six criteria from
 Use `auteur-frameworks score-render observation.json` for the weighted score. Use `auteur-frameworks compare-renders before.json after.json` to calculate relative improvement. A refinement cycle meets the project threshold only when the measured score rises by at least 10% relative to the immediately preceding render of the same shot. A critical defect always blocks the result regardless of score.
 
 Scores are observations, not model capability claims. Preserve the provider/model label visible at runtime and state whether review was human, vision-assisted, or both in `evidenceNote`.
+
+## Maintainer live smoke: Flow extension loop
+
+On 2026-07-21, maintainers ran a synthetic science-fiction trailer through the authenticated Google Flow interface labeled `Veo 3.1 - Lite`. Each prompt was compiled separately, submitted as one extension, inspected, scored, repaired in the framework, and then rerun. The accepted sequential path reached 29 seconds; rejected and diagnostic variants were excluded from that path.
+
+| Same-shot cycle | Before | After | Relative gain | Observed repair |
+| --- | ---: | ---: | ---: | --- |
+| Shot 2 spatial bridge | 61.9 | 79.6 | 28.6% | Replaced an omitted hatch transition with a visible source-to-destination bridge. |
+| Shot 3 camera continuity | 74.6 | 83.2 | 11.5% | Removed overhead and frontal coverage jumps with one physical camera path. |
+| Shot 4 dialogue | 78.5 | 92.5 | 17.8% | Moved a time-boxed exact line ahead of visual detail; local VAD-enabled transcription recovered `Don't bring it home.` once at 2.45-4.45 seconds. |
+
+The scores were maintainer-assigned with visual frame inspection and deterministic rubric calculation. Audio verification used local `faster-whisper` transcription; stream presence alone was not accepted as speech evidence.
+
+This smoke does **not** prove a permanent Flow capability, exact frame-zero matching, cross-provider performance, a completed 60-second trailer, or universal cinematic quality. One tested extension still restaged frame zero despite the match instruction. Provider behavior, UI controls, and model labels may change, so reproduce the loop and retain `UNKNOWN` for anything not observed in the returned asset.

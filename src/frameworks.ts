@@ -82,6 +82,14 @@ export const FRAMEWORKS: readonly FrameworkDefinition[] = [
     requiredBlocks: ["primary-source", "ambience", "sync", "space", "music-boundary", "exclusions"],
     evidenceClass: "PROMPT_CORPUS",
   },
+  {
+    id: "render-observed-continuation",
+    name: "Render-Observed Continuation",
+    purpose: "Extend from the actual final frame with a first-motion deadline and an explicit physical bridge into the next shot state.",
+    bestFor: ["short-film", "sequence", "ad", "character-scene", "vfx"],
+    requiredBlocks: ["observed-final-frame", "preserve", "first-motion", "spatial-bridge", "physics", "handoff"],
+    evidenceClass: "RENDER_VALIDATED",
+  },
 ] as const;
 
 export function getFramework(id: string): FrameworkDefinition {

@@ -10,6 +10,7 @@ import { parseUniversalPacket } from "./schemas.js";
 import { buildStoryboard } from "./storyboard.js";
 import { PACKAGE_VERSION } from "./version.js";
 import { compareRenderCycles, scoreRender } from "./evaluation.js";
+import { compileContinuationPrompt } from "./continuation.js";
 
 export interface CliIo {
   stdout: (value: string) => void;
@@ -30,12 +31,13 @@ Usage:
   auteur-frameworks <command> [input.json] [--out result.json]
 
 Commands:
-  frameworks              List the nine production frameworks
+  frameworks              List the ten production frameworks
   develop <request.json>  Build an LLM-ready development contract
   validate <packet.json>  Validate a Universal Packet
   preflight <packet.json> Run continuity, timing, audio, and realism checks
   storyboard <packet.json> Project ordered storyboard panels
   compile <packet.json>   Compile video, frame, audio, and negative prompts
+  continue <input.json>   Compile a render-observed extension prompt
   score-render <observation.json>  Score an observed provider result
   compare-renders <before.json> <after.json>  Measure cycle improvement
   help                    Show this guide
@@ -94,6 +96,7 @@ export function runCli(args: string[], io: CliIo = defaultIo): number {
     const inputCommands = new Set([
       "compare-renders",
       "compile",
+      "continue",
       "develop",
       "preflight",
       "score-render",
@@ -126,6 +129,7 @@ export function runCli(args: string[], io: CliIo = defaultIo): number {
       output = compareRenderCycles(input, readJson(inputPaths[1]!));
     }
     else if (command === "compile") output = compilePacket(input);
+    else if (command === "continue") output = compileContinuationPrompt(input);
     else if (command === "develop") output = buildDevelopmentContract(input);
     else if (command === "preflight") output = preflightPacket(parseUniversalPacket(input));
     else if (command === "score-render") output = scoreRender(input);

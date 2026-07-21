@@ -31,6 +31,27 @@ For a single-shot video workflow:
 5. evaluate action completion, geometry, physical behavior, identity, audio, and final state;
 6. use `buildRepairPrompt` for one observed defect at a time.
 
+## Sequential extension
+
+Do not compile an extension from the planned shot alone. First inspect the actual final frame of the accepted render, then encode that evidence in a continuation contract:
+
+```bash
+npx auteur-frameworks continue examples/continuation.json --out continuation-prompt.json
+```
+
+The compiler front-loads a frame-zero match instruction and a single-camera-path guard. These attempt to preserve the accepted boundary and require every later composition to be reached through visible camera motion rather than a hidden coverage cut. They are instructions, not provider guarantees: the tested Flow extension restaged frame zero in one cycle even though later motion continuity improved. Inspect every returned boundary before accepting or extending it again.
+
+When speech is required, attach a `dialogueCue` with a time window, speaker, delivery, and mix priority. The compiler quotes the line exactly once and forbids paraphrase, repetition, substitution, and generated subtitles. Verify intelligibility from the returned audio; stream presence alone is not dialogue proof.
+
+The contract requires:
+
+- the exact observed final frame and preserved visible state;
+- one irreversible motion that begins inside the first two seconds;
+- the source geometry, transition mechanism, destination geometry, and physical camera path;
+- physics invariants and a new final-frame handoff.
+
+Submit only `prompt` from the compiled result through the provider's supported extension control. If the provider repeats the boundary, cuts, dissolves, teleports, or morphs into the destination, record `CONTINUATION_BRIDGE_BREAK` and repair the first motion or spatial bridge without redesigning the later shot.
+
 Provider models, controls, costs, and capabilities change. Treat the interface shown at runtime as provider evidence for that session, not as a permanent compiler rule.
 
 ## Result review

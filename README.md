@@ -3,7 +3,7 @@
 [![CI](https://github.com/shrishmanglik/auteur-frameworks/actions/workflows/ci.yml/badge.svg)](https://github.com/shrishmanglik/auteur-frameworks/actions/workflows/ci.yml)
 [![Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Node 20+](https://img.shields.io/badge/node-%3E%3D20-339933.svg)](package.json)
-[![Frameworks: 9](https://img.shields.io/badge/frameworks-9-F59E0B.svg)](#frameworks)
+[![Frameworks: 10](https://img.shields.io/badge/frameworks-10-F59E0B.svg)](#frameworks)
 
 **Turn an idea into a structured story, shot list, storyboard contract, generation prompt package, pre-flight report, and constrained repair plan.**
 
@@ -81,6 +81,7 @@ auteur-frameworks validate <packet.json> [--out result.json]
 auteur-frameworks preflight <packet.json> [--out result.json]
 auteur-frameworks storyboard <packet.json> [--out result.json]
 auteur-frameworks compile <packet.json> [--out result.json]
+auteur-frameworks continue <continuation.json> [--out result.json]
 auteur-frameworks score-render <observation.json> [--out result.json]
 auteur-frameworks compare-renders <before.json> <after.json> [--out result.json]
 auteur-frameworks help
@@ -96,6 +97,7 @@ import {
   buildDevelopmentContract,
   buildRepairPrompt,
   buildStoryboard,
+  compileContinuationPrompt,
   compilePacket,
   parseUniversalPacket,
   preflightPacket,
@@ -116,17 +118,21 @@ const repair = buildRepairPrompt({
   observedSymptom: "The hero glass disappears after the pour begins.",
   preserve: ["camera move", "lighting direction", "glass geometry"],
 });
+
+const extension = compileContinuationPrompt(yourRenderObservedContinuation);
+// Submit extension.prompt only after its source final frame is attached or selected.
 ```
 
 ## What ships
 
-- **Universal Packet schema** for story, scenes, shots, characters, optics, lighting, materials, physics, timing, audio, continuity, and exclusions.
+- **Universal Packet and continuation JSON Schemas** for story, scenes, shots, characters, optics, lighting, materials, physics, timing, audio, continuity, exclusions, and render-observed handoffs.
 - **Development contract** that turns a brief into model instructions plus JSON Schema.
 - **Deterministic compiler** for full and compact video, frame, audio, and negative prompt surfaces.
 - **Storyboard projection** with ordered panels, action, camera, duration, continuity, audio, and frame-generation instructions.
 - **Pre-flight QC** for temporal coverage, production duration, scene ownership, continuity, audio, typography risk, and realism anchors.
 - **Repair engine** for identity drift, anatomy, topology, object loss, broken physics, lip sync, branding, material drift, and other recurring defects.
 - **Measured refinement loop** with a typed render-observation schema, weighted scoring, and a relative-improvement gate.
+- **Render-observed continuation compiler** with a match-frame instruction, first-motion deadline, physical spatial bridge, single-camera-path guard, time-boxed dialogue cue, and final-frame handoff. Provider output must still be audited; the instruction is not a frame-match guarantee.
 - **Four executable creator fixtures** covering a product film, short film, vertical reel, and A-roll monologue.
 - **CLI and typed API** designed for local tools, agents, desktop apps, servers, and CI.
 
@@ -143,6 +149,7 @@ const repair = buildRepairPrompt({
 | Continuous Take | A-roll, dialogue, character scenes, and unbroken actions |
 | Constrained Repair Pass | One-defect corrections that preserve shot identity |
 | Audio Contract | Dialogue, sound hierarchy, sync, acoustic space, and music boundaries |
+| Render-Observed Continuation | Sequential extensions grounded in the actual previous final frame |
 
 List the machine-readable registry:
 
@@ -198,7 +205,8 @@ At handoff time:
 3. submit `videoPrompt`;
 4. use `framePrompt` for a reference frame when the workflow supports it;
 5. keep `negativePrompt` and continuity locks attached to the job record;
-6. record observed defects and compile a constrained repair.
+6. for an extension, describe the actual final frame and compile a render-observed continuation;
+7. record observed defects and compile a constrained repair.
 
 See [Provider Handoff](docs/provider-handoff.md).
 
@@ -247,10 +255,11 @@ Runtime dependencies are audited separately in CI.
 | [`src/frameworks.ts`](src/frameworks.ts) | Framework registry and evidence classes |
 | [`src/development.ts`](src/development.ts) | Raw-brief to LLM contract compiler |
 | [`src/compiler.ts`](src/compiler.ts) | Prompt package compiler |
+| [`src/continuation.ts`](src/continuation.ts) | Render-observed extension compiler |
 | [`src/storyboard.ts`](src/storyboard.ts) | Storyboard panel projection |
 | [`src/qc.ts`](src/qc.ts) | Pre-flight checks and corrective actions |
 | [`src/repair.ts`](src/repair.ts) | Constrained failure repair |
-| [`schemas/`](schemas/) | Generated JSON Schema |
+| [`schemas/`](schemas/) | Generated Universal Packet and continuation JSON Schemas |
 | [`examples/`](examples/) | Synthetic production and request fixtures |
 | [`docs/`](docs/) | Quickstart, integration, evaluation, and architecture guides |
 
@@ -276,7 +285,7 @@ Start with [CONTRIBUTING.md](CONTRIBUTING.md) or open a [framework proposal](htt
 
 ## Status
 
-Version `0.2.0` is an early public API. Provider adapters and commercial execution remain outside core. Breaking changes will be documented in [CHANGELOG.md](CHANGELOG.md) until the API reaches `1.0.0`.
+Version `0.3.0` is an early public API. Provider adapters and commercial execution remain outside core. Breaking changes will be documented in [CHANGELOG.md](CHANGELOG.md) until the API reaches `1.0.0`.
 
 ## License and citation
 

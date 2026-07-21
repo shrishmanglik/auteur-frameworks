@@ -1,6 +1,6 @@
 {
   "name": "auteur-frameworks",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Provider-neutral frameworks and deterministic tooling for cinematic AI content planning, prompt compilation, continuity, QC, and repair.",
   "type": "module",
   "license": "Apache-2.0",

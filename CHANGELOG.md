@@ -2,6 +2,21 @@
 
 All notable public changes are recorded here. The project follows semantic versioning while the API matures; versions below `1.0.0` may contain documented breaking changes.
 
+## 0.3.0 - 2026-07-21
+
+### Added
+
+- Render-Observed Continuation framework and deterministic continuation compiler.
+- First-motion deadline, source-to-destination spatial bridge, physics invariants, and final-frame handoff contracts.
+- Render-observed match-frame and single-camera-path guards for extension boundaries.
+- Repair guidance for match-frame drift and camera-path jumps.
+- Optional time-boxed dialogue cues with exact-line and foreground-mix guards.
+- Repair guidance for omitted requested dialogue.
+- Provider-safe repair guidance for fictional character names that collide with prominent-person controls.
+- CLI `continue` command plus a synthetic extension fixture.
+- Generated JSON Schema for render-observed continuation input.
+- Evidence-scoped Flow extension smoke with three same-shot refinement cycles above the 10% project threshold.
+
 ## 0.2.0 - 2026-07-21
 
 ### Added

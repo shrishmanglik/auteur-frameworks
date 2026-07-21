@@ -115,6 +115,87 @@ export const ShotSchema = z.object({
   frameworkId: z.string().min(1),
 });
 
+export const ContinuationContractSchema = z.object({
+  sourceShotId: z.string().min(1),
+  exactFinalFrame: z.string().min(1),
+  subjectReference: z.string().min(1),
+  preservedState: z.array(z.string().min(1)).min(2),
+  firstMotion: z.object({
+    mustBeginBySeconds: z.number().positive().max(2),
+    action: z.string().min(1),
+    visibleResult: z.string().min(1),
+  }),
+  spatialBridge: z.object({
+    completeBySeconds: z.number().positive().max(300),
+    sourceGeometry: z.string().min(1),
+    transitionMechanism: z.string().min(1),
+    destinationGeometry: z.string().min(1),
+    cameraPath: z.string().min(1),
+  }),
+  physicsInvariants: z.array(z.string().min(1)).min(1),
+  dialogueCue: z.object({
+    startSeconds: z.number().min(0),
+    endSeconds: z.number().positive(),
+    speaker: z.string().min(1),
+    delivery: z.string().min(1),
+    mixPriority: z.enum(["foreground", "balanced"]).default("foreground"),
+  }).refine((cue) => cue.startSeconds < cue.endSeconds, {
+    message: "dialogue cue startSeconds must precede endSeconds",
+  }).optional(),
+  finalFrameHandoff: z.string().min(1),
+  forbiddenTransitions: z.array(z.string().min(1)).default([
+    "cut",
+    "dissolve",
+    "teleport",
+    "geometry morphing",
+  ]),
+}).superRefine((contract, ctx) => {
+  if (contract.firstMotion.mustBeginBySeconds >= contract.spatialBridge.completeBySeconds) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["firstMotion", "mustBeginBySeconds"],
+      message: "first motion must begin before the spatial bridge completes",
+    });
+  }
+});
+
+export const ContinuationInputSchema = z.object({
+  shot: ShotSchema,
+  contract: ContinuationContractSchema,
+  globalStyle: z.array(z.string().min(1)).default([]),
+  globalExclusions: z.array(z.string().min(1)).default([]),
+}).superRefine((input, ctx) => {
+  if (input.contract.spatialBridge.completeBySeconds > input.shot.durationSeconds) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["contract", "spatialBridge", "completeBySeconds"],
+      message: "spatial bridge must complete within the target shot duration",
+    });
+  }
+  if (input.contract.dialogueCue && input.contract.dialogueCue.endSeconds > input.shot.durationSeconds) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["contract", "dialogueCue", "endSeconds"],
+      message: "dialogue cue must end within the target shot duration",
+    });
+  }
+  if (input.contract.dialogueCue && !(input.shot.dialogue ?? input.shot.audioTrack.spokenText)) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["contract", "dialogueCue"],
+      message: "dialogue cue requires shot.dialogue or audioTrack.spokenText",
+    });
+  }
+  if (input.shot.dialogue && input.shot.audioTrack.spokenText
+    && input.shot.dialogue.trim() !== input.shot.audioTrack.spokenText.trim()) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["shot", "audioTrack", "spokenText"],
+      message: "dialogue and audioTrack.spokenText must contain the same performance",
+    });
+  }
+});
+
 export const SceneSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(1),
@@ -153,6 +234,8 @@ export type ContentFormat = z.infer<typeof ContentFormatSchema>;
 export type DevelopmentRequest = z.infer<typeof DevelopmentRequestSchema>;
 export type Optics = z.infer<typeof OpticsSchema>;
 export type Shot = z.infer<typeof ShotSchema>;
+export type ContinuationContract = z.infer<typeof ContinuationContractSchema>;
+export type ContinuationInput = z.infer<typeof ContinuationInputSchema>;
 export type UniversalPacket = z.infer<typeof UniversalPacketSchema>;
 
 export function parseUniversalPacket(input: unknown): UniversalPacket {

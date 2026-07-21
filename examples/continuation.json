@@ -1,0 +1,82 @@
+{
+  "shot": {
+    "id": "shot-2",
+    "sceneId": "scene-1",
+    "title": "Below the hatch",
+    "durationSeconds": 8,
+    "intent": "Turn one visible touch into a physically continuous descent.",
+    "subject": "the same original fictional lunar pilot",
+    "action": "the pilot opens the existing hatch, descends the attached ladder, and faces the seal below",
+    "environment": "a narrow basalt passage directly beneath the existing lunar hatch",
+    "camera": {
+      "shotType": "continuous close follow",
+      "movement": "hold the source angle through the opening, then pass through the same aperture behind the pilot",
+      "framing": "glove and hatch first, pilot small before the seal last",
+      "focusBehavior": "track from the glove to the opening, then hold the destination geometry readable",
+      "optics": {
+        "cameraBody": "large-format cinema camera",
+        "lensModel": "35mm spherical prime",
+        "focalLengthMm": 35,
+        "tStop": 2.8,
+        "subjectDistanceMeters": 2.4
+      }
+    },
+    "lighting": {
+      "primarySource": "the pilot's helmet beam",
+      "motivation": "dying hatch light behind and a faint seal light ahead",
+      "paletteBase": ["matte black", "aged nickel", "restrained amber"],
+      "isDesaturated": true,
+      "isCrushedBlacks": false
+    },
+    "physics": [
+      "the hatch moves only on its visible hinge and the fixed ladder carries the pilot's weight"
+    ],
+    "materials": ["matte basalt", "aged nickel", "dry frost"],
+    "beats": [
+      {"startSeconds": 0, "endSeconds": 2, "action": "the existing hatch visibly opens on its hinge"},
+      {"startSeconds": 2, "endSeconds": 6, "action": "the same pilot passes through the opening and descends the fixed ladder"},
+      {"startSeconds": 6, "endSeconds": 8, "action": "the pilot reaches the floor and faces the circular seal"}
+    ],
+    "continuityLocks": [
+      "same white EVA suit and orange shoulder tab",
+      "same rectangular hatch dimensions and gold lever",
+      "same left glove and camera axis at the boundary"
+    ],
+    "imperfectionAnchors": ["small dry frost flakes remain on the glove knuckles"],
+    "audioTrack": {
+      "soundDesignDirectives": ["heavy hinge grind, ladder contact, and controlled suit breath"],
+      "musicDirective": "one restrained sub-bass pulse"
+    },
+    "exclusions": ["no liquid water", "no smoke", "no extra crew"],
+    "frameworkId": "render-observed-continuation"
+  },
+  "contract": {
+    "sourceShotId": "shot-1",
+    "exactFinalFrame": "the pilot's left glove rests on the gold lever of the rectangular black-glass hatch",
+    "subjectReference": "the same original fictional lunar pilot",
+    "preservedState": [
+      "same glove contact",
+      "same suit and orange shoulder tab",
+      "same rectangular hatch, gold lever, ice, and camera axis"
+    ],
+    "firstMotion": {
+      "mustBeginBySeconds": 0.75,
+      "action": "the left glove pulls the visible gold lever downward",
+      "visibleResult": "the existing rectangular panel separates from its frame"
+    },
+    "spatialBridge": {
+      "completeBySeconds": 2,
+      "sourceGeometry": "the existing rectangular hatch and its bottom hinge",
+      "transitionMechanism": "the same panel swings inward while the camera holds the opening in view",
+      "destinationGeometry": "a fixed ladder bolted directly beneath that opening",
+      "cameraPath": "passes through the same rectangular aperture behind the pilot"
+    },
+    "physicsInvariants": [
+      "frost breaks into small dry grains and settles",
+      "the door retains fixed dimensions and one visible hinge"
+    ],
+    "finalFrameHandoff": "hold the pilot facing the circular seal from behind"
+  },
+  "globalStyle": ["grounded documentary realism", "readable physical geography"],
+  "globalExclusions": ["no decorative lens flare"]
+}

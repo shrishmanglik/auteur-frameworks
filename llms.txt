@@ -13,6 +13,7 @@ Primary CLI flow:
 5. auteur-frameworks preflight production.json
 6. auteur-frameworks storyboard production.json --out storyboard.json
 7. auteur-frameworks compile production.json --out prompt-package.json
+8. After inspecting a real final frame, auteur-frameworks continue continuation.json --out continuation-prompt.json
 
 Rules for agents:
 - Treat model output as untrusted until validate and preflight pass.
@@ -20,6 +21,7 @@ Rules for agents:
 - Do not invent provider limits, pricing, audio support, or API behavior.
 - Keep global exclusions and continuity locks attached to every shot.
 - Use one constrained repair per observed defect.
+- Compile extensions from observed final-frame state, a first-motion deadline, and a physical spatial bridge.
 - Never place credentials, private paths, customer media, or private prompts in packets.
 
 Documentation:
@@ -36,6 +38,7 @@ Public API modules:
 - src/frameworks.ts
 - src/development.ts
 - src/compiler.ts
+- src/continuation.ts
 - src/storyboard.ts
 - src/qc.ts
 - src/repair.ts

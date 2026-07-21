@@ -1,6 +1,7 @@
 export * from "./schemas.js";
 export * from "./frameworks.js";
 export * from "./compiler.js";
+export * from "./continuation.js";
 export * from "./qc.js";
 export * from "./repair.js";
 export * from "./storyboard.js";

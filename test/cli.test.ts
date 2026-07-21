@@ -27,7 +27,7 @@ describe("CLI", () => {
   it("lists frameworks and builds an LLM development contract", () => {
     const frameworks = capture();
     expect(runCli(["frameworks"], frameworks.io)).toBe(0);
-    expect(JSON.parse(frameworks.output().stdout)).toHaveLength(9);
+    expect(JSON.parse(frameworks.output().stdout)).toHaveLength(10);
 
     const requestPath = fileURLToPath(new URL("../examples/requests/short-film.json", import.meta.url));
     const development = capture();
@@ -36,6 +36,13 @@ describe("CLI", () => {
     expect(contract.framework.id).toBe("act-shot-master-spec");
     expect(contract.systemInstruction).toContain("surprising but inevitable");
     expect(contract.userBrief).toContain("AVOID CLICHES");
+
+    const continuationPath = fileURLToPath(new URL("../examples/continuation.json", import.meta.url));
+    const continuation = capture();
+    expect(runCli(["continue", continuationPath], continuation.io)).toBe(0);
+    const continuationResult = JSON.parse(continuation.output().stdout);
+    expect(continuationResult.prompt).toContain("BY 0.75s - FIRST MOTION");
+    expect(continuationResult.prompt).toContain("Music: one restrained sub-bass pulse.");
   });
 
   it("returns an actionable error for bad commands and malformed packets", () => {
