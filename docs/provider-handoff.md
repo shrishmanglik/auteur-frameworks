@@ -15,7 +15,8 @@ The core package is provider-neutral. This guide describes a safe manual handoff
 
 - **videoPrompt**: the canonical framework-native architecture, including its required ordering and production blocks.
 - **compactVideoPrompt**: a whitespace-flattened, budgeted attempt for provider fields that handle long rich-text input poorly; its report states whether the selected framework architecture survived intact.
-- **framePrompt**: a reference-frame or image-generation description without temporal choreography.
+- **openingFramePrompt**: a 0.0-second reference contract compiled from `frameStates.opening`, keeping later actions, contacts, dialogue, illumination, discoveries, and completed states absent or occluded. Without explicit opening-only data, the compiler emits `frameStateSources.opening: "minimal-fallback"` plus a pre-flight warning. `framePrompt` is a backwards-compatible alias.
+- **terminalFramePrompt**: the completed final-beat still for an explicitly supported terminal or first/last-frame route. A missing `frameStates.terminal` on a first/last-frame route emits `TERMINAL_FRAME_STATE_FALLBACK`. Do not attach the terminal prompt as the opening reference.
 - **audioPrompt**: spoken performance, sound design, and music boundary when present.
 - **negativePrompt**: exclusions for systems or adapters that expose a separate negative field.
 

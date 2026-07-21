@@ -30,7 +30,8 @@ Open `production-kit.json`. It contains the full story-to-repair handoff. Prompt
 - `videoPrompt`
 - `compactVideoPrompt`
 - `compactPromptReport`
-- `framePrompt`
+- `openingFramePrompt` (`framePrompt` is its backwards-compatible alias)
+- `terminalFramePrompt`
 - `audioPrompt`
 - `negativePrompt`
 - `qcIssues`

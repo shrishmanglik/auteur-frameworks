@@ -123,6 +123,18 @@ export const StoryBeatSchema = z.object({
   emotionalTurn: z.string().min(1),
 });
 
+export const ReferenceFrameStateSchema = z.object({
+  subject: z.string().min(1),
+  action: z.string().min(1),
+  environment: z.string().min(1),
+  visibleInventory: z.array(z.string().min(1)).default([]),
+  lighting: z.string().min(1).optional(),
+  paletteBase: z.array(z.string().min(1)).default([]),
+  materials: z.array(z.string().min(1)).default([]),
+  imperfectionAnchors: z.array(z.string().min(1)).default([]),
+  continuityLocks: z.array(z.string().min(1)).default([]),
+});
+
 export const ShotSchema = z.object({
   id: z.string().min(1),
   sceneId: z.string().min(1),
@@ -134,6 +146,10 @@ export const ShotSchema = z.object({
   subject: z.string().min(1),
   action: z.string().min(1),
   environment: z.string().min(1),
+  frameStates: z.object({
+    opening: ReferenceFrameStateSchema.optional(),
+    terminal: ReferenceFrameStateSchema.optional(),
+  }).default({}),
   camera: CameraSchema,
   lighting: LightingSchema,
   physics: z.array(z.string().min(1)).min(1),

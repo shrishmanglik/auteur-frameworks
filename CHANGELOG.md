@@ -2,6 +2,19 @@
 
 All notable public changes are recorded here. The project follows semantic versioning while the API matures; versions below `1.0.0` may contain documented breaking changes.
 
+## 0.7.1 - 2026-07-21
+
+### Fixed
+
+- Split frame compilation into `openingFramePrompt` and `terminalFramePrompt`; the existing `framePrompt` now aliases the opening state for backwards compatibility.
+- Added explicit opening-only and terminal-only `frameStates` data. Opening compilation never reuses composite environment, material, imperfection, or continuity fields; absent explicit data is labeled `minimal-fallback` and warned in pre-flight.
+- Added a route-asset requirement and acceptance check that rejects reference-first opening frames contaminated by a later beat.
+- Extended opening-state fallback warnings to first/last-frame routes and added a terminal-state fallback warning wherever that route consumes a final-state asset.
+
+### Evidence
+
+- A route-compliant `cinematic-prose-stack` Flow render preserved one diver, clean tanks, wreck geometry, buoyancy, bubbles, silt, lamp falloff, and nonverbal audio, but scored 71.2/100 and was rejected: the bell and lamp-to-bell relationship were already visible in frame zero, collapsing the requested 6-8 second discovery. The scene reference had encoded the terminal reveal. This patch separates opening and terminal frame evidence instead of adding more video-prompt wording.
+
 ## 0.7.0 - 2026-07-21
 
 ### Added

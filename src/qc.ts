@@ -1,6 +1,6 @@
 import type { Shot, UniversalPacket } from "./schemas.js";
 import { getFramework } from "./frameworks.js";
-import { assessShotConstraintBudget } from "./route-advisor.js";
+import { assessShotConstraintBudget, assessShotRoute } from "./route-advisor.js";
 
 export type IssueSeverity = "error" | "warning";
 
@@ -31,6 +31,7 @@ export function preflightShot(shot: Shot, audioRequired = false): PreflightIssue
   const issues: PreflightIssue[] = [];
   getFramework(shot.frameworkId);
   const constraintBudget = assessShotConstraintBudget(shot);
+  const route = assessShotRoute(shot);
 
   if (constraintBudget.status === "overloaded") {
     issues.push({
@@ -39,6 +40,28 @@ export function preflightShot(shot: Shot, audioRequired = false): PreflightIssue
       shotId: shot.id,
       message: `The shot carries ${constraintBudget.score} framework constraint points across ${constraintBudget.factors.length} fragile controls.`,
       action: constraintBudget.recommendation,
+    });
+  }
+
+  const routeConsumesOpeningFrame = route.recommendedMode === "reference-first"
+    || route.recommendedMode === "first-last-frame";
+  if (routeConsumesOpeningFrame && shot.beats.length > 1 && !shot.frameStates.opening) {
+    issues.push({
+      code: "OPENING_FRAME_STATE_FALLBACK",
+      severity: "warning",
+      shotId: shot.id,
+      message: `The multi-stage ${route.recommendedMode} shot has no explicit opening-only frame state, so its generated opening prompt uses a minimal fallback.`,
+      action: "Provide frameStates.opening with only the subject, environment, visible inventory, lighting, materials, imperfections, and locks available at 0.0 seconds.",
+    });
+  }
+
+  if (route.recommendedMode === "first-last-frame" && !shot.frameStates.terminal) {
+    issues.push({
+      code: "TERMINAL_FRAME_STATE_FALLBACK",
+      severity: "warning",
+      shotId: shot.id,
+      message: "The first/last-frame shot has no explicit terminal-only frame state, so its generated terminal prompt uses composite shot fields.",
+      action: "Provide frameStates.terminal with only the subject, environment, visible inventory, lighting, materials, imperfections, and locks present after the final beat completes.",
     });
   }
 

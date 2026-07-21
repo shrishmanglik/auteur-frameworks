@@ -133,7 +133,7 @@ const extension = compileContinuationPrompt(yourRenderObservedContinuation);
 - **Framework-native deterministic compiler** whose prose, JSON, timing, stunt, transformation, continuous-take, and audio architectures change with the selected framework; the full surface preserves that structure, the compact surface reports whenever budgeting degrades it, and generated reference-frame prompts carry an affirmative clean-surface lock.
 - **Complete production-kit compiler** that projects story, scenes, bibles, storyboard, shot list, sound, references, continuity, prompts, QC, repairs, and exports in one call.
 - **Risk-aware route advisor** that directs causal contact, mechanical assembly, multi-subject dynamics, and precise spatial clearance to first/last-frame workflows; exact fluid counts and compound constraint overload to split passes; and identity or brand control to reference-first workflows. A deterministic constraint budget blocks short shots that combine too many fragile controls, rather than pretending more prose will fix the route. Provider support remains `UNKNOWN` until the host verifies it.
-- **Storyboard projection** with ordered panels, action, camera, duration, continuity, audio, and frame-generation instructions.
+- **Storyboard projection** with ordered panels, action, camera, duration, continuity, audio, and distinct opening/terminal frame-generation instructions. Explicit `frameStates.opening` data owns the opening asset; without it, the compiler labels and warns on a minimal fallback instead of copying a composite scene into frame zero. The legacy `framePrompt` aliases the opening state.
 - **Pre-flight QC** for temporal coverage, production duration, scene ownership, continuity, audio, typography risk, and realism anchors.
 - **Repair engine** for identity drift, anatomy, topology, object loss, broken physics, lip sync, branding, material drift, and other recurring defects.
 - **Measured refinement loop** with a typed render-observation schema, weighted scoring, a relative-improvement gate, and fail-closed audio verification before a render can become a production candidate.
@@ -212,7 +212,7 @@ At handoff time:
 1. select one compiled shot;
 2. set aspect ratio and duration explicitly in the provider UI or adapter;
 3. submit the framework-native `videoPrompt`; use `compactVideoPrompt` only after its report confirms no required section or safeguard was lost;
-4. use `framePrompt` for a reference frame when the workflow supports it;
+4. use `openingFramePrompt` for reference-first generation; use `terminalFramePrompt` only when the route explicitly supports a terminal or first/last-frame asset (`framePrompt` remains an alias for the opening state);
 5. keep `negativePrompt` and continuity locks attached to the job record;
 6. for an extension, describe the actual final frame and compile a render-observed continuation;
 7. record observed defects and compile a constrained repair.

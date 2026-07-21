@@ -4,6 +4,7 @@ import {
   FRAMEWORKS,
   ContentFormatSchema,
   UniversalPacketSchema,
+  assessShotRoute,
   buildRepairPrompt,
   buildStoryboard,
   buildDevelopmentContract,
@@ -135,12 +136,81 @@ describe("compiler", () => {
     expect(compiled.compactVideoPrompt).toContain("EXPRESSION AND EXCLUSIONS:");
     expect(compiled.compactVideoPrompt).toContain("no identity drift");
     expect(compiled.compactPromptReport.frameworkPreserved).toBe(true);
-    expect(compiled.framePrompt).toContain("tiny trapped bubbles");
+    expect(compiled.frameStateSources.opening).toBe("minimal-fallback");
+    expect(compiled.terminalFramePrompt).toContain("tiny trapped bubbles");
     expect(compiled.framePrompt).toContain("Reference surface lock:");
     expect(compiled.framePrompt).toContain("otherwise it remains plain and unbranded");
     expect(compiled.framePrompt).not.toContain("No glyph, letter, number");
     expect(compiled.audioPrompt).toContain("liquid pour");
     expect(compiled.negativePrompt).toContain("no identity drift");
+  });
+
+  it("separates opening and terminal frame contracts for multi-stage reference routes", () => {
+    const shot = structuredClone(UniversalPacketSchema.parse(example).shots[0]!);
+    shot.generationRisks = ["IDENTITY_OR_PERFORMANCE"];
+    shot.subject = "one professional diver with one handheld lamp";
+    shot.environment = "cold green water, broken timber ribs, and one bronze bell attached to a beam";
+    shot.materials = ["waterlogged timber", "oxidized bronze", "black drysuit fabric"];
+    shot.imperfectionAnchors = ["uneven silt", "biofouling on the bell edge"];
+    shot.continuityLocks = ["same diver gear", "bell stays attached to the beam"];
+    shot.beats = [
+      { startSeconds: 0, endSeconds: 2, action: "the diver enters through a narrow timber gap" },
+      { startSeconds: 2, endSeconds: 6, action: "the lamp sweeps once across waterlogged timber" },
+      { startSeconds: 6, endSeconds: 8, action: "the lamp reveals the bronze bell and the diver stops" },
+    ];
+    shot.frameStates = {
+      opening: {
+        subject: "one professional diver with one handheld lamp",
+        action: "the diver has just entered through a narrow timber gap",
+        environment: "cold green water with suspended silt and occluding timber ribs",
+        visibleInventory: ["one diver", "one right-hand lamp", "two plain tanks", "one timber gap"],
+        lighting: "the handheld lamp rakes across near timber",
+        paletteBase: ["cold green", "weathered timber", "black neoprene", "plain steel"],
+        materials: ["waterlogged timber", "black drysuit fabric", "plain brushed metal tanks"],
+        imperfectionAnchors: ["tiny scratches on mask glass", "uneven silt density"],
+        continuityLocks: ["same diver gear and tank layout", "one lamp remains in the right hand"],
+      },
+      terminal: {
+        subject: "the same professional diver with the same handheld lamp",
+        action: "the lamp reveals the bronze bell and the diver stops",
+        environment: "cold green water beside one bronze bell attached to a wreck beam",
+        visibleInventory: ["one diver", "one right-hand lamp", "one attached bronze bell"],
+        lighting: "the handheld lamp lands on the bronze bell",
+        paletteBase: ["cold green", "aged bronze", "black neoprene"],
+        materials: ["waterlogged timber", "oxidized bronze", "black drysuit fabric"],
+        imperfectionAnchors: ["tiny scratches on mask glass", "biofouling on the bell edge"],
+        continuityLocks: ["same diver gear and tank layout", "bell stays attached to the beam"],
+      },
+    };
+    const compiled = compileShot(shot);
+    const route = assessShotRoute(shot);
+
+    expect(compiled.framePrompt).toBe(compiled.openingFramePrompt);
+    expect(compiled.openingFramePrompt).toContain("OPENING STATE (0.0s):");
+    expect(compiled.openingFramePrompt).toContain("the diver has just entered through a narrow timber gap");
+    expect(compiled.openingFramePrompt).not.toMatch(/bell/i);
+    expect(compiled.openingFramePrompt).not.toMatch(/bronze/i);
+    expect(compiled.openingFramePrompt).toContain("assigned to a later beat remains outside frame");
+    expect(compiled.terminalFramePrompt).toContain("TERMINAL STATE (8s):");
+    expect(compiled.terminalFramePrompt).toContain("the lamp reveals the bronze bell");
+    expect(compiled.frameStateSources).toEqual({ opening: "explicit", terminal: "explicit" });
+    expect(route.recommendedMode).toBe("reference-first");
+    expect(route.requiredAssets).toContain("opening-state reference with every later beat absent or occluded");
+    expect(route.acceptanceChecks).toContain("Reject an opening reference that already shows a later action, contact, dialogue, illumination, discovery, or terminal state.");
+  });
+
+  it("labels a safe minimal opening fallback instead of copying composite scene fields", () => {
+    const shot = structuredClone(UniversalPacketSchema.parse(example).shots[0]!);
+    shot.generationRisks = ["IDENTITY_OR_PERFORMANCE"];
+    shot.environment = "a workshop where the final engraved trophy is already visible";
+    shot.materials = ["engraved trophy metal"];
+    shot.continuityLocks = ["trophy remains on the table", "same craftsperson identity"];
+    const compiled = compileShot(shot);
+
+    expect(compiled.frameStateSources.opening).toBe("minimal-fallback");
+    expect(compiled.openingFramePrompt).not.toContain("final engraved trophy");
+    expect(compiled.openingFramePrompt).not.toContain("trophy remains on the table");
+    expect(compiled.qcIssues).toContainEqual(expect.objectContaining({ code: "OPENING_FRAME_STATE_FALLBACK" }));
   });
 
   it("compiles genuinely distinct corpus architectures instead of relabeling one template", () => {

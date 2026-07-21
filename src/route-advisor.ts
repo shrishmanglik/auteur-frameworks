@@ -284,6 +284,11 @@ export function assessShotRoute(input: Shot): ShotRouteAdvice {
         ? "reference-first"
         : "text-only";
 
+  if (recommendedMode === "reference-first" && shot.beats.length > 1) {
+    requiredAssets.add("opening-state reference with every later beat absent or occluded");
+    acceptanceChecks.add("Reject an opening reference that already shows a later action, contact, dialogue, illumination, discovery, or terminal state.");
+  }
+
   return {
     shotId: shot.id,
     riskLevel,

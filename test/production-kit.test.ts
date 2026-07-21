@@ -46,6 +46,8 @@ describe("complete production kit", () => {
       providerCapabilityStatus: "UNKNOWN",
     });
     expect(kit.assetManifest.some((asset) => asset.required && asset.type === "shot-reference")).toBe(true);
+    expect(kit.preflight.issues).toContainEqual(expect.objectContaining({ code: "OPENING_FRAME_STATE_FALLBACK" }));
+    expect(kit.preflight.issues).toContainEqual(expect.objectContaining({ code: "TERMINAL_FRAME_STATE_FALLBACK" }));
   });
 
   it("links character continuity only to shots that name the character or role", () => {

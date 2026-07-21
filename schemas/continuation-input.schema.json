@@ -65,6 +65,157 @@
           "type": "string",
           "minLength": 1
         },
+        "frameStates": {
+          "default": {},
+          "type": "object",
+          "properties": {
+            "opening": {
+              "type": "object",
+              "properties": {
+                "subject": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "action": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "environment": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "visibleInventory": {
+                  "default": [],
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "lighting": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "paletteBase": {
+                  "default": [],
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "materials": {
+                  "default": [],
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "imperfectionAnchors": {
+                  "default": [],
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "continuityLocks": {
+                  "default": [],
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              },
+              "required": [
+                "subject",
+                "action",
+                "environment",
+                "visibleInventory",
+                "paletteBase",
+                "materials",
+                "imperfectionAnchors",
+                "continuityLocks"
+              ],
+              "additionalProperties": false
+            },
+            "terminal": {
+              "type": "object",
+              "properties": {
+                "subject": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "action": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "environment": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "visibleInventory": {
+                  "default": [],
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "lighting": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "paletteBase": {
+                  "default": [],
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "materials": {
+                  "default": [],
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "imperfectionAnchors": {
+                  "default": [],
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "continuityLocks": {
+                  "default": [],
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              },
+              "required": [
+                "subject",
+                "action",
+                "environment",
+                "visibleInventory",
+                "paletteBase",
+                "materials",
+                "imperfectionAnchors",
+                "continuityLocks"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
         "camera": {
           "type": "object",
           "properties": {
@@ -336,6 +487,7 @@
         "subject",
         "action",
         "environment",
+        "frameStates",
         "camera",
         "lighting",
         "physics",

@@ -18,6 +18,13 @@ export interface CompiledShot {
   videoPrompt: string;
   compactVideoPrompt: string;
   compactPromptReport: CompactPromptReport;
+  openingFramePrompt: string;
+  terminalFramePrompt: string;
+  frameStateSources: {
+    opening: "explicit" | "minimal-fallback";
+    terminal: "explicit" | "composite-fallback";
+  };
+  /** Back-compatible alias for openingFramePrompt. */
   framePrompt: string;
   audioPrompt: string | null;
   negativePrompt: string;
@@ -209,18 +216,49 @@ export function compileShot(
   const frameSurfaceLock = shot.generationRisks.includes("BRAND_OR_TEXT_CONTROL")
     ? "Production design lock: declared clean surfaces remain uninterrupted base material, color, finish, and geometry."
     : "Reference surface lock: every visible surface contains only its declared base material, color, finish, wear, and geometry; otherwise it remains plain and unbranded.";
-
-  const framePrompt = [
-    shot.subject + " in " + shot.environment + ".",
+  const openingBeat = shot.beats[0]!;
+  const terminalBeat = shot.beats[shot.beats.length - 1]!;
+  const compileFrameState = (
+    phase: "opening" | "terminal",
+    temporalBoundary: string,
+  ): string => {
+    const explicitState = shot.frameStates[phase];
+    const isOpening = phase === "opening";
+    const stateAction = explicitState?.action ?? (isOpening ? openingBeat.action : terminalBeat.action);
+    const stateSubject = explicitState?.subject ?? shot.subject;
+    const stateEnvironment = explicitState?.environment ?? (isOpening ? null : shot.environment);
+    const stateLighting = explicitState?.lighting ?? shot.lighting.primarySource;
+    const statePalette = explicitState?.paletteBase ?? (isOpening ? [] : shot.lighting.paletteBase);
+    const stateMaterials = explicitState?.materials ?? (isOpening ? [] : shot.materials);
+    const stateImperfections = explicitState?.imperfectionAnchors ?? (isOpening ? [] : shot.imperfectionAnchors);
+    const stateContinuity = explicitState?.continuityLocks ?? (isOpening ? [] : shot.continuityLocks);
+    const stateLabel = isOpening
+      ? "OPENING STATE (0.0s): " + stateAction + "."
+      : "TERMINAL STATE (" + shot.durationSeconds + "s): " + stateAction + ".";
+    return [
+    stateLabel,
+    stateSubject + (stateEnvironment ? " in " + stateEnvironment : "") + ".",
+    temporalBoundary,
+    explicitState?.visibleInventory.length ? "Visible inventory: " + explicitState.visibleInventory.join("; ") + "." : null,
     globalStyle.length ? "Style: " + globalStyle.join("; ") + "." : null,
     optics,
     shot.camera.shotType + ", " + shot.camera.framing + ".",
-    shot.lighting.primarySource + "; " + shot.lighting.paletteBase.join(", ") + ".",
-    shot.materials.length ? "Materials: " + shot.materials.join(", ") + "." : null,
-    shot.imperfectionAnchors.length ? "Realism anchors: " + shot.imperfectionAnchors.join("; ") + "." : null,
+    stateLighting + (statePalette.length ? "; " + statePalette.join(", ") : "") + ".",
+    stateMaterials.length ? "Materials: " + stateMaterials.join(", ") + "." : null,
+    stateImperfections.length ? "Realism anchors: " + stateImperfections.join("; ") + "." : null,
     frameSurfaceLock,
-    "Continuity: " + shot.continuityLocks.join("; ") + ".",
-  ].filter((part): part is string => Boolean(part)).join(" ");
+    stateContinuity.length ? "Continuity: " + stateContinuity.join("; ") + "." : null,
+    ].filter((part): part is string => Boolean(part)).join(" ");
+  };
+
+  const openingFramePrompt = compileFrameState(
+    "opening",
+    "Temporal reference boundary: show only the state available at 0.0s. Any object, contact, pose, illumination, dialogue, transformation, discovery, or completed result assigned to a later beat remains outside frame, occluded, unlit, unstarted, or otherwise unreadable.",
+  );
+  const terminalFramePrompt = compileFrameState(
+    "terminal",
+    "Terminal reference boundary: show the completed final beat without beginning a new action, while preserving every declared continuity lock.",
+  );
 
   return {
     shotId: shot.id,
@@ -231,7 +269,13 @@ export function compileShot(
     videoPrompt: frameworkPrompt.prompt,
     compactVideoPrompt,
     compactPromptReport,
-    framePrompt,
+    openingFramePrompt,
+    terminalFramePrompt,
+    frameStateSources: {
+      opening: shot.frameStates.opening ? "explicit" : "minimal-fallback",
+      terminal: shot.frameStates.terminal ? "explicit" : "composite-fallback",
+    },
+    framePrompt: openingFramePrompt,
     audioPrompt: audioParts.length ? audioParts.join(" ") : null,
     negativePrompt: exclusions.join(", "),
     qcIssues: preflightShot(shot),
