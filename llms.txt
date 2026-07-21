@@ -1,0 +1,41 @@
+# AUTEUR Frameworks
+
+Provider-neutral TypeScript framework for turning production intent into a Universal Packet, storyboard panels, prompt packages, pre-flight QC, and constrained repair prompts.
+
+Install:
+npm install github:shrishmanglik/auteur-frameworks#main
+
+Primary CLI flow:
+1. auteur-frameworks develop <request.json> --out development-contract.json
+2. Send systemInstruction, userBrief, and responseSchema to a structured-output LLM.
+3. Save the returned Universal Packet as production.json.
+4. auteur-frameworks validate production.json
+5. auteur-frameworks preflight production.json
+6. auteur-frameworks storyboard production.json --out storyboard.json
+7. auteur-frameworks compile production.json --out prompt-package.json
+
+Rules for agents:
+- Treat model output as untrusted until validate and preflight pass.
+- Structured data is the source; prompts and storyboards are projections.
+- Do not invent provider limits, pricing, audio support, or API behavior.
+- Keep global exclusions and continuity locks attached to every shot.
+- Use one constrained repair per observed defect.
+- Never place credentials, private paths, customer media, or private prompts in packets.
+
+Documentation:
+- README.md
+- docs/quickstart.md
+- docs/architecture.md
+- docs/llm-integration.md
+- docs/provider-handoff.md
+- docs/evaluation.md
+- docs/research-boundary.md
+
+Public API modules:
+- src/schemas.ts
+- src/frameworks.ts
+- src/development.ts
+- src/compiler.ts
+- src/storyboard.ts
+- src/qc.ts
+- src/repair.ts

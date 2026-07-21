@@ -85,6 +85,16 @@ export function preflightShot(shot: Shot, audioRequired = false): PreflightIssue
     });
   }
 
+  if (shot.dialogue && shot.audioTrack.spokenText && shot.dialogue !== shot.audioTrack.spokenText) {
+    issues.push({
+      code: "SPOKEN_TEXT_CONFLICT",
+      severity: "warning",
+      shotId: shot.id,
+      message: "dialogue and audioTrack.spokenText contain different performances.",
+      action: "Choose one canonical spoken performance or make both fields identical.",
+    });
+  }
+
   if (shot.continuityLocks.length < 2) {
     issues.push({
       code: "CONTINUITY_UNDERSPECIFIED",
@@ -102,6 +112,16 @@ export function preflightPacket(packet: UniversalPacket): PreflightReport {
   const issues = packet.shots.flatMap((shot) => preflightShot(shot, packet.metadata.audioRequired));
   const sceneIds = new Set(packet.scenes.map((scene) => scene.id));
   const shotIds = new Set(packet.shots.map((shot) => shot.id));
+  const totalDuration = packet.shots.reduce((sum, shot) => sum + shot.durationSeconds, 0);
+
+  if (Math.abs(totalDuration - packet.metadata.targetDurationSeconds) > 0.001) {
+    issues.push({
+      code: "PRODUCTION_DURATION_MISMATCH",
+      severity: "error",
+      message: `Shot durations total ${totalDuration}s but metadata targets ${packet.metadata.targetDurationSeconds}s.`,
+      action: "Align shot durations with metadata.targetDurationSeconds.",
+    });
+  }
 
   for (const shot of packet.shots) {
     if (!sceneIds.has(shot.sceneId)) {
@@ -111,6 +131,16 @@ export function preflightPacket(packet: UniversalPacket): PreflightReport {
         shotId: shot.id,
         message: "The shot references a scene that does not exist.",
         action: "Create the scene or update sceneId.",
+      });
+    }
+    const owningScene = packet.scenes.find((scene) => scene.id === shot.sceneId);
+    if (owningScene && !owningScene.shotIds.includes(shot.id)) {
+      issues.push({
+        code: "SHOT_NOT_IN_SCENE",
+        severity: "error",
+        shotId: shot.id,
+        message: `Shot ${shot.id} points to ${shot.sceneId} but is absent from that scene's shotIds.`,
+        action: "Add the shot ID to the owning scene or update sceneId.",
       });
     }
   }
@@ -124,6 +154,17 @@ export function preflightPacket(packet: UniversalPacket): PreflightReport {
           message: "Scene " + scene.id + " references missing shot " + shotId + ".",
           action: "Create the shot or remove the reference.",
         });
+      } else {
+        const shot = packet.shots.find((candidate) => candidate.id === shotId);
+        if (shot && shot.sceneId !== scene.id) {
+          issues.push({
+            code: "SCENE_SHOT_MISMATCH",
+            severity: "error",
+            shotId,
+            message: `Scene ${scene.id} lists ${shotId}, but the shot points to ${shot.sceneId}.`,
+            action: "Make the scene shotIds and shot.sceneId ownership agree.",
+          });
+        }
       }
     }
   }

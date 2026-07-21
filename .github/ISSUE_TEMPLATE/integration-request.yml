@@ -1,0 +1,33 @@
+name: Integration request
+description: Propose an integration with an LLM tool, agent, application, or provider adapter.
+title: "[Integration]: "
+labels: ["integration"]
+body:
+  - type: input
+    id: host
+    attributes:
+      label: Host tool or application
+      placeholder: "Codex CLI, MCP server, local Node app"
+    validations:
+      required: true
+  - type: textarea
+    id: workflow
+    attributes:
+      label: Creator workflow
+      description: Describe the user journey and the AUTEUR commands or APIs involved.
+    validations:
+      required: true
+  - type: textarea
+    id: boundary
+    attributes:
+      label: Provider, credential, spend, and data boundary
+      description: State what remains in the host and what the integration would transmit.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance proof
+      description: Describe a synthetic test that would prove the integration works.
+    validations:
+      required: true

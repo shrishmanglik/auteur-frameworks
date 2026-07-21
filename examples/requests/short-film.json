@@ -1,0 +1,15 @@
+{
+  "idea": "A night-shift cleaner discovers that an office elevator keeps opening onto a floor erased from the building plans, where one desk lamp is still waiting for its owner.",
+  "format": "short-film",
+  "targetDurationSeconds": 90,
+  "aspectRatio": "2.39:1",
+  "audience": "adult suspense viewers",
+  "tone": ["dry", "uneasy", "human"],
+  "constraints": ["one actor", "one building", "no exposition voice-over"],
+  "creativeMandate": "Make the supernatural behavior bureaucratically precise and let the cleaner respond with tired practical humor rather than panic.",
+  "mustInclude": ["a handwritten maintenance log", "one visual reversal", "an earned final choice"],
+  "avoidCliches": ["jump scare", "flickering-light montage", "mysterious child", "it was all a dream"],
+  "hasDialogue": true,
+  "requiresTransformation": false,
+  "audioRequired": true
+}

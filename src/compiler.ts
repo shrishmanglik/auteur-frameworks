@@ -41,13 +41,18 @@ const timedBeats = (shot: Shot): string => shot.beats
   .map((beat) => "[" + beat.startSeconds + "-" + beat.endSeconds + "s] " + beat.action)
   .join(" ");
 
+const sentence = (value: string): string => {
+  const trimmed = value.trim();
+  return /[.!?]$/.test(trimmed) ? trimmed : trimmed + ".";
+};
+
 export function compileShot(input: Shot, globalExclusions: readonly string[] = []): CompiledShot {
   const shot = ShotSchema.parse(input);
   const framework = getFramework(shot.frameworkId);
   const optics = opticsToProse(shot.camera.optics);
+  const spokenText = shot.dialogue ?? shot.audioTrack.spokenText;
   const audioParts = [
-    shot.dialogue ? "Dialogue: " + shot.dialogue : null,
-    shot.audioTrack.spokenText ? "Spoken text: " + shot.audioTrack.spokenText : null,
+    spokenText ? "Spoken performance: " + spokenText : null,
     shot.audioTrack.soundDesignDirectives.length
       ? "Sound design: " + shot.audioTrack.soundDesignDirectives.join("; ")
       : null,
@@ -63,8 +68,9 @@ export function compileShot(input: Shot, globalExclusions: readonly string[] = [
 
   const videoPrompt = [
     "FRAMEWORK: " + framework.name + ".",
-    "SHOT INTENT: " + shot.intent + ".",
-    "REALITY: " + shot.subject + " in " + shot.environment + ". Materials: " + shot.materials.join(", ") + ".",
+    "SHOT INTENT: " + sentence(shot.intent),
+    "REALITY: " + sentence(shot.subject + " in " + shot.environment)
+      + (shot.materials.length ? " Materials: " + shot.materials.join(", ") + "." : ""),
     "CAMERA: " + optics + " " + shot.camera.movement + "; " + shot.camera.shotType + "; " + shot.camera.framing
       + "; focus behavior: " + shot.camera.focusBehavior + ".",
     "TEMPORAL PLAN: " + timedBeats(shot) + ".",

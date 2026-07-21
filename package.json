@@ -1,6 +1,6 @@
 {
   "name": "auteur-frameworks",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Provider-neutral frameworks and deterministic tooling for cinematic AI content planning, prompt compilation, continuity, QC, and repair.",
   "type": "module",
   "license": "Apache-2.0",
@@ -23,9 +23,16 @@
     "schemas",
     "docs",
     "examples",
+    "CHANGELOG.md",
+    "CITATION.cff",
+    "CODE_OF_CONDUCT.md",
+    "GOVERNANCE.md",
+    "llms.txt",
     "README.md",
+    "ROADMAP.md",
     "CONTRIBUTING.md",
     "SECURITY.md",
+    "SUPPORT.md",
     "LICENSE",
     "NOTICE"
   ],
@@ -33,10 +40,14 @@
     "audit:package": "node scripts/audit-package-manifest.mjs",
     "audit:public": "node scripts/audit-publication-boundary.mjs",
     "build": "tsc -p tsconfig.json",
+    "docs:check": "node scripts/check-doc-links.mjs",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run check",
     "schema": "tsx scripts/generate-schema.ts",
     "test": "vitest run",
+    "test:consumer": "node scripts/smoke-packed-consumer.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "check": "npm run schema && npm run typecheck && npm run test && npm run build && npm run audit:public && npm run audit:package && npm pack --dry-run"
+    "check": "npm run schema && npm run typecheck && npm run test && npm run build && npm run docs:check && npm run audit:public && npm run audit:package && npm run test:consumer && npm pack --dry-run"
   },
   "dependencies": {
     "zod": "^4.4.3"
@@ -53,7 +64,9 @@
     "storyboard",
     "prompt-engineering",
     "continuity",
-    "creative-ai"
+    "creative-ai",
+    "ai-filmmaking",
+    "video-generation"
   ],
   "repository": {
     "type": "git",

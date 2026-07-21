@@ -80,6 +80,7 @@ describe("compiler", () => {
     secondShot.title = "Second pour angle";
     twoShotExample.shots.push(secondShot);
     twoShotExample.scenes[0].shotIds.push(secondShot.id);
+    twoShotExample.metadata.targetDurationSeconds = 16;
 
     const result = compilePacket(twoShotExample);
     expect(result.shots).toHaveLength(2);
