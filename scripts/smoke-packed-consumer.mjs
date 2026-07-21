@@ -29,7 +29,7 @@ try {
   const importProof = execFileSync(process.execPath, [
     "--input-type=module",
     "-e",
-    "import { FRAMEWORKS, compilePacket, buildDevelopmentContract, compileContinuationPrompt } from 'auteur-frameworks'; if (FRAMEWORKS.length !== 10 || typeof compilePacket !== 'function' || typeof buildDevelopmentContract !== 'function' || typeof compileContinuationPrompt !== 'function') process.exit(1); console.log(FRAMEWORKS.length);",
+    "import { FRAMEWORKS, compilePacket, buildDevelopmentContract, compileContinuationPrompt, buildProductionKit, assessShotRoute } from 'auteur-frameworks'; if (FRAMEWORKS.length !== 10 || typeof compilePacket !== 'function' || typeof buildDevelopmentContract !== 'function' || typeof compileContinuationPrompt !== 'function' || typeof buildProductionKit !== 'function' || typeof assessShotRoute !== 'function') process.exit(1); console.log(FRAMEWORKS.length);",
   ], { cwd: temp, encoding: "utf8" }).trim();
 
   const cli = path.join(temp, "node_modules", "auteur-frameworks", "dist", "cli.js");
@@ -37,8 +37,9 @@ try {
   const example = path.join(installedRoot, "examples", "product-film.json");
   const help = execFileSync(process.execPath, [cli, "help"], { cwd: temp, encoding: "utf8" });
   const compiled = JSON.parse(execFileSync(process.execPath, [cli, "compile", example], { cwd: temp, encoding: "utf8" }));
+  const kit = JSON.parse(execFileSync(process.execPath, [cli, "kit", example], { cwd: temp, encoding: "utf8" }));
 
-  if (!help.includes("develop <request.json>") || !help.includes("continue <input.json>") || compiled.shots.length !== 1 || !compiled.preflight.passed) {
+  if (!help.includes("develop <request.json>") || !help.includes("continue <input.json>") || !help.includes("kit <packet.json>") || compiled.shots.length !== 1 || !compiled.preflight.passed || kit.shotList.length !== 1 || !kit.preflight.passed) {
     throw new Error("Packed CLI smoke returned an unexpected result");
   }
 
@@ -60,6 +61,7 @@ try {
     passed: true,
     frameworks: Number(importProof),
     compiledShots: compiled.shots.length,
+    productionKitShots: kit.shotList.length,
     packedReadmeLinks: localLinks.length,
   }));
 } finally {

@@ -13,6 +13,7 @@ export const FAILURE_REPAIRS = {
   DURATION_MISMATCH: "Align the temporal plan to the configured duration and assign every beat an exact window.",
   AUDIO_MISSING_OR_BAD: "State dialogue, foley, ambience, music boundary, acoustic space, and sync points explicitly.",
   ACTION_SUBSTITUTION: "Pin actor, verb, object, contact moment, and completed result state.",
+  PERFORMANCE_EXAGGERATION: "Set a precise emotional amplitude and one observable micro-expression; forbid mugging, widened eyes, grimacing, and added reaction beats.",
   MATERIAL_DRIFT: "Lock material, finish, wear, reflectance, and deformation behavior before motion.",
   OBJECT_CONSERVATION: "List persistent objects and require each to remain present unless a visible action removes it.",
   TOPOLOGY_DRIFT: "Protect branches, appendages, cables, joints, and repeated structures through every angle.",

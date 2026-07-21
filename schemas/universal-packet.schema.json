@@ -250,6 +250,30 @@
             "type": "string",
             "minLength": 1
           },
+          "characterIds": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "generationRisks": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "CAUSAL_CONTACT_CHOREOGRAPHY",
+                "PRECISE_MECHANICAL_ASSEMBLY",
+                "EXACT_FLUID_COUNT",
+                "BRAND_OR_TEXT_CONTROL",
+                "IDENTITY_OR_PERFORMANCE",
+                "TRANSFORMATION_PHASES",
+                "EXACT_DIALOGUE_AUDIO"
+              ]
+            }
+          },
           "durationSeconds": {
             "type": "number",
             "exclusiveMinimum": 0,
@@ -483,6 +507,8 @@
           "id",
           "sceneId",
           "title",
+          "characterIds",
+          "generationRisks",
           "durationSeconds",
           "intent",
           "subject",

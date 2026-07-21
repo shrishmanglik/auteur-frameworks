@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "1.0.0",
+  "evidenceClass": "SESSION_OBSERVED",
+  "observedAt": "2026-07-21",
+  "provider": "Google Flow",
+  "modelLabelVisibleAtRuntime": "Veo 3.1 - Fast",
+  "accountBoundary": "Authenticated consumer session; account identity intentionally omitted.",
+  "submissionControls": {
+    "durationSeconds": 8,
+    "variationsPerPrompt": 1,
+    "visibleCostPerGeneration": "10 credits",
+    "aspectRatios": ["9:16", "16:9"],
+    "inputSurface": "Flow text-to-video creation field"
+  },
+  "inputSource": "Every submitted prompt was emitted by compileCompactVideoPrompt from a validated synthetic shot contract.",
+  "fingerprintMethod": "SHA-256 over UTF-8. shotContractSha256 hashes JSON.stringify(shot) exactly as generated; promptSha256 hashes the exact submitted prompt string.",
+  "reviewMethod": "Maintainer visual inspection of one-frame-per-second contact sheets. The A-roll result also used local VAD-enabled faster-whisper transcription.",
+  "runs": [
+    {"runId": "flow-01", "lens": "vertical comedy baseline", "aspectRatio": "9:16", "shotId": "reel-comedy-timing", "shotSummary": "A worker carries one blank board into an elevator; door contact must pivot and pin the board for a restrained deadpan payoff.", "shotContractSha256": "497ce9971c3dcfb5591de29fe5efe62622c8ce986d5a82809d4f65eac1231a68", "promptSha256": "ab030c4831cec4c689813db9f45e28f6e8b182d583fbb4f1f8cdd9a2f4ea9a28", "promptCharacters": 1482, "score": 55.2, "grade": "blocked", "result": "Causal contact was replaced by a static pose; performance exaggerated."},
+    {"runId": "flow-02", "lens": "vertical comedy repair", "aspectRatio": "9:16", "shotId": "reel-comedy-timing", "shotSummary": "Repair isolates one visible door-board contact, one pivot path, one terminal pin, and one tired blink.", "shotContractSha256": "aeb52f943a1930ae7c9efb7655743a6fb0658532cb256f2d547f3414f06480a9", "promptSha256": "6bea3c77fbe078b5bade18e2b2fbee8576721e41f5fb7c230da088347e07a3ba", "promptCharacters": 2015, "score": 64.4, "grade": "needs-repair", "result": "Opening state and performance improved; causal pinning still absent."},
+    {"runId": "flow-03", "lens": "A-roll dialogue", "aspectRatio": "16:9", "shotId": "a-roll-dialogue", "shotSummary": "An original watchmaker performs one restrained action and speaks one exact sentence once.", "shotContractSha256": "f2cb40745d0d2e4da1422c435ebfb7539a52eca3455ac8593abeb194e968398d", "promptSha256": "1da3ee8eff5713f8d2a2cc9f7b740f43325e7169f057024bd94578e1edcaafb9", "promptCharacters": 1556, "score": 96.8, "grade": "exceptional", "result": "Stable performance; exact approved line recovered once at 2.74-5.74 seconds."},
+    {"runId": "flow-04", "lens": "product mechanics baseline", "aspectRatio": "16:9", "shotId": "product-materials", "shotSummary": "One unbranded glass bottle, one droplet, and one separate cap must complete a visible lowering and seating path.", "shotContractSha256": "07b4f1309ef7b7daace34139ca9ff6a79c97ea6806293a0785a6b66095d45754", "promptSha256": "ee9fd26611333f71cc3da4ed7b17f16a35f95ad51e54601c800de942dc502c5d", "promptCharacters": 1517, "score": 76.8, "grade": "blocked", "result": "Materials passed; cap began seated and skipped its motion path."},
+    {"runId": "flow-05", "lens": "product mechanics repair", "aspectRatio": "16:9", "shotId": "product-materials", "shotSummary": "Repair fixes the bottle upright, declares one cap eight centimeters above the neck, and sequences droplet then seating.", "shotContractSha256": "dc71da0cd001f4a269147a9107143769fa98dea23c495692009795fd76399eb3", "promptSha256": "0faeb80e9293c1237adcf1096b357c7037a1c22d0278e476c9bac718204c8729", "promptCharacters": 2202, "score": 43.6, "grade": "blocked", "result": "Repair regressed orientation, duplicated the cap, and invented a camera mark."},
+    {"runId": "flow-06", "lens": "automotive baseline", "aspectRatio": "16:9", "shotId": "automotive-physics", "shotSummary": "One graphite coupe brakes, rotates through a wet hairpin with grounded tires, and exits through coherent spray.", "shotContractSha256": "3108ffffd5e902d86b07690156c3172fe29d64dce1699a5f40e173a80d2b21a8", "promptSha256": "be771811dee3e6e2a2f11ac94fd41332166316b1579df1b2b862c59cee6fd3da", "promptCharacters": 1590, "score": 81.5, "grade": "blocked", "result": "Motion passed; recognizable badge and plate text leaked."},
+    {"runId": "flow-07", "lens": "food-fluid baseline", "aspectRatio": "16:9", "shotId": "food-fluid-physics", "shotSummary": "One dumpling rises above broth while exactly three droplets fall and form three distinct ripples.", "shotContractSha256": "6923506e54a9ed194d1a85155f6c111de730fdc6be644c37af54a2b81319c66a", "promptSha256": "2809dd9d9a8deb4b0be2cc8956c820c7c5dcd5d20cd7880ec4f6a07f88d22b86", "promptCharacters": 1557, "score": 74.9, "grade": "needs-repair", "result": "Material craft passed; exact droplets became strands and extra drips."},
+    {"runId": "flow-08", "lens": "controlled VFX", "aspectRatio": "16:9", "shotId": "vfx-controlled-transformation", "shotSummary": "One rust patch releases as particles, follows one visible arc, and assembles into one compass without changing the actor or world.", "shotContractSha256": "e94f6f4547b696ffe19026db2f0458194c9c9ca84d6f228f34a2f056b64587de", "promptSha256": "6da85286a028ecfd47f2bd96760a9190b5a4f073cb5d27194e070c1188bf6a7d", "promptCharacters": 1597, "score": 90.8, "grade": "exceptional", "result": "Visible transformation phases resolved while actor and world stayed stable."},
+    {"runId": "flow-09", "lens": "automotive brand repair", "aspectRatio": "16:9", "shotId": "automotive-physics", "shotSummary": "Repair uses an original anonymous concept coupe with no badge, lettering, plate, or recognizable production-model design.", "shotContractSha256": "5ae6e450d0b82dcec76f59372e293ab3b503f87a5db06e7f3880998ec46ad27c", "promptSha256": "0eeeb13cf462a5a495dd88e7a80a7bd3faa1f7b4dccd6ecae6e16d6cf2de4edb", "promptCharacters": 1969, "score": 94.1, "grade": "exceptional", "result": "Anonymous design removed visible marks while accepted motion held."},
+    {"runId": "flow-10", "lens": "food-fluid repair", "aspectRatio": "16:9", "shotId": "food-fluid-physics", "shotSummary": "Repair predeclares three separate broth beads and requires one-by-one release into three ripples.", "shotContractSha256": "e4ff7e3b6d33558c43de1449476f59db53d084427caead4f92d33e351456eb5e", "promptSha256": "18b2c01f68c75567467bc4b360d86e6d6b37d8246295bf4a63c2c4b93ae1870d", "promptCharacters": 2034, "score": 73.0, "grade": "needs-repair", "result": "Exact fluid count remained unreliable in one text-only pass."}
+  ],
+  "refinementComparisons": [
+    {"shotClass": "vertical comedy", "relativeImprovementPercent": 16.7, "metTenPercentGate": true},
+    {"shotClass": "product mechanics", "relativeImprovementPercent": -43.2, "metTenPercentGate": false},
+    {"shotClass": "automotive brand control", "relativeImprovementPercent": 15.5, "metTenPercentGate": true},
+    {"shotClass": "food-fluid count", "relativeImprovementPercent": -2.5, "metTenPercentGate": false}
+  ],
+  "claimCeiling": "This manifest is a sanitized maintainer report of one authenticated session. It is not an independently reproducible pixel audit, provider benchmark, universal success rate, or permanent capability claim.",
+  "excludedPrivateEvidence": ["account identity", "raw prompts", "returned media", "provider asset identifiers", "local paths"]
+}

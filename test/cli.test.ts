@@ -18,6 +18,7 @@ describe("CLI", () => {
     const help = capture();
     expect(runCli(["help"], help.io)).toBe(0);
     expect(help.output().stdout).toContain("develop <request.json>");
+    expect(help.output().stdout).toContain("kit <packet.json>");
 
     const version = capture();
     expect(runCli(["version"], version.io)).toBe(0);
@@ -43,6 +44,13 @@ describe("CLI", () => {
     const continuationResult = JSON.parse(continuation.output().stdout);
     expect(continuationResult.prompt).toContain("BY 0.75s - FIRST MOTION");
     expect(continuationResult.prompt).toContain("Music: one restrained sub-bass pulse.");
+
+    const packetPath = fileURLToPath(new URL("../examples/product-film.json", import.meta.url));
+    const kit = capture();
+    expect(runCli(["kit", packetPath], kit.io)).toBe(0);
+    const kitResult = JSON.parse(kit.output().stdout);
+    expect(kitResult.exportManifest.deliverables).toContain("visual storyboard");
+    expect(kitResult.shotList[0].prompts.videoPrompt).toContain("FRAMEWORK:");
   });
 
   it("returns an actionable error for bad commands and malformed packets", () => {

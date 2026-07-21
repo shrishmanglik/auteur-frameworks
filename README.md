@@ -5,7 +5,7 @@
 [![Node 20+](https://img.shields.io/badge/node-%3E%3D20-339933.svg)](package.json)
 [![Frameworks: 10](https://img.shields.io/badge/frameworks-10-F59E0B.svg)](#frameworks)
 
-**Turn an idea into a structured story, shot list, storyboard contract, generation prompt package, pre-flight report, and constrained repair plan.**
+**Turn an idea into one complete AI-video production kit: story, scenes, shot list, storyboard, references, sound, prompts, route decisions, pre-flight, and repair.**
 
 AUTEUR Frameworks is a provider-neutral TypeScript toolkit for developers, filmmakers, ad directors, creators, and AI-tool builders. It makes production intent explicit before a prompt reaches a video, image, or audio model.
 
@@ -22,7 +22,9 @@ Most generation failures start before generation:
 - a repair prompt redesigns the shot instead of fixing one defect;
 - provider limits are guessed and presented as fact.
 
-AUTEUR stores those decisions in one validated **Universal Packet**. Storyboards, prompt packages, QC, and repairs are deterministic projections of that packet.
+AUTEUR stores those decisions in one validated **Universal Packet**. The complete production kit, storyboards, prompt packages, QC, routing advice, and repairs are deterministic projections of that packet.
+
+Development requests accept and deterministically route every current AUTEUR format enum: short film, ad, reel, A-roll, B-roll, music video, product film, character scene, VFX, animation, image, sequence, and custom work. Executable fixtures currently validate full packet-to-kit behavior for product film, short film, vertical reel, and A-roll; other routes have exact framework-selection tests but do not yet have equivalent end-to-end fixtures. No route claim means every provider will execute every instruction correctly.
 
 ## Two-minute start
 
@@ -35,13 +37,13 @@ npm install github:shrishmanglik/auteur-frameworks#main
 # See every command.
 npx auteur-frameworks help
 
-# Compile the included product-film example.
-npx auteur-frameworks compile \
+# Build the complete production kit for the included product-film example.
+npx auteur-frameworks kit \
   node_modules/auteur-frameworks/examples/product-film.json \
-  --out prompt-package.json
+  --out production-kit.json
 ```
 
-The output contains one record per shot with `videoPrompt`, `compactVideoPrompt`, `framePrompt`, `audioPrompt`, `negativePrompt`, and QC findings.
+The output includes the creative brief, story, scene plan, character and world bibles, style bible, visual storyboard, shot list, sound plan, continuity matrix, reference-asset manifest, route advice, generation prompts, pre-flight, repair catalog, and export manifest.
 
 > npm registry publication is intentionally deferred while the public API stabilizes. Git installs run the package build automatically.
 
@@ -65,9 +67,7 @@ Save the model's JSON response as `production.json`, then run:
 
 ```bash
 npx auteur-frameworks validate production.json
-npx auteur-frameworks preflight production.json
-npx auteur-frameworks storyboard production.json --out storyboard.json
-npx auteur-frameworks compile production.json --out prompt-package.json
+npx auteur-frameworks kit production.json --out production-kit.json
 ```
 
 The toolkit does not call an LLM or generation provider for you. This keeps credentials, spend, routing, and provider claims in the host application where they belong.
@@ -81,6 +81,7 @@ auteur-frameworks validate <packet.json> [--out result.json]
 auteur-frameworks preflight <packet.json> [--out result.json]
 auteur-frameworks storyboard <packet.json> [--out result.json]
 auteur-frameworks compile <packet.json> [--out result.json]
+auteur-frameworks kit <packet.json> [--out result.json]
 auteur-frameworks continue <continuation.json> [--out result.json]
 auteur-frameworks score-render <observation.json> [--out result.json]
 auteur-frameworks compare-renders <before.json> <after.json> [--out result.json]
@@ -95,6 +96,7 @@ Errors name both the problem and the corrective action. Commands return non-zero
 ```ts
 import {
   buildDevelopmentContract,
+  buildProductionKit,
   buildRepairPrompt,
   buildStoryboard,
   compileContinuationPrompt,
@@ -112,6 +114,7 @@ if (!preflight.passed) {
 
 const storyboard = buildStoryboard(packet);
 const promptPackage = compilePacket(packet);
+const productionKit = buildProductionKit(packet);
 
 const repair = buildRepairPrompt({
   failure: "OBJECT_CONSERVATION",
@@ -128,6 +131,8 @@ const extension = compileContinuationPrompt(yourRenderObservedContinuation);
 - **Universal Packet and continuation JSON Schemas** for story, scenes, shots, characters, optics, lighting, materials, physics, timing, audio, continuity, exclusions, and render-observed handoffs.
 - **Development contract** that turns a brief into model instructions plus JSON Schema.
 - **Deterministic compiler** for full and compact video, frame, audio, and negative prompt surfaces.
+- **Complete production-kit compiler** that projects story, scenes, bibles, storyboard, shot list, sound, references, continuity, prompts, QC, repairs, and exports in one call.
+- **Risk-aware route advisor** that directs causal contact and mechanical assembly to first/last-frame workflows, exact fluid counts to split passes, and identity or brand control to reference-first workflows. Provider support remains `UNKNOWN` until the host verifies it.
 - **Storyboard projection** with ordered panels, action, camera, duration, continuity, audio, and frame-generation instructions.
 - **Pre-flight QC** for temporal coverage, production duration, scene ownership, continuity, audio, typography risk, and realism anchors.
 - **Repair engine** for identity drift, anatomy, topology, object loss, broken physics, lip sync, branding, material drift, and other recurring defects.
@@ -186,7 +191,9 @@ flowchart LR
     D --> E["Storyboard panels"]
     D --> F["Prompt package"]
     D --> G["Pre-flight QC"]
+    D --> R["Route and asset advisor"]
     G -->|"pass"| H["Provider handoff"]
+    R --> H
     H --> I["Observed result"]
     I --> J["Constrained repair"]
     J --> G
@@ -257,6 +264,8 @@ Runtime dependencies are audited separately in CI.
 | [`src/compiler.ts`](src/compiler.ts) | Prompt package compiler |
 | [`src/continuation.ts`](src/continuation.ts) | Render-observed extension compiler |
 | [`src/storyboard.ts`](src/storyboard.ts) | Storyboard panel projection |
+| [`src/production-kit.ts`](src/production-kit.ts) | Complete production-kit projection |
+| [`src/route-advisor.ts`](src/route-advisor.ts) | Risk-aware generation-route and asset advice |
 | [`src/qc.ts`](src/qc.ts) | Pre-flight checks and corrective actions |
 | [`src/repair.ts`](src/repair.ts) | Constrained failure repair |
 | [`schemas/`](schemas/) | Generated Universal Packet and continuation JSON Schemas |
@@ -269,6 +278,7 @@ Runtime dependencies are audited separately in CI.
 - [Architecture](docs/architecture.md)
 - [LLM integration](docs/llm-integration.md)
 - [Provider handoff](docs/provider-handoff.md)
+- [Production kit](docs/production-kit.md)
 - [Evaluation methodology](docs/evaluation.md)
 - [Research and publication boundary](docs/research-boundary.md)
 - [Contributing](CONTRIBUTING.md)
@@ -285,7 +295,7 @@ Start with [CONTRIBUTING.md](CONTRIBUTING.md) or open a [framework proposal](htt
 
 ## Status
 
-Version `0.3.0` is an early public API. Provider adapters and commercial execution remain outside core. Breaking changes will be documented in [CHANGELOG.md](CHANGELOG.md) until the API reaches `1.0.0`.
+Version `0.4.0` is an early public API. Provider adapters and commercial execution remain outside core. Breaking changes will be documented in [CHANGELOG.md](CHANGELOG.md) until the API reaches `1.0.0`.
 
 ## License and citation
 

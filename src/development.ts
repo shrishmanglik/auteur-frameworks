@@ -34,6 +34,8 @@ export function buildDevelopmentContract(input: unknown): DevelopmentContract {
     "Prefer one surprising but inevitable creative premise over disconnected spectacle or generic genre filler.",
     "Build humor, emotion, and originality through observable behavior, reversals, timing, and consequences.",
     "Each shot must have one dominant action, a complete temporal plan, physical behavior, optics, lighting motivation, continuity locks, realism anchors, audio intent, and exclusions.",
+    "Assign explicit characterIds to every shot; use an empty list only when no cast member appears.",
+    "Declare generationRisks when a shot depends on causal contact, mechanical assembly, exact fluid counts, brand or text control, identity or performance, transformation phases, or exact dialogue audio.",
     "Use references as craft properties, never as instructions to imitate a living artist.",
     "Do not invent provider capabilities, duration limits, prices, or API behavior.",
     "Framework route: " + framework.name + ". Required blocks: " + framework.requiredBlocks.join(", ") + ".",

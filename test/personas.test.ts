@@ -1,6 +1,12 @@
 import fs from "node:fs";
 import { describe, expect, it } from "vitest";
-import { buildStoryboard, compilePacket, parseUniversalPacket, preflightPacket } from "../src/index.js";
+import {
+  buildProductionKit,
+  buildStoryboard,
+  compilePacket,
+  parseUniversalPacket,
+  preflightPacket,
+} from "../src/index.js";
 
 const load = (name: string) => JSON.parse(
   fs.readFileSync(new URL(`../examples/${name}.json`, import.meta.url), "utf8"),
@@ -20,10 +26,15 @@ describe("expert creator fixtures", () => {
       const report = preflightPacket(packet);
       const storyboard = buildStoryboard(packet);
       const compiled = compilePacket(packet);
+      const kit = buildProductionKit(packet);
 
       expect(report.passed, JSON.stringify(report.issues, null, 2)).toBe(true);
       expect(storyboard).toHaveLength(packet.shots.length);
       expect(compiled.shots).toHaveLength(packet.shots.length);
+      expect(kit.shotList).toHaveLength(packet.shots.length);
+      expect(kit.storyboard).toHaveLength(packet.shots.length);
+      expect(kit.promptPackage).toEqual(compiled);
+      expect(kit.preflight).toEqual(report);
       expect(compiled.shots.every((shot) => shot.videoPrompt.includes("TEMPORAL PLAN"))).toBe(true);
       expect(compiled.shots.every((shot) => shot.negativePrompt.length > 30)).toBe(true);
       expect(compiled.shots.every((shot) => shot.compactVideoPrompt.length <= shot.videoPrompt.length * 0.8)).toBe(true);

@@ -7,10 +7,11 @@
 3. Validate it with parseUniversalPacket.
 4. Run preflightPacket.
 5. Present errors as blocking production actions and warnings as explicit choices.
-6. Generate storyboard panels with buildStoryboard.
-7. Compile prompt surfaces with compilePacket.
+6. Build the full handoff with `buildProductionKit`.
+7. Resolve its route advice and required reference assets per shot.
 8. Attach provider-specific translation only after the provider capability is evidenced.
-9. Feed observed failures into buildRepairPrompt.
+9. Dispatch and audit one result at a time.
+10. Feed observed failures into `buildRepairPrompt`.
 
 ## UI mapping
 
@@ -20,6 +21,7 @@
 - Inspector controls edit optics, lighting, continuity, timing, and audio.
 - Prompt Package is read-only output unless the application deliberately forks a new packet version.
 - Review presents pre-flight issues and repair prompts.
+- Export presents the complete production kit; individual views are projections of that same artifact.
 
 ## Persistence
 

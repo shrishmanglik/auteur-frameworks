@@ -8,10 +8,29 @@ export interface CompiledShot {
   frameworkId: string;
   videoPrompt: string;
   compactVideoPrompt: string;
+  compactPromptReport: CompactPromptReport;
   framePrompt: string;
   audioPrompt: string | null;
   negativePrompt: string;
   qcIssues: PreflightIssue[];
+}
+
+export const TOOLKIT_COMPACT_PROMPT_BUDGET = 4000;
+
+export interface CompactPromptOptions {
+  maxCharacters?: number;
+}
+
+export interface CompactPromptReport {
+  toolkitBudget: number;
+  characterCount: number;
+  wasCompacted: boolean;
+  omittedExclusions: string[];
+  truncatedSections: string[];
+}
+
+export interface CompactPromptResult extends CompactPromptReport {
+  prompt: string;
 }
 
 export interface CompiledPackage {
@@ -59,26 +78,39 @@ const compactOptics = (optics: Optics): string => [
   depthOfFieldCharacter(optics).replace("depth of field", "DOF"),
 ].filter(Boolean).join(", ");
 
-export function compileCompactVideoPrompt(
+const clipSection = (value: string, maxCharacters: number): string => {
+  if (value.length <= maxCharacters) return value;
+  if (maxCharacters <= 3) return value.slice(0, maxCharacters);
+  const raw = value.slice(0, maxCharacters - 3);
+  const wordBoundary = raw.lastIndexOf(" ");
+  const clipped = wordBoundary > 12 ? raw.slice(0, wordBoundary) : raw;
+  return clipped.trimEnd() + "...";
+};
+
+export function compileCompactVideoPromptWithReport(
   input: Shot,
   globalExclusions: readonly string[] = [],
   globalStyle: readonly string[] = [],
-): string {
+  options: CompactPromptOptions = {},
+): CompactPromptResult {
   const shot = ShotSchema.parse(input);
+  const toolkitBudget = options.maxCharacters ?? TOOLKIT_COMPACT_PROMPT_BUDGET;
+  if (!Number.isInteger(toolkitBudget) || toolkitBudget < 1000) {
+    throw new Error("Compact prompt maxCharacters must be an integer of at least 1000.");
+  }
   const spokenText = shot.dialogue ?? shot.audioTrack.spokenText;
-  const exclusions = [...new Set([
+  const shotSpecificExclusions = shot.exclusions.filter(
+    (exclusion) => !globalExclusions.includes(exclusion),
+  );
+  const mandatoryExclusions = [
+    "no identity drift",
+    "no geometry morphing",
+    "no unplanned logos",
+  ];
+  const candidateExclusions = [...new Set([
+    ...shotSpecificExclusions,
     ...globalExclusions,
-    ...shot.exclusions,
-    "no identity drift",
-    "no geometry morphing",
-    "no unplanned logos",
-  ])];
-  const compactExclusions = [...new Set([
-    ...exclusions.slice(0, 4),
-    "no identity drift",
-    "no geometry morphing",
-    "no unplanned logos",
-  ])];
+  ])].filter((exclusion) => !mandatoryExclusions.includes(exclusion));
   const audio = [
     spokenText ? "spoken: " + spokenText : null,
     shot.audioTrack.soundDesignDirectives.length
@@ -87,7 +119,7 @@ export function compileCompactVideoPrompt(
     shot.audioTrack.musicDirective,
   ].filter((part): part is string => Boolean(part)).join("; ");
 
-  return [
+  const rawSections = [
     "Intent: " + sentence(shot.intent),
     "Scene: " + sentence(shot.subject + " in " + shot.environment),
     shot.materials.length ? "Materials: " + compactList(firstTwo(shot.materials)) + "." : null,
@@ -105,8 +137,50 @@ export function compileCompactVideoPrompt(
     shot.imperfectionAnchors.length ? "Reality: " + compactList(firstOne(shot.imperfectionAnchors)) + "." : null,
     audio ? "Audio: " + audio + "." : "Audio: visual-only; no invented dialogue.",
     shot.onScreenText ? "Reserve clean space for post-composited text: " + shot.onScreenText + "." : null,
-    "Avoid: " + compactList(compactExclusions) + ".",
-  ].filter((part): part is string => Boolean(part)).join(" ");
+  ].filter((part): part is string => Boolean(part));
+  const compose = (sections: string[], exclusions: string[]): string => [
+    ...sections,
+    "Avoid: " + compactList(exclusions) + ".",
+  ].join(" ");
+  let sections = rawSections;
+  const truncatedSections: string[] = [];
+  if (compose(sections, mandatoryExclusions).length > toolkitBudget) {
+    const perSectionBudget = Math.max(48, Math.floor((toolkitBudget - 320) / rawSections.length));
+    sections = rawSections.map((section) => {
+      const clipped = clipSection(section, perSectionBudget);
+      if (clipped !== section) truncatedSections.push(section.split(":", 1)[0]!);
+      return clipped;
+    });
+  }
+  if (compose(sections, mandatoryExclusions).length > toolkitBudget) {
+    throw new Error("Compact prompt minimum contract exceeds the toolkit-owned character budget.");
+  }
+
+  const selectedExclusions: string[] = [];
+  const omittedExclusions: string[] = [];
+  for (const exclusion of candidateExclusions) {
+    const candidate = [...selectedExclusions, exclusion, ...mandatoryExclusions];
+    if (compose(sections, candidate).length <= toolkitBudget) selectedExclusions.push(exclusion);
+    else omittedExclusions.push(exclusion);
+  }
+  const prompt = compose(sections, [...selectedExclusions, ...mandatoryExclusions]);
+  return {
+    prompt,
+    toolkitBudget,
+    characterCount: prompt.length,
+    wasCompacted: truncatedSections.length > 0 || omittedExclusions.length > 0,
+    omittedExclusions,
+    truncatedSections,
+  };
+}
+
+export function compileCompactVideoPrompt(
+  input: Shot,
+  globalExclusions: readonly string[] = [],
+  globalStyle: readonly string[] = [],
+  options: CompactPromptOptions = {},
+): string {
+  return compileCompactVideoPromptWithReport(input, globalExclusions, globalStyle, options).prompt;
 }
 
 export function compileShot(
@@ -132,6 +206,8 @@ export function compileShot(
     "no geometry morphing",
     "no unplanned logos",
   ])];
+  const compact = compileCompactVideoPromptWithReport(shot, globalExclusions, globalStyle);
+  const { prompt: compactVideoPrompt, ...compactPromptReport } = compact;
 
   const videoPrompt = [
     "FRAMEWORK: " + framework.name + ".",
@@ -167,7 +243,8 @@ export function compileShot(
     shotId: shot.id,
     frameworkId: framework.id,
     videoPrompt,
-    compactVideoPrompt: compileCompactVideoPrompt(shot, globalExclusions, globalStyle),
+    compactVideoPrompt,
+    compactPromptReport,
     framePrompt,
     audioPrompt: audioParts.length ? audioParts.join(" ") : null,
     negativePrompt: exclusions.join(", "),

@@ -11,6 +11,7 @@ import { buildStoryboard } from "./storyboard.js";
 import { PACKAGE_VERSION } from "./version.js";
 import { compareRenderCycles, scoreRender } from "./evaluation.js";
 import { compileContinuationPrompt } from "./continuation.js";
+import { buildProductionKit } from "./production-kit.js";
 
 export interface CliIo {
   stdout: (value: string) => void;
@@ -37,6 +38,7 @@ Commands:
   preflight <packet.json> Run continuity, timing, audio, and realism checks
   storyboard <packet.json> Project ordered storyboard panels
   compile <packet.json>   Compile video, frame, audio, and negative prompts
+  kit <packet.json>       Build the complete production kit in one artifact
   continue <input.json>   Compile a render-observed extension prompt
   score-render <observation.json>  Score an observed provider result
   compare-renders <before.json> <after.json>  Measure cycle improvement
@@ -46,7 +48,7 @@ Commands:
 Examples:
   auteur-frameworks develop examples/requests/short-film.json
   auteur-frameworks preflight examples/short-film.json
-  auteur-frameworks compile examples/product-film.json --out prompt-package.json
+  auteur-frameworks kit examples/product-film.json --out production-kit.json
 `;
 
 function writeJson(value: unknown, outputPath: string | undefined, io: CliIo): void {
@@ -98,6 +100,7 @@ export function runCli(args: string[], io: CliIo = defaultIo): number {
       "compile",
       "continue",
       "develop",
+      "kit",
       "preflight",
       "score-render",
       "storyboard",
@@ -131,6 +134,7 @@ export function runCli(args: string[], io: CliIo = defaultIo): number {
     else if (command === "compile") output = compilePacket(input);
     else if (command === "continue") output = compileContinuationPrompt(input);
     else if (command === "develop") output = buildDevelopmentContract(input);
+    else if (command === "kit") output = buildProductionKit(input);
     else if (command === "preflight") output = preflightPacket(parseUniversalPacket(input));
     else if (command === "score-render") output = scoreRender(input);
     else if (command === "storyboard") output = buildStoryboard(input);

@@ -18,6 +18,15 @@ export const ContentFormatSchema = z.enum([
 
 export const AspectRatioSchema = z.enum(["16:9", "9:16", "1:1", "4:5", "2.39:1", "custom"]);
 export const ContinuityStrictnessSchema = z.enum(["relaxed", "standard", "strict"]);
+export const GenerationRiskCodeSchema = z.enum([
+  "CAUSAL_CONTACT_CHOREOGRAPHY",
+  "PRECISE_MECHANICAL_ASSEMBLY",
+  "EXACT_FLUID_COUNT",
+  "BRAND_OR_TEXT_CONTROL",
+  "IDENTITY_OR_PERFORMANCE",
+  "TRANSFORMATION_PHASES",
+  "EXACT_DIALOGUE_AUDIO",
+]);
 
 export const DevelopmentRequestSchema = z.object({
   idea: z.string().min(10),
@@ -94,6 +103,8 @@ export const ShotSchema = z.object({
   id: z.string().min(1),
   sceneId: z.string().min(1),
   title: z.string().min(1),
+  characterIds: z.array(z.string().min(1)).default([]),
+  generationRisks: z.array(GenerationRiskCodeSchema).default([]),
   durationSeconds: z.number().positive().max(300),
   intent: z.string().min(1),
   subject: z.string().min(1),
@@ -231,6 +242,7 @@ export const UniversalPacketSchema = z.object({
 });
 
 export type ContentFormat = z.infer<typeof ContentFormatSchema>;
+export type GenerationRiskCode = z.infer<typeof GenerationRiskCodeSchema>;
 export type DevelopmentRequest = z.infer<typeof DevelopmentRequestSchema>;
 export type Optics = z.infer<typeof OpticsSchema>;
 export type Shot = z.infer<typeof ShotSchema>;

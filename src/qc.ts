@@ -113,12 +113,16 @@ export function preflightPacket(packet: UniversalPacket): PreflightReport {
   const issues = packet.shots.flatMap((shot) => preflightShot(shot, packet.metadata.audioRequired));
   const sceneIds = new Set(packet.scenes.map((scene) => scene.id));
   const shotIds = new Set(packet.shots.map((shot) => shot.id));
+  const characterIds = new Set(packet.characters.map((character) => character.id));
   const totalDuration = packet.shots.reduce((sum, shot) => sum + shot.durationSeconds, 0);
   const duplicateShotIds = [...new Set(packet.shots
     .map((shot) => shot.id)
     .filter((id, index, ids) => ids.indexOf(id) !== index))];
   const duplicateSceneIds = [...new Set(packet.scenes
     .map((scene) => scene.id)
+    .filter((id, index, ids) => ids.indexOf(id) !== index))];
+  const duplicateCharacterIds = [...new Set(packet.characters
+    .map((character) => character.id)
     .filter((id, index, ids) => ids.indexOf(id) !== index))];
 
   for (const shotId of duplicateShotIds) {
@@ -140,6 +144,15 @@ export function preflightPacket(packet: UniversalPacket): PreflightReport {
     });
   }
 
+  for (const characterId of duplicateCharacterIds) {
+    issues.push({
+      code: "DUPLICATE_CHARACTER_ID",
+      severity: "error",
+      message: `Character ID ${characterId} is used more than once.`,
+      action: "Assign a unique ID to every character and update shot characterIds.",
+    });
+  }
+
   if (Math.abs(totalDuration - packet.metadata.targetDurationSeconds) > 0.001) {
     issues.push({
       code: "PRODUCTION_DURATION_MISMATCH",
@@ -150,6 +163,26 @@ export function preflightPacket(packet: UniversalPacket): PreflightReport {
   }
 
   for (const shot of packet.shots) {
+    if (packet.characters.length && shot.characterIds.length === 0) {
+      issues.push({
+        code: "CHARACTER_RELATIONSHIP_UNKNOWN",
+        severity: "warning",
+        shotId: shot.id,
+        message: "The production has characters but this shot does not declare characterIds.",
+        action: "Assign the cast members who appear, or keep the relationship explicitly UNKNOWN in the host application.",
+      });
+    }
+    for (const characterId of shot.characterIds) {
+      if (!characterIds.has(characterId)) {
+        issues.push({
+          code: "UNKNOWN_CHARACTER",
+          severity: "error",
+          shotId: shot.id,
+          message: `Shot ${shot.id} references missing character ${characterId}.`,
+          action: "Create the character or remove the characterId from the shot.",
+        });
+      }
+    }
     if (!sceneIds.has(shot.sceneId)) {
       issues.push({
         code: "UNKNOWN_SCENE",

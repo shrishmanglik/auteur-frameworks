@@ -2,12 +2,14 @@ import fs from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   FRAMEWORKS,
+  ContentFormatSchema,
   UniversalPacketSchema,
   buildRepairPrompt,
   buildStoryboard,
   buildDevelopmentContract,
   compilePacket,
   compileCompactVideoPrompt,
+  compileCompactVideoPromptWithReport,
   compileShot,
   depthOfFieldCharacter,
   preflightPacket,
@@ -57,6 +59,37 @@ describe("development contract", () => {
     });
     expect(contract.framework.id).toBe("temporal-evolution");
   });
+
+  it("builds a development contract for every public content format", () => {
+    const expectedRoutes = {
+      "short-film": "act-shot-master-spec",
+      ad: "cinematic-prose-stack",
+      reel: "timed-social-sequence",
+      "a-roll": "continuous-take",
+      "b-roll": "cinematic-prose-stack",
+      "music-video": "act-shot-master-spec",
+      "product-film": "cinematic-prose-stack",
+      "character-scene": "continuous-take",
+      vfx: "temporal-evolution",
+      animation: "cinematic-prose-stack",
+      image: "cinematic-prose-stack",
+      sequence: "act-shot-master-spec",
+      other: "cinematic-prose-stack",
+    } as const;
+    for (const format of ContentFormatSchema.options) {
+      const contract = buildDevelopmentContract({
+        idea: `An original ${format} concept with one observable action and an earned final state.`,
+        format,
+        targetDurationSeconds: 24,
+        aspectRatio: "16:9",
+        audience: "general creative audience",
+        tone: ["specific", "human"],
+      });
+      expect(contract.request.format).toBe(format);
+      expect(contract.framework.id).toBe(expectedRoutes[format]);
+      expect(contract.responseSchema).toBeTypeOf("object");
+    }
+  });
 });
 
 describe("compiler", () => {
@@ -83,9 +116,57 @@ describe("compiler", () => {
     expect(compact.split("\n")).toHaveLength(1);
   });
 
+  it("prioritizes shot-specific safeguards over generic exclusions in compact prompts", () => {
+    const shot = structuredClone(UniversalPacketSchema.parse(example).shots[0]!);
+    shot.exclusions = [
+      ...example.globalExclusions,
+      "no widened eyes or mugging",
+      "do not begin after the contact event",
+      "no contact-free object motion",
+      "no static payoff pose",
+      "no added reaction beat",
+      "no reverse motion",
+      "no object duplication",
+      "no skipped terminal state",
+      "no unrelated camera mark",
+    ];
+    const compact = compileCompactVideoPrompt(shot, example.globalExclusions);
+    expect(compact).toContain("no widened eyes or mugging");
+    expect(compact).toContain("do not begin after the contact event");
+    expect(compact).toContain("no added reaction beat");
+    expect(compact).toContain("no unrelated camera mark");
+  });
+
   it("derives depth-of-field character from optics", () => {
     expect(depthOfFieldCharacter({ focalLengthMm: 24, tStop: 8, subjectDistanceMeters: 5 })).toContain("deep focus");
     expect(depthOfFieldCharacter({ focalLengthMm: 85, tStop: 1.4, subjectDistanceMeters: 1.2 })).toContain("very shallow");
+  });
+
+  it("bounds compact prompts and reports every omitted safeguard", () => {
+    const shot = structuredClone(UniversalPacketSchema.parse(example).shots[0]!);
+    shot.exclusions = Array.from({ length: 100 }, (_, index) => (
+      `no synthetic failure mode ${index + 1} with duplicated geometry and unrelated motion`
+    ));
+    const result = compileCompactVideoPromptWithReport(shot);
+    expect(result.prompt.length).toBeLessThanOrEqual(result.toolkitBudget);
+    expect(result.wasCompacted).toBe(true);
+    expect(result.omittedExclusions.length).toBeGreaterThan(0);
+    expect(result.prompt).toContain("no identity drift");
+    expect(result.prompt).toContain("no geometry morphing");
+    expect(result.characterCount).toBe(result.prompt.length);
+  });
+
+  it("reports global exclusions that do not fit the compact prompt budget", () => {
+    const shot = structuredClone(UniversalPacketSchema.parse(example).shots[0]!);
+    const globalExclusions = Array.from({ length: 40 }, (_, index) => (
+      `no global failure mode ${index + 1} with unrelated geometry, text, or motion`
+    ));
+    const result = compileCompactVideoPromptWithReport(shot, globalExclusions, [], {
+      maxCharacters: 1200,
+    });
+    expect(result.prompt.length).toBeLessThanOrEqual(1200);
+    expect(result.omittedExclusions).toContain(globalExclusions.at(-1));
+    expect(result.wasCompacted).toBe(true);
   });
 
   it("compiles a complete package with a passing preflight", () => {
@@ -161,5 +242,15 @@ describe("storyboard and QC", () => {
     });
     expect(prompt).toContain("persistent objects");
     expect(prompt).toContain("PRESERVE");
+  });
+
+  it("repairs exaggerated performance without redesigning the shot", () => {
+    const prompt = buildRepairPrompt({
+      failure: "PERFORMANCE_EXAGGERATION",
+      observedSymptom: "The actor widens their eyes instead of holding the deadpan beat.",
+      preserve: ["actor identity", "elevator geometry", "board dimensions"],
+    });
+    expect(prompt).toContain("one observable micro-expression");
+    expect(prompt).toContain("forbid mugging");
   });
 });

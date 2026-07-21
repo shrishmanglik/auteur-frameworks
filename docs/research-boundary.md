@@ -7,6 +7,7 @@
 - Aggregate methodology and exact bounded validation denominator
 - Synthetic examples
 - Deterministic tests and QC rules
+- Sanitized synthetic provider-smoke manifests without raw prompts, media, account identities, or provider asset IDs
 - Contribution and evidence standards
 
 ## Private

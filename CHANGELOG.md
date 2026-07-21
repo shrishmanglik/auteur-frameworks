@@ -2,6 +2,20 @@
 
 All notable public changes are recorded here. The project follows semantic versioning while the API matures; versions below `1.0.0` may contain documented breaking changes.
 
+## 0.4.0 - 2026-07-21
+
+### Added
+
+- One-command complete production kit with story, scene plan, character and world bibles, style bible, storyboard, shot list, sound plan, continuity matrix, reference assets, prompt package, pre-flight, repairs, and export manifest.
+- Risk-aware route advisor for causal contact, precise assembly, exact fluid counts, brand/text control, identity/performance, transformations, and exact dialogue.
+- Render-observed performance-exaggeration repair guidance.
+- Sanitized maintainer-reported ten-run Flow session manifest spanning reel comedy, A-roll dialogue, product mechanics, automotive, food fluids, and VFX.
+
+### Changed
+
+- Compact prompts prioritize shot-specific safeguards before generic global exclusions.
+- High-risk route recommendations retain provider capability as `UNKNOWN` until the host verifies support.
+
 ## 0.3.0 - 2026-07-21
 
 ### Added

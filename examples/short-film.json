@@ -6,7 +6,11 @@
     "aspectRatio": "2.39:1",
     "targetDurationSeconds": 24,
     "audience": "adult suspense viewers",
-    "tone": ["dry", "uneasy", "human"],
+    "tone": [
+      "dry",
+      "uneasy",
+      "human"
+    ],
     "providerTarget": "provider-neutral",
     "continuityStrictness": "strict",
     "audioRequired": true
@@ -15,9 +19,24 @@
     "logline": "A tired night cleaner follows a rule-breaking elevator to an erased office floor and finds a maintenance request written in her own handwriting.",
     "dramaticQuestion": "Will Mara treat the impossible as another broken system, or finally refuse the job that has been consuming her life?",
     "beats": [
-      {"id": "beat-1", "title": "The exception", "purpose": "Make the impossible behave like a precise workplace defect.", "emotionalTurn": "annoyance becomes alert curiosity"},
-      {"id": "beat-2", "title": "The evidence", "purpose": "Connect the missing floor to Mara through a physical record.", "emotionalTurn": "curiosity becomes personal dread"},
-      {"id": "beat-3", "title": "The refusal", "purpose": "Turn the supernatural premise into an earned human choice.", "emotionalTurn": "dread becomes quiet agency"}
+      {
+        "id": "beat-1",
+        "title": "The exception",
+        "purpose": "Make the impossible behave like a precise workplace defect.",
+        "emotionalTurn": "annoyance becomes alert curiosity"
+      },
+      {
+        "id": "beat-2",
+        "title": "The evidence",
+        "purpose": "Connect the missing floor to Mara through a physical record.",
+        "emotionalTurn": "curiosity becomes personal dread"
+      },
+      {
+        "id": "beat-3",
+        "title": "The refusal",
+        "purpose": "Turn the supernatural premise into an earned human choice.",
+        "emotionalTurn": "dread becomes quiet agency"
+      }
     ]
   },
   "characters": [
@@ -25,13 +44,40 @@
       "id": "mara",
       "name": "Mara",
       "role": "night-shift cleaner",
-      "identityLock": ["woman in her late forties", "tired observant eyes", "silver streak at left temple"],
-      "wardrobeLock": ["navy work jacket", "creased grey trousers", "yellow rubber gloves tucked into belt"]
+      "identityLock": [
+        "woman in her late forties",
+        "tired observant eyes",
+        "silver streak at left temple"
+      ],
+      "wardrobeLock": [
+        "navy work jacket",
+        "creased grey trousers",
+        "yellow rubber gloves tucked into belt"
+      ]
     }
   ],
   "scenes": [
-    {"id": "scene-1", "title": "Service elevator", "purpose": "Present the impossible floor as a repeatable mechanical exception.", "location": "empty office service elevator lobby", "timeOfDay": "2:13 AM", "shotIds": ["shot-1", "shot-2"]},
-    {"id": "scene-2", "title": "Erased office", "purpose": "Reveal the personal maintenance request and Mara's refusal.", "location": "dusty unlisted office floor", "timeOfDay": "2:14 AM", "shotIds": ["shot-3"]}
+    {
+      "id": "scene-1",
+      "title": "Service elevator",
+      "purpose": "Present the impossible floor as a repeatable mechanical exception.",
+      "location": "empty office service elevator lobby",
+      "timeOfDay": "2:13 AM",
+      "shotIds": [
+        "shot-1",
+        "shot-2"
+      ]
+    },
+    {
+      "id": "scene-2",
+      "title": "Erased office",
+      "purpose": "Reveal the personal maintenance request and Mara's refusal.",
+      "location": "dusty unlisted office floor",
+      "timeOfDay": "2:14 AM",
+      "shotIds": [
+        "shot-3"
+      ]
+    }
   ],
   "shots": [
     {
@@ -43,17 +89,88 @@
       "subject": "Mara holding a mop beside a stainless service elevator",
       "action": "the floor display changes from B2 to a blank square and the doors open",
       "environment": "a fluorescent-lit concrete service corridor with damp wheel marks",
-      "camera": {"shotType": "medium-wide profile", "movement": "locked tripod with a two-centimeter vibration when the elevator stops", "framing": "Mara left third, elevator doors filling the right half", "focusBehavior": "deep focus keeps Mara and the floor display readable", "optics": {"cameraBody": "full-frame cinema camera", "lensModel": "spherical prime", "focalLengthMm": 35, "tStop": 5.6, "subjectDistanceMeters": 3.2}},
-      "lighting": {"primarySource": "overhead industrial fluorescents", "motivation": "building service lighting", "paletteBase": ["cool white", "aged concrete", "muted navy"], "isDesaturated": true, "isCrushedBlacks": false},
-      "physics": ["elevator decelerates with believable cabin mass", "mop water remains pooled by gravity", "doors travel on a stable mechanical track"],
-      "materials": ["brushed stainless steel", "painted concrete", "wet rubber wheels"],
-      "beats": [{"startSeconds": 0, "endSeconds": 2, "action": "Mara drags the mop bucket into frame"}, {"startSeconds": 2, "endSeconds": 5, "action": "the elevator chimes and the display becomes a blank square"}, {"startSeconds": 5, "endSeconds": 8, "action": "doors open onto darkness while Mara checks her watch instead of recoiling"}],
-      "continuityLocks": ["same silver hair streak and navy jacket", "same mop bucket position and wet wheel trail", "display remains a blank square after the chime"],
-      "imperfectionAnchors": ["faint wipe streaks on elevator steel", "one fluorescent tube warms half a second late", "mop wheel squeaks once under load"],
-      "audioTrack": {"soundDesignDirectives": ["single dry elevator chime", "mop wheel squeak", "low ventilation hum"], "musicDirective": "no score"},
+      "camera": {
+        "shotType": "medium-wide profile",
+        "movement": "locked tripod with a two-centimeter vibration when the elevator stops",
+        "framing": "Mara left third, elevator doors filling the right half",
+        "focusBehavior": "deep focus keeps Mara and the floor display readable",
+        "optics": {
+          "cameraBody": "full-frame cinema camera",
+          "lensModel": "spherical prime",
+          "focalLengthMm": 35,
+          "tStop": 5.6,
+          "subjectDistanceMeters": 3.2
+        }
+      },
+      "lighting": {
+        "primarySource": "overhead industrial fluorescents",
+        "motivation": "building service lighting",
+        "paletteBase": [
+          "cool white",
+          "aged concrete",
+          "muted navy"
+        ],
+        "isDesaturated": true,
+        "isCrushedBlacks": false
+      },
+      "physics": [
+        "elevator decelerates with believable cabin mass",
+        "mop water remains pooled by gravity",
+        "doors travel on a stable mechanical track"
+      ],
+      "materials": [
+        "brushed stainless steel",
+        "painted concrete",
+        "wet rubber wheels"
+      ],
+      "beats": [
+        {
+          "startSeconds": 0,
+          "endSeconds": 2,
+          "action": "Mara drags the mop bucket into frame"
+        },
+        {
+          "startSeconds": 2,
+          "endSeconds": 5,
+          "action": "the elevator chimes and the display becomes a blank square"
+        },
+        {
+          "startSeconds": 5,
+          "endSeconds": 8,
+          "action": "doors open onto darkness while Mara checks her watch instead of recoiling"
+        }
+      ],
+      "continuityLocks": [
+        "same silver hair streak and navy jacket",
+        "same mop bucket position and wet wheel trail",
+        "display remains a blank square after the chime"
+      ],
+      "imperfectionAnchors": [
+        "faint wipe streaks on elevator steel",
+        "one fluorescent tube warms half a second late",
+        "mop wheel squeaks once under load"
+      ],
+      "audioTrack": {
+        "soundDesignDirectives": [
+          "single dry elevator chime",
+          "mop wheel squeak",
+          "low ventilation hum"
+        ],
+        "musicDirective": "no score"
+      },
       "dialogue": "Mara, under her breath: Of course there is another floor.",
-      "exclusions": ["no jump scare", "no flickering montage", "no supernatural glow"],
-      "frameworkId": "act-shot-master-spec"
+      "exclusions": [
+        "no jump scare",
+        "no flickering montage",
+        "no supernatural glow"
+      ],
+      "frameworkId": "act-shot-master-spec",
+      "characterIds": [
+        "mara"
+      ],
+      "generationRisks": [
+        "IDENTITY_OR_PERFORMANCE"
+      ]
     },
     {
       "id": "shot-2",
@@ -64,16 +181,88 @@
       "subject": "Mara at the threshold with one yellow glove now on her right hand",
       "action": "she wedges the mop head between the doors, tests the floor, and steps across",
       "environment": "the service elevator threshold opening onto an unlit carpeted office",
-      "camera": {"shotType": "low medium tracking shot", "movement": "slow eight-inch push following the mop head across the threshold", "framing": "mop head foreground, Mara's face held in upper left", "focusBehavior": "rack from the mop fibers to Mara's eyes after the floor holds", "optics": {"cameraBody": "full-frame cinema camera", "lensModel": "spherical prime", "focalLengthMm": 50, "tStop": 2.8, "subjectDistanceMeters": 1.8}},
-      "lighting": {"primarySource": "service corridor fluorescents spilling through the doors", "motivation": "the only powered area is behind Mara", "paletteBase": ["cool white", "deep office charcoal", "muted navy"], "isDesaturated": true, "isCrushedBlacks": false},
-      "physics": ["mop handle flexes under hand pressure", "elevator doors stop against the mop head safety sensor", "carpet compresses under the wet mop fibers"],
-      "materials": ["wet cotton mop", "brushed steel sill", "dusty commercial carpet"],
-      "beats": [{"startSeconds": 0, "endSeconds": 3, "action": "Mara slides the mop head across the threshold"}, {"startSeconds": 3, "endSeconds": 6, "action": "she presses down twice and watches the carpet hold"}, {"startSeconds": 6, "endSeconds": 8, "action": "she puts on one glove and steps through"}],
-      "continuityLocks": ["same silver hair streak and navy jacket", "same mop and bucket remain visible behind her", "blank-square display remains unchanged"],
-      "imperfectionAnchors": ["water beads catch only the corridor spill", "mop handle paint is chipped near the grip", "carpet dust lifts in one narrow plume"],
-      "audioTrack": {"soundDesignDirectives": ["mop fibers drag across steel and carpet", "doors strain softly against safety stop", "ventilation hum drops at the threshold"], "musicDirective": "no score"},
-      "exclusions": ["no portal effect", "no floating dust storm", "no changing wardrobe"],
-      "frameworkId": "act-shot-master-spec"
+      "camera": {
+        "shotType": "low medium tracking shot",
+        "movement": "slow eight-inch push following the mop head across the threshold",
+        "framing": "mop head foreground, Mara's face held in upper left",
+        "focusBehavior": "rack from the mop fibers to Mara's eyes after the floor holds",
+        "optics": {
+          "cameraBody": "full-frame cinema camera",
+          "lensModel": "spherical prime",
+          "focalLengthMm": 50,
+          "tStop": 2.8,
+          "subjectDistanceMeters": 1.8
+        }
+      },
+      "lighting": {
+        "primarySource": "service corridor fluorescents spilling through the doors",
+        "motivation": "the only powered area is behind Mara",
+        "paletteBase": [
+          "cool white",
+          "deep office charcoal",
+          "muted navy"
+        ],
+        "isDesaturated": true,
+        "isCrushedBlacks": false
+      },
+      "physics": [
+        "mop handle flexes under hand pressure",
+        "elevator doors stop against the mop head safety sensor",
+        "carpet compresses under the wet mop fibers"
+      ],
+      "materials": [
+        "wet cotton mop",
+        "brushed steel sill",
+        "dusty commercial carpet"
+      ],
+      "beats": [
+        {
+          "startSeconds": 0,
+          "endSeconds": 3,
+          "action": "Mara slides the mop head across the threshold"
+        },
+        {
+          "startSeconds": 3,
+          "endSeconds": 6,
+          "action": "she presses down twice and watches the carpet hold"
+        },
+        {
+          "startSeconds": 6,
+          "endSeconds": 8,
+          "action": "she puts on one glove and steps through"
+        }
+      ],
+      "continuityLocks": [
+        "same silver hair streak and navy jacket",
+        "same mop and bucket remain visible behind her",
+        "blank-square display remains unchanged"
+      ],
+      "imperfectionAnchors": [
+        "water beads catch only the corridor spill",
+        "mop handle paint is chipped near the grip",
+        "carpet dust lifts in one narrow plume"
+      ],
+      "audioTrack": {
+        "soundDesignDirectives": [
+          "mop fibers drag across steel and carpet",
+          "doors strain softly against safety stop",
+          "ventilation hum drops at the threshold"
+        ],
+        "musicDirective": "no score"
+      },
+      "exclusions": [
+        "no portal effect",
+        "no floating dust storm",
+        "no changing wardrobe"
+      ],
+      "frameworkId": "act-shot-master-spec",
+      "characterIds": [
+        "mara"
+      ],
+      "generationRisks": [
+        "IDENTITY_OR_PERFORMANCE",
+        "CAUSAL_CONTACT_CHOREOGRAPHY"
+      ]
     },
     {
       "id": "shot-3",
@@ -84,19 +273,99 @@
       "subject": "Mara beside a lone desk lamp and a handwritten maintenance log",
       "action": "she recognizes her handwriting, crosses out the request, and leaves her keys on the page",
       "environment": "a dust-coated office with cubicles disappearing into darkness",
-      "camera": {"shotType": "close over-shoulder into insert", "movement": "measured tilt from Mara's reflection in the lamp base to the logbook", "framing": "handwriting and keys dominate the final lower-center composition", "focusBehavior": "focus settles from reflected eye to ink, then holds on keys", "optics": {"cameraBody": "full-frame cinema camera", "lensModel": "macro prime", "focalLengthMm": 85, "tStop": 2, "subjectDistanceMeters": 0.9}},
-      "lighting": {"primarySource": "single green-shaded desk lamp", "motivation": "the one powered object on the erased floor", "paletteBase": ["tungsten amber", "dust grey", "oxidized green"], "isDesaturated": true, "isCrushedBlacks": false},
-      "physics": ["keys land with believable weight and stop against the paper ridge", "dust shifts under Mara's sleeve", "ink crosses the paper fibers without glowing"],
-      "materials": ["yellowed ledger paper", "brass keys", "oxidized lamp shade", "settled office dust"],
-      "beats": [{"startSeconds": 0, "endSeconds": 3, "action": "lamp reflection reveals Mara reading a request in her own handwriting"}, {"startSeconds": 3, "endSeconds": 6, "action": "she draws one deliberate line through FIX ELEVATOR"}, {"startSeconds": 6, "endSeconds": 8, "action": "she places her keys on the log and turns away as the lamp remains on"}],
-      "continuityLocks": ["same silver hair streak, navy jacket, and single right glove", "same wet mop remains at the doorway in background", "desk lamp position and handwritten page do not change"],
-      "imperfectionAnchors": ["finger oil darkens the ledger edge", "lamp base reflection is slightly warped", "one key has a worn red plastic tag"],
-      "audioTrack": {"soundDesignDirectives": ["pen scratches through paper", "keys land with one brass clack", "distant elevator doors close offscreen"], "musicDirective": "no score"},
+      "camera": {
+        "shotType": "close over-shoulder into insert",
+        "movement": "measured tilt from Mara's reflection in the lamp base to the logbook",
+        "framing": "handwriting and keys dominate the final lower-center composition",
+        "focusBehavior": "focus settles from reflected eye to ink, then holds on keys",
+        "optics": {
+          "cameraBody": "full-frame cinema camera",
+          "lensModel": "macro prime",
+          "focalLengthMm": 85,
+          "tStop": 2,
+          "subjectDistanceMeters": 0.9
+        }
+      },
+      "lighting": {
+        "primarySource": "single green-shaded desk lamp",
+        "motivation": "the one powered object on the erased floor",
+        "paletteBase": [
+          "tungsten amber",
+          "dust grey",
+          "oxidized green"
+        ],
+        "isDesaturated": true,
+        "isCrushedBlacks": false
+      },
+      "physics": [
+        "keys land with believable weight and stop against the paper ridge",
+        "dust shifts under Mara's sleeve",
+        "ink crosses the paper fibers without glowing"
+      ],
+      "materials": [
+        "yellowed ledger paper",
+        "brass keys",
+        "oxidized lamp shade",
+        "settled office dust"
+      ],
+      "beats": [
+        {
+          "startSeconds": 0,
+          "endSeconds": 3,
+          "action": "lamp reflection reveals Mara reading a request in her own handwriting"
+        },
+        {
+          "startSeconds": 3,
+          "endSeconds": 6,
+          "action": "she draws one deliberate line through FIX ELEVATOR"
+        },
+        {
+          "startSeconds": 6,
+          "endSeconds": 8,
+          "action": "she places her keys on the log and turns away as the lamp remains on"
+        }
+      ],
+      "continuityLocks": [
+        "same silver hair streak, navy jacket, and single right glove",
+        "same wet mop remains at the doorway in background",
+        "desk lamp position and handwritten page do not change"
+      ],
+      "imperfectionAnchors": [
+        "finger oil darkens the ledger edge",
+        "lamp base reflection is slightly warped",
+        "one key has a worn red plastic tag"
+      ],
+      "audioTrack": {
+        "soundDesignDirectives": [
+          "pen scratches through paper",
+          "keys land with one brass clack",
+          "distant elevator doors close offscreen"
+        ],
+        "musicDirective": "no score"
+      },
       "dialogue": "Mara: Put in a ticket.",
-      "exclusions": ["no explanatory apparition", "no moving handwriting", "no triumphant score"],
-      "frameworkId": "act-shot-master-spec"
+      "exclusions": [
+        "no explanatory apparition",
+        "no moving handwriting",
+        "no triumphant score"
+      ],
+      "frameworkId": "act-shot-master-spec",
+      "characterIds": [
+        "mara"
+      ],
+      "generationRisks": [
+        "IDENTITY_OR_PERFORMANCE"
+      ]
     }
   ],
-  "globalStyle": ["observational supernatural realism", "restrained camera", "bureaucratic production design"],
-  "globalExclusions": ["no horror cliché lighting", "no identity drift", "no generated signage"]
+  "globalStyle": [
+    "observational supernatural realism",
+    "restrained camera",
+    "bureaucratic production design"
+  ],
+  "globalExclusions": [
+    "no horror cliché lighting",
+    "no identity drift",
+    "no generated signage"
+  ]
 }

@@ -5,10 +5,11 @@ The core package is provider-neutral. This guide describes a safe manual handoff
 ## Before submission
 
 1. Run `validate` and `preflight`.
-2. Choose one shot, not an entire sequence, unless the provider workflow explicitly supports sequences.
-3. Confirm duration and aspect ratio in the provider interface.
-4. Attach identity, object, or final-frame references only through supported controls.
-5. Preserve the packet version and shot ID in your own job ledger.
+2. Build `kit` and inspect each shot's route advice.
+3. Choose one shot, not an entire sequence, unless the provider workflow explicitly supports sequences.
+4. Confirm duration and aspect ratio in the provider interface.
+5. Attach required identity, object, opening-state, terminal-state, or final-frame references only through supported controls.
+6. Preserve the packet version and shot ID in your own job ledger.
 
 ## Prompt surfaces
 
@@ -19,6 +20,8 @@ The core package is provider-neutral. This guide describes a safe manual handoff
 - **negativePrompt**: exclusions for systems or adapters that expose a separate negative field.
 
 The `videoPrompt` already contains exclusions. Do not append the same negative list twice.
+
+`compactVideoPrompt` uses a toolkit-owned 4,000-character ceiling; this is not a provider limit. Inspect `compactPromptReport` before dispatch. If it lists omitted exclusions or truncated sections, use the full prompt, reduce the shot safely, or pass omitted safeguards through a supported separate negative field.
 
 ## Manual Flow-style smoke
 
@@ -53,6 +56,8 @@ The contract requires:
 Submit only `prompt` from the compiled result through the provider's supported extension control. If the provider repeats the boundary, cuts, dissolves, teleports, or morphs into the destination, record `CONTINUATION_BRIDGE_BREAK` and repair the first motion or spatial bridge without redesigning the later shot.
 
 Provider models, controls, costs, and capabilities change. Treat the interface shown at runtime as provider evidence for that session, not as a permanent compiler rule.
+
+Text-only mode is not the default for every shot. The route advisor marks causal contact and precise assembly for first/last-frame workflows, exact fluid counts for split passes, and identity or blank-surface control for reference-first workflows. If the selected provider cannot support that route, keep capability `UNKNOWN`, warn the user, and do not silently claim the prompt can enforce it.
 
 ## Result review
 
