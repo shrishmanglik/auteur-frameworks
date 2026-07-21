@@ -1,0 +1,74 @@
+import fs from "node:fs";
+import { describe, expect, it } from "vitest";
+import { buildStoryboard, compilePacket, parseUniversalPacket, preflightPacket } from "../src/index.js";
+
+const load = (name: string) => JSON.parse(
+  fs.readFileSync(new URL(`../examples/${name}.json`, import.meta.url), "utf8"),
+);
+
+const personas = [
+  { name: "commercial director", fixture: "product-film" },
+  { name: "narrative director", fixture: "short-film" },
+  { name: "vertical creator", fixture: "vertical-reel" },
+  { name: "A-roll operator", fixture: "a-roll" },
+] as const;
+
+describe("expert creator fixtures", () => {
+  for (const persona of personas) {
+    it(`${persona.name} packet validates, preflights, storyboards, and compiles`, () => {
+      const packet = parseUniversalPacket(load(persona.fixture));
+      const report = preflightPacket(packet);
+      const storyboard = buildStoryboard(packet);
+      const compiled = compilePacket(packet);
+
+      expect(report.passed, JSON.stringify(report.issues, null, 2)).toBe(true);
+      expect(storyboard).toHaveLength(packet.shots.length);
+      expect(compiled.shots).toHaveLength(packet.shots.length);
+      expect(compiled.shots.every((shot) => shot.videoPrompt.includes("TEMPORAL PLAN"))).toBe(true);
+      expect(compiled.shots.every((shot) => shot.negativePrompt.length > 30)).toBe(true);
+      expect(compiled.shots.every((shot) => shot.compactVideoPrompt.length <= shot.videoPrompt.length * 0.8)).toBe(true);
+      for (const shot of compiled.shots) {
+        for (const label of [
+          "Intent:",
+          "Scene:",
+          "Materials:",
+          "Style:",
+          "Camera:",
+          "Beats:",
+          "Light:",
+          "Physics:",
+          "Lock:",
+          "Reality:",
+          "Audio:",
+          "Avoid:",
+        ]) {
+          expect(shot.compactVideoPrompt, `${persona.name} missing ${label}`).toContain(label);
+        }
+      }
+    });
+  }
+
+  it("gives the narrative director causal scenes, continuity, and an earned choice", () => {
+    const packet = parseUniversalPacket(load("short-film"));
+    expect(packet.scenes.length).toBeGreaterThanOrEqual(2);
+    expect(packet.story.beats).toHaveLength(3);
+    expect(packet.shots.every((shot) => shot.continuityLocks.length >= 3)).toBe(true);
+    expect(packet.shots.at(-1)?.action).toContain("leaves her keys");
+  });
+
+  it("gives the vertical creator a first-second hook, legible vertical route, and loop", () => {
+    const packet = parseUniversalPacket(load("vertical-reel"));
+    expect(packet.metadata.aspectRatio).toBe("9:16");
+    expect(packet.shots[0]?.beats[0]?.endSeconds).toBeLessThanOrEqual(1);
+    expect(packet.shots.at(-1)?.beats.at(-1)?.action).toContain("loop");
+    expect(preflightPacket(packet).issues.some((issue) => issue.code === "GENERATED_TEXT_RISK")).toBe(true);
+  });
+
+  it("gives the A-roll operator one non-duplicated spoken performance", () => {
+    const packet = parseUniversalPacket(load("a-roll"));
+    const compiled = compilePacket(packet).shots[0]!;
+    expect(packet.shots[0]?.frameworkId).toBe("continuous-take");
+    expect(compiled.audioPrompt?.match(/We spent three weeks/g)).toHaveLength(1);
+    expect(compiled.videoPrompt.match(/We spent three weeks/g)).toHaveLength(1);
+  });
+});

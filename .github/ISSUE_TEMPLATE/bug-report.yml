@@ -1,0 +1,48 @@
+name: Bug report
+description: Report reproducible package, CLI, schema, compiler, QC, or documentation behavior.
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: "Use synthetic data only. Do not attach private prompts, media, credentials, or provider sessions."
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      placeholder: "0.2.0 or commit SHA"
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: "Windows 11, Node 24.1.0, npm 11.4.2"
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal synthetic reproduction
+      description: Include the command, safe fixture, exit code, and output.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: checkboxes
+    id: boundary
+    attributes:
+      label: Publication boundary
+      options:
+        - label: I removed private prompts, media, identifiers, paths, credentials, and customer data.
+          required: true

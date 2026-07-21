@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security or private-data report
+    url: https://github.com/shrishmanglik/auteur-frameworks/security/advisories/new
+    about: Report credentials, private-corpus exposure, or security vulnerabilities privately.

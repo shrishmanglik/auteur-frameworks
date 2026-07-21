@@ -7,6 +7,7 @@ import {
   buildStoryboard,
   buildDevelopmentContract,
   compilePacket,
+  compileCompactVideoPrompt,
   compileShot,
   depthOfFieldCharacter,
   preflightPacket,
@@ -63,9 +64,23 @@ describe("compiler", () => {
     const shot = UniversalPacketSchema.parse(example).shots[0]!;
     const compiled = compileShot(shot);
     expect(compiled.videoPrompt.indexOf("100mm")).toBeLessThan(compiled.videoPrompt.indexOf("slider"));
+    expect(compiled.compactVideoPrompt.length).toBeLessThan(compiled.videoPrompt.length);
+    expect(compiled.compactVideoPrompt).toContain("[0-2s]");
+    expect(compiled.compactVideoPrompt).toContain("100mm");
+    expect(compiled.compactVideoPrompt).toContain("Physics:");
+    expect(compiled.compactVideoPrompt).toContain("Lock:");
+    expect(compiled.compactVideoPrompt).toContain("Audio:");
+    expect(compiled.compactVideoPrompt).toContain("no identity drift");
     expect(compiled.framePrompt).toContain("tiny trapped bubbles");
     expect(compiled.audioPrompt).toContain("liquid pour");
     expect(compiled.negativePrompt).toContain("no identity drift");
+  });
+
+  it("offers a deterministic compact handoff without losing production categories", () => {
+    const shot = UniversalPacketSchema.parse(example).shots[0]!;
+    const compact = compileCompactVideoPrompt(shot, example.globalExclusions);
+    expect(compact).toBe(compileCompactVideoPrompt(shot, example.globalExclusions));
+    expect(compact.split("\n")).toHaveLength(1);
   });
 
   it("derives depth-of-field character from optics", () => {
@@ -80,6 +95,7 @@ describe("compiler", () => {
     secondShot.title = "Second pour angle";
     twoShotExample.shots.push(secondShot);
     twoShotExample.scenes[0].shotIds.push(secondShot.id);
+    twoShotExample.metadata.targetDurationSeconds = 16;
 
     const result = compilePacket(twoShotExample);
     expect(result.shots).toHaveLength(2);
@@ -89,6 +105,14 @@ describe("compiler", () => {
         expect(shot.negativePrompt.split(exclusion)).toHaveLength(2);
         expect(shot.videoPrompt.split(exclusion)).toHaveLength(2);
       }
+    }
+  });
+
+  it("preserves every required global style term in compiled prompts", () => {
+    const result = compilePacket(example);
+    for (const style of example.globalStyle) {
+      expect(result.shots[0]?.videoPrompt).toContain(style);
+      expect(result.shots[0]?.framePrompt).toContain(style);
     }
   });
 });
@@ -106,6 +130,27 @@ describe("storyboard and QC", () => {
     const report = preflightPacket(UniversalPacketSchema.parse(broken));
     expect(report.passed).toBe(false);
     expect(report.issues.some((issue) => issue.code === "DURATION_MISMATCH")).toBe(true);
+  });
+
+  it("accepts spokenText as a complete required audio contract", () => {
+    const spokenOnly = structuredClone(example);
+    spokenOnly.shots[0].dialogue = undefined;
+    spokenOnly.shots[0].audioTrack = {
+      spokenText: "The detail is the proof.",
+      soundDesignDirectives: [],
+    };
+    const report = preflightPacket(UniversalPacketSchema.parse(spokenOnly));
+    expect(report.issues.some((issue) => issue.code === "AUDIO_CONTRACT_MISSING")).toBe(false);
+  });
+
+  it("blocks duplicate shot identifiers", () => {
+    const duplicate = structuredClone(example);
+    duplicate.shots.push(structuredClone(duplicate.shots[0]));
+    duplicate.scenes[0].shotIds.push("shot-1");
+    duplicate.metadata.targetDurationSeconds = 16;
+    const report = preflightPacket(UniversalPacketSchema.parse(duplicate));
+    expect(report.passed).toBe(false);
+    expect(report.issues.some((issue) => issue.code === "DUPLICATE_SHOT_ID")).toBe(true);
   });
 
   it("builds a constrained repair prompt", () => {

@@ -1,0 +1,15 @@
+{
+  "idea": "A cafe loyalty card is stamped for the tenth time and the counter briefly reveals every tiny ritual that made the customer return.",
+  "format": "reel",
+  "targetDurationSeconds": 12,
+  "aspectRatio": "9:16",
+  "audience": "mobile-first independent cafe customers",
+  "tone": ["warm", "quick", "wry"],
+  "constraints": ["vertical framing", "readable without dialogue", "one location"],
+  "creativeMandate": "Hook on the violent stamp impact, then turn the reward into specific remembered human behavior instead of a discount reveal.",
+  "mustInclude": ["first-second hook", "three visual memory beats", "loopable final frame"],
+  "avoidCliches": ["influencer reaction face", "generic coffee b-roll", "floating app UI", "motivational caption"],
+  "hasDialogue": false,
+  "requiresTransformation": true,
+  "audioRequired": true
+}

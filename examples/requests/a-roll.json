@@ -1,0 +1,15 @@
+{
+  "idea": "A founder explains why the most expensive automation mistake was not bad AI, but automating a process nobody on the team actually understood.",
+  "format": "a-roll",
+  "targetDurationSeconds": 30,
+  "aspectRatio": "16:9",
+  "audience": "operators evaluating AI workflow automation",
+  "tone": ["candid", "specific", "dryly self-aware"],
+  "constraints": ["single speaker", "one continuous take", "no teleprompter eye-line"],
+  "creativeMandate": "Start with the costly mistake, give one concrete symptom, and end on the operational rule learned from it.",
+  "mustInclude": ["one self-incriminating detail", "one useful rule", "natural breath and room tone"],
+  "avoidCliches": ["AI is changing everything", "hustle language", "generic thought-leadership cadence"],
+  "hasDialogue": true,
+  "requiresTransformation": false,
+  "audioRequired": true
+}

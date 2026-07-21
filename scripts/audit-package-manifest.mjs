@@ -5,16 +5,37 @@ import path from "node:path";
 
 const root = process.cwd();
 const npmCli = process.env.npm_execpath;
-const allowedRoots = ["dist/", "docs/", "examples/", "schemas/"];
+const allowedRoots = ["dist/", "docs/", "examples/", "schemas/", "src/"];
 const allowedRootFiles = new Set([
   "CONTRIBUTING.md",
+  "CHANGELOG.md",
+  "CITATION.cff",
+  "CODE_OF_CONDUCT.md",
+  "GOVERNANCE.md",
   "LICENSE",
   "NOTICE",
   "README.md",
+  "ROADMAP.md",
   "SECURITY.md",
+  "SUPPORT.md",
+  "llms.txt",
   "package.json",
 ]);
-const requiredFiles = new Set(["dist/cli.js", "dist/index.d.ts", "dist/index.js"]);
+const requiredFiles = new Set([
+  "dist/cli.js",
+  "dist/index.d.ts",
+  "dist/index.js",
+  "CITATION.cff",
+  "docs/quickstart.md",
+  "docs/llm-integration.md",
+  "examples/a-roll.json",
+  "examples/product-film.json",
+  "examples/short-film.json",
+  "examples/vertical-reel.json",
+  "GOVERNANCE.md",
+  "llms.txt",
+  "SUPPORT.md",
+]);
 const bannedExtensions = new Set([
   ".avi",
   ".jpeg",

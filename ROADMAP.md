@@ -1,27 +1,41 @@
 # Roadmap
 
-## 0.1
+The roadmap is ordered by creator and integrator value, not infrastructure novelty.
 
-- Universal Packet schema
-- Framework registry
-- Prompt compiler
-- Storyboard projection
-- Pre-flight QC
-- Repair engine
-- CLI and synthetic examples
+## Current: 0.2
 
-## Next
+- Universal Packet schema and JSON Schema
+- Nine production frameworks
+- Raw-brief development contract
+- Prompt, storyboard, QC, and repair compilers
+- Multi-persona fixtures and evaluation suite
+- Git installation, CLI, TypeScript API, and agent integration guide
+- Publication-boundary and packed-consumer gates
 
-- Schema migrations and richer story-development helpers
-- Provider translation packages with evidence-bound capability matrices
-- More domain playbooks and continuity validators
-- Stable package publication after API review
-- Community framework proposal process
+## Next: public API stabilization
 
-## Not planned for core
+- Schema migration helpers and compatibility fixtures
+- Richer story-development and shot-sequencing helpers
+- Domain playbooks for automotive, food, fashion, dialogue, documentary, and VFX
+- Continuity graph and reference-asset manifest
+- Provider translation packages with field-level evidence classes
+- Community framework review and benchmark process
+- npm registry publication after name, API, provenance, and release checks
 
-- Provider credentials
+## Later
+
+- Optional MCP server exposing deterministic AUTEUR tools
+- Evidence-led provider adapters in separate packages
+- Cost/spend authorization interfaces for host applications
+- Render-result forensic QA contract
+
+## Not planned for neutral core
+
+- Provider credentials or account automation
 - Paid generation dispatch
 - Raw prompt or render datasets
+- Undocumented provider limits or pricing
+- Customer project persistence
 - Browser automation
-- Model-specific undocumented limits
+
+Open a framework proposal when a roadmap item has a concrete creator workflow, evidence boundary, and synthetic acceptance fixture.

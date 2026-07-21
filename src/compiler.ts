@@ -7,6 +7,7 @@ export interface CompiledShot {
   shotId: string;
   frameworkId: string;
   videoPrompt: string;
+  compactVideoPrompt: string;
   framePrompt: string;
   audioPrompt: string | null;
   negativePrompt: string;
@@ -41,13 +42,84 @@ const timedBeats = (shot: Shot): string => shot.beats
   .map((beat) => "[" + beat.startSeconds + "-" + beat.endSeconds + "s] " + beat.action)
   .join(" ");
 
-export function compileShot(input: Shot, globalExclusions: readonly string[] = []): CompiledShot {
+const sentence = (value: string): string => {
+  const trimmed = value.trim();
+  return /[.!?]$/.test(trimmed) ? trimmed : trimmed + ".";
+};
+
+const compactList = (values: readonly string[]): string => values.join("; ");
+const firstTwo = (values: readonly string[]): readonly string[] => values.slice(0, 2);
+const firstOne = (values: readonly string[]): readonly string[] => values.slice(0, 1);
+
+const compactOptics = (optics: Optics): string => [
+  optics.cameraBody,
+  optics.lensModel ?? optics.focalLengthMm + "mm lens",
+  "T" + optics.tStop,
+  optics.subjectDistanceMeters + "m from subject",
+  depthOfFieldCharacter(optics).replace("depth of field", "DOF"),
+].filter(Boolean).join(", ");
+
+export function compileCompactVideoPrompt(
+  input: Shot,
+  globalExclusions: readonly string[] = [],
+  globalStyle: readonly string[] = [],
+): string {
+  const shot = ShotSchema.parse(input);
+  const spokenText = shot.dialogue ?? shot.audioTrack.spokenText;
+  const exclusions = [...new Set([
+    ...globalExclusions,
+    ...shot.exclusions,
+    "no identity drift",
+    "no geometry morphing",
+    "no unplanned logos",
+  ])];
+  const compactExclusions = [...new Set([
+    ...exclusions.slice(0, 4),
+    "no identity drift",
+    "no geometry morphing",
+    "no unplanned logos",
+  ])];
+  const audio = [
+    spokenText ? "spoken: " + spokenText : null,
+    shot.audioTrack.soundDesignDirectives.length
+      ? compactList(firstOne(shot.audioTrack.soundDesignDirectives))
+      : null,
+    shot.audioTrack.musicDirective,
+  ].filter((part): part is string => Boolean(part)).join("; ");
+
+  return [
+    "Intent: " + sentence(shot.intent),
+    "Scene: " + sentence(shot.subject + " in " + shot.environment),
+    shot.materials.length ? "Materials: " + compactList(firstTwo(shot.materials)) + "." : null,
+    globalStyle.length ? "Style: " + compactList(firstTwo(globalStyle)) + "." : null,
+    "Camera: " + compactOptics(shot.camera.optics) + "; " + compactList([
+      shot.camera.movement,
+      shot.camera.framing,
+      shot.camera.focusBehavior,
+    ]) + ".",
+    "Beats: " + timedBeats(shot) + ".",
+    "Light: " + shot.lighting.primarySource + "; motivated by " + shot.lighting.motivation
+      + ".",
+    "Physics: " + compactList(firstOne(shot.physics)) + ".",
+    "Lock: " + compactList(firstTwo(shot.continuityLocks)) + ".",
+    shot.imperfectionAnchors.length ? "Reality: " + compactList(firstOne(shot.imperfectionAnchors)) + "." : null,
+    audio ? "Audio: " + audio + "." : "Audio: visual-only; no invented dialogue.",
+    shot.onScreenText ? "Reserve clean space for post-composited text: " + shot.onScreenText + "." : null,
+    "Avoid: " + compactList(compactExclusions) + ".",
+  ].filter((part): part is string => Boolean(part)).join(" ");
+}
+
+export function compileShot(
+  input: Shot,
+  globalExclusions: readonly string[] = [],
+  globalStyle: readonly string[] = [],
+): CompiledShot {
   const shot = ShotSchema.parse(input);
   const framework = getFramework(shot.frameworkId);
   const optics = opticsToProse(shot.camera.optics);
+  const spokenText = shot.dialogue ?? shot.audioTrack.spokenText;
   const audioParts = [
-    shot.dialogue ? "Dialogue: " + shot.dialogue : null,
-    shot.audioTrack.spokenText ? "Spoken text: " + shot.audioTrack.spokenText : null,
+    spokenText ? "Spoken performance: " + spokenText : null,
     shot.audioTrack.soundDesignDirectives.length
       ? "Sound design: " + shot.audioTrack.soundDesignDirectives.join("; ")
       : null,
@@ -63,8 +135,10 @@ export function compileShot(input: Shot, globalExclusions: readonly string[] = [
 
   const videoPrompt = [
     "FRAMEWORK: " + framework.name + ".",
-    "SHOT INTENT: " + shot.intent + ".",
-    "REALITY: " + shot.subject + " in " + shot.environment + ". Materials: " + shot.materials.join(", ") + ".",
+    globalStyle.length ? "STYLE: " + globalStyle.join("; ") + "." : null,
+    "SHOT INTENT: " + sentence(shot.intent),
+    "REALITY: " + sentence(shot.subject + " in " + shot.environment)
+      + (shot.materials.length ? " Materials: " + shot.materials.join(", ") + "." : ""),
     "CAMERA: " + optics + " " + shot.camera.movement + "; " + shot.camera.shotType + "; " + shot.camera.framing
       + "; focus behavior: " + shot.camera.focusBehavior + ".",
     "TEMPORAL PLAN: " + timedBeats(shot) + ".",
@@ -80,6 +154,7 @@ export function compileShot(input: Shot, globalExclusions: readonly string[] = [
 
   const framePrompt = [
     shot.subject + " in " + shot.environment + ".",
+    globalStyle.length ? "Style: " + globalStyle.join("; ") + "." : null,
     optics,
     shot.camera.shotType + ", " + shot.camera.framing + ".",
     shot.lighting.primarySource + "; " + shot.lighting.paletteBase.join(", ") + ".",
@@ -92,6 +167,7 @@ export function compileShot(input: Shot, globalExclusions: readonly string[] = [
     shotId: shot.id,
     frameworkId: framework.id,
     videoPrompt,
+    compactVideoPrompt: compileCompactVideoPrompt(shot, globalExclusions, globalStyle),
     framePrompt,
     audioPrompt: audioParts.length ? audioParts.join(" ") : null,
     negativePrompt: exclusions.join(", "),
@@ -105,7 +181,7 @@ export function compilePacket(input: unknown): CompiledPackage {
     schemaVersion: "1.0.0",
     title: packet.metadata.title,
     providerTarget: packet.metadata.providerTarget,
-    shots: packet.shots.map((shot) => compileShot(shot, packet.globalExclusions)),
+    shots: packet.shots.map((shot) => compileShot(shot, packet.globalExclusions, packet.globalStyle)),
     preflight: preflightPacket(packet),
   };
 }

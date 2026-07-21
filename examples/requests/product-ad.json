@@ -1,0 +1,15 @@
+{
+  "idea": "A hand-blown tumbler proves its craft through the behavior of light, liquid, tiny trapped bubbles, and the worn glass studio where it was made.",
+  "format": "product-film",
+  "targetDurationSeconds": 15,
+  "aspectRatio": "16:9",
+  "audience": "design-conscious premium homeware buyers",
+  "tone": ["tactile", "restrained", "observational"],
+  "constraints": ["one product", "working studio", "no generated typography"],
+  "creativeMandate": "Make physical evidence, not luxury adjectives, carry the product argument.",
+  "mustInclude": ["visible liquid settling", "craft imperfection", "clean final product state"],
+  "avoidCliches": ["synthetic showroom", "gold particle reveal", "floating product", "empty superlatives"],
+  "hasDialogue": false,
+  "requiresTransformation": false,
+  "audioRequired": true
+}
