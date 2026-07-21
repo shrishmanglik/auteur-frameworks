@@ -257,7 +257,7 @@ export function compileShot(
   );
   const terminalFramePrompt = compileFrameState(
     "terminal",
-    "Terminal reference boundary: show the completed final beat without beginning a new action, while preserving every declared continuity lock.",
+    "Terminal reference boundary: show the completed final beat without beginning a new action, while preserving every declared continuity lock. Endpoint match lock: when editing an accepted opening reference, preserve its camera position, lens, crop, subject identity, scale, wardrobe, persistent inventory, lighting direction, and undeclared geometry exactly; change only the declared terminal state.",
   );
 
   return {

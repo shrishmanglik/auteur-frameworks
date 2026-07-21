@@ -193,10 +193,13 @@ describe("compiler", () => {
     expect(compiled.openingFramePrompt).toContain("assigned to a later beat remains outside frame");
     expect(compiled.terminalFramePrompt).toContain("TERMINAL STATE (8s):");
     expect(compiled.terminalFramePrompt).toContain("the lamp reveals the bronze bell");
+    expect(compiled.terminalFramePrompt).toContain("Endpoint match lock:");
+    expect(compiled.terminalFramePrompt).toContain("change only the declared terminal state");
     expect(compiled.frameStateSources).toEqual({ opening: "explicit", terminal: "explicit" });
-    expect(route.recommendedMode).toBe("reference-first");
-    expect(route.requiredAssets).toContain("opening-state reference with every later beat absent or occluded");
-    expect(route.acceptanceChecks).toContain("Reject an opening reference that already shows a later action, contact, dialogue, illumination, discovery, or terminal state.");
+    expect(route.recommendedMode).toBe("split-pass");
+    expect(route.risks).toContainEqual(expect.objectContaining({ code: "DELAYED_TERMINAL_REVEAL" }));
+    expect(route.requiredAssets).toContain("accepted pre-reveal final frame for render-observed continuation compilation");
+    expect(route.acceptanceChecks).toContain("Reject a pre-reveal pass whose prompt or pixels expose terminal-only inventory.");
   });
 
   it("labels a safe minimal opening fallback instead of copying composite scene fields", () => {

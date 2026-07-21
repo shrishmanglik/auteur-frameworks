@@ -2,6 +2,18 @@
 
 All notable public changes are recorded here. The project follows semantic versioning while the API matures; versions below `1.0.0` may contain documented breaking changes.
 
+## 0.7.2 - 2026-07-21
+
+### Fixed
+
+- Added `DELAYED_TERMINAL_REVEAL` routing. When an explicit terminal frame introduces visible inventory absent from the explicit opening frame, the original single-pass prompt is blocked and the route becomes a split pass.
+- Added `buildDelayedRevealSplitPlan`: it compiles a framework-native pre-reveal prompt from opening-only structured data, rejects terminal-term leakage, and requires the reveal extension to be compiled from the accepted pre-reveal render's observed final frame.
+- Added rejection gates for terminal inventory in pre-reveal prompts or pixels and for reset, reframe, teleport, dissolve, geometry morph, or omitted reveal in the continuation. Provider frame/edit support remains runtime evidence, not a claimed capability.
+
+### Evidence
+
+- The v0.7.1 opening asset correctly omitted the bell, but the reference-first Flow render still materialized it in frame zero because the terminal object remained named in the full video contract. The render scored 72.4/100 versus the 71.2 baseline, below the required 10% improvement. Three attempted terminal endpoints then substituted the interaction, changed camera/identity geometry, or duplicated/detached a tank. A v0.7.2 exact-first-frame retry used the verified clean opening asset yet changed camera and subject pose before frame zero and materialized the bell immediately. This patch therefore isolates the terminal object's vocabulary and assets into a later render-observed continuation instead of claiming a first-frame control solved the provider failure.
+
 ## 0.7.1 - 2026-07-21
 
 ### Fixed

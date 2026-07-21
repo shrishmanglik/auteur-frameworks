@@ -16,7 +16,7 @@ The core package is provider-neutral. This guide describes a safe manual handoff
 - **videoPrompt**: the canonical framework-native architecture, including its required ordering and production blocks.
 - **compactVideoPrompt**: a whitespace-flattened, budgeted attempt for provider fields that handle long rich-text input poorly; its report states whether the selected framework architecture survived intact.
 - **openingFramePrompt**: a 0.0-second reference contract compiled from `frameStates.opening`, keeping later actions, contacts, dialogue, illumination, discoveries, and completed states absent or occluded. Without explicit opening-only data, the compiler emits `frameStateSources.opening: "minimal-fallback"` plus a pre-flight warning. `framePrompt` is a backwards-compatible alias.
-- **terminalFramePrompt**: the completed final-beat still for an explicitly supported terminal or first/last-frame route. A missing `frameStates.terminal` on a first/last-frame route emits `TERMINAL_FRAME_STATE_FALLBACK`. Do not attach the terminal prompt as the opening reference.
+- **terminalFramePrompt**: the completed final-beat still for an explicitly supported terminal or first/last-frame route. It carries an endpoint match lock for editing the accepted opening frame without changing camera, identity, scale, wardrobe, persistent inventory, lighting direction, or undeclared geometry. A missing `frameStates.terminal` on a first/last-frame route emits `TERMINAL_FRAME_STATE_FALLBACK`. Do not attach the terminal prompt as the opening reference.
 - **audioPrompt**: spoken performance, sound design, and music boundary when present.
 - **negativePrompt**: exclusions for systems or adapters that expose a separate negative field.
 
@@ -58,7 +58,9 @@ Submit only `prompt` from the compiled result through the provider's supported e
 
 Provider models, controls, costs, and capabilities change. Treat the interface shown at runtime as provider evidence for that session, not as a permanent compiler rule.
 
-Text-only mode is not the default for every shot. The route advisor marks causal contact and precise assembly for first/last-frame workflows, exact fluid counts for split passes, and identity or blank-surface control for reference-first workflows. If the selected provider cannot support that route, keep capability `UNKNOWN`, warn the user, and do not silently claim the prompt can enforce it.
+Text-only mode is not the default for every shot. The route advisor isolates delayed terminal inventory into a terminal-free pre-reveal pass and a render-observed continuation; marks causal contact and precise assembly for first/last-frame workflows; sends exact fluid counts to split passes; and routes identity or blank-surface control to reference-first workflows. If the selected provider cannot support that route, keep capability `UNKNOWN`, warn the user, and do not silently claim the prompt can enforce it.
+
+For `DELAYED_TERMINAL_REVEAL`, do not dispatch the original shot prompt. Dispatch `buildDelayedRevealSplitPlan(...).preReveal.prompts.videoPrompt` first and verify that neither the prompt nor any returned frame contains terminal-only inventory. Only after that render passes may the host describe its actual last frame and call `compileContinuationPrompt` for the reveal extension.
 
 ## Result review
 

@@ -65,6 +65,25 @@ export function preflightShot(shot: Shot, audioRequired = false): PreflightIssue
     });
   }
 
+  if (route.risks.some((risk) => risk.code === "DELAYED_TERMINAL_REVEAL")) {
+    if (!shot.frameStates.opening || !shot.frameStates.terminal) {
+      issues.push({
+        code: "DELAYED_REVEAL_FRAME_STATES_REQUIRED",
+        severity: "error",
+        shotId: shot.id,
+        message: "The delayed reveal cannot be isolated without explicit opening and terminal frame states.",
+        action: "Provide frameStates.opening and frameStates.terminal with their exact visible inventories before compiling the split plan.",
+      });
+    }
+    issues.push({
+      code: "DELAYED_REVEAL_SINGLE_PASS_BLOCKED",
+      severity: "error",
+      shotId: shot.id,
+      message: "A terminal-only object named in one prompt may contaminate the opening even when a clean first frame is attached.",
+      action: "Build a delayed-reveal split plan, dispatch the lexically isolated pre-reveal pass, then compile a render-observed continuation from its accepted final frame.",
+    });
+  }
+
   if (shot.imperfectionAnchors.length < 2) {
     issues.push({
       code: "INSUFFICIENT_IMPERFECTION_ANCHORS",

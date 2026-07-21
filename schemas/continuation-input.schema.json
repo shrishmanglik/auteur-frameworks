@@ -38,6 +38,7 @@
               "EXACT_FLUID_COUNT",
               "BRAND_OR_TEXT_CONTROL",
               "IDENTITY_OR_PERFORMANCE",
+              "DELAYED_TERMINAL_REVEAL",
               "TRANSFORMATION_PHASES",
               "EXACT_DIALOGUE_AUDIO",
               "AUDIO_ACTION_SYNCHRONIZATION"

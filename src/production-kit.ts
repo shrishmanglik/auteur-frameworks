@@ -3,6 +3,7 @@ import { FRAMEWORKS } from "./frameworks.js";
 import { preflightPacket } from "./qc.js";
 import { FAILURE_REPAIRS, type FailureCode } from "./repair.js";
 import { assessShotRoute, type ShotRouteAdvice } from "./route-advisor.js";
+import { buildDelayedRevealSplitPlan, type DelayedRevealSplitPlan } from "./reveal-plan.js";
 import { parseUniversalPacket, type UniversalPacket } from "./schemas.js";
 import { buildStoryboard, type StoryboardPanel } from "./storyboard.js";
 
@@ -27,6 +28,7 @@ export interface ProductionShotPackage {
   continuityLocks: string[];
   route: ShotRouteAdvice;
   prompts: CompiledShot;
+  revealSplitPlan: DelayedRevealSplitPlan | null;
 }
 
 export interface ProductionKit {
@@ -171,6 +173,16 @@ export function buildProductionKit(input: unknown): ProductionKit {
       continuityLocks: shot.continuityLocks,
       route: routeByShot.get(shot.id)!,
       prompts: compiledByShot.get(shot.id)!,
+      revealSplitPlan: routeByShot.get(shot.id)!.risks.some((risk) => risk.code === "DELAYED_TERMINAL_REVEAL")
+        && shot.frameStates.opening && shot.frameStates.terminal
+        ? buildDelayedRevealSplitPlan(shot, packet.globalExclusions, packet.globalStyle, {
+          aspectRatio: packet.metadata.aspectRatio,
+          audience: packet.metadata.audience,
+          contentFormat: packet.metadata.format,
+          dramaticQuestion: packet.story.dramaticQuestion,
+          productionTitle: packet.metadata.title,
+        })
+        : null,
     })),
     soundPlan: packet.shots.map((shot) => ({
       shotId: shot.id,
@@ -217,7 +229,7 @@ export function buildProductionKit(input: unknown): ProductionKit {
         "continuity and preflight gates",
         "render scoring and constrained repair instructions",
       ],
-      dispatchRule: "Dispatch only shots with a passing preflight, a non-overloaded constraint budget, and every required high-risk reference asset attached.",
+      dispatchRule: "Dispatch only shots with a passing preflight, a non-overloaded constraint budget, and every required high-risk reference asset attached. A delayed reveal never dispatches from the primary single-pass prompt: use revealSplitPlan.preReveal first, then compile its render-observed continuation.",
       acceptanceRule: "Provider output is evidence, not success: inspect each route acceptance check before accepting or extending it.",
     },
   };

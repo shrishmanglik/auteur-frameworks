@@ -46,6 +46,196 @@ export interface ShotRouteAdvice {
 
 const contains = (text: string, pattern: RegExp): boolean => pattern.test(text);
 
+const normalizeInventoryItem = (item: string): string => item
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, " ")
+  .trim();
+
+const INVENTORY_QUANTITIES: Readonly<Record<string, number>> = {
+  a: 1,
+  an: 1,
+  one: 1,
+  single: 1,
+  two: 2,
+  three: 3,
+  four: 4,
+  five: 5,
+  six: 6,
+  seven: 7,
+  eight: 8,
+  both: 2,
+  nine: 9,
+  ten: 10,
+};
+
+const ADDITIVE_INVENTORY_WORDS = new Set(["additional", "another", "extra", "new"]);
+
+const IRREGULAR_SINGULARS: Readonly<Record<string, string>> = {
+  calves: "calf",
+  children: "child",
+  feet: "foot",
+  geese: "goose",
+  halves: "half",
+  knives: "knife",
+  leaves: "leaf",
+  lives: "life",
+  loaves: "loaf",
+  men: "man",
+  mice: "mouse",
+  people: "person",
+  scarves: "scarf",
+  selves: "self",
+  shelves: "shelf",
+  teeth: "tooth",
+  thieves: "thief",
+  women: "woman",
+  wives: "wife",
+  wolves: "wolf",
+};
+
+const singularizeInventoryHead = (token: string): string => {
+  const irregular = IRREGULAR_SINGULARS[token];
+  if (irregular) return irregular;
+  if (token.endsWith("ves") && token.length > 4) return `${token.slice(0, -3)}f`;
+  if (token.endsWith("ies") && token.length > 4) return `${token.slice(0, -3)}y`;
+  if (/(?:sses|xes|zes|ches|shes)$/.test(token) && token.length > 4) return token.slice(0, -2);
+  if (token.endsWith("s") && !token.endsWith("ss") && token.length > 3) return token.slice(0, -1);
+  return token;
+};
+
+const INVENTORY_POST_NOMINAL_MARKERS = new Set([
+  "both",
+  "coated",
+  "colored",
+  "coloured",
+  "finished",
+  "fully",
+  "in",
+  "lit",
+  "painted",
+  "remains",
+  "showing",
+  "under",
+  "visible",
+  "wearing",
+  "with",
+]);
+
+interface InventorySignature {
+  head: string;
+  quantity: number | null;
+  additive: boolean;
+  descriptors: Set<string>;
+}
+
+const inventorySignature = (item: string): InventorySignature => {
+  const tokens = normalizeInventoryItem(item).split(" ").filter(Boolean);
+  const explicitNumeric = tokens.find((token) => /^\d+$/.test(token));
+  const quantityWord = tokens.find((token) => INVENTORY_QUANTITIES[token] !== undefined);
+  const quantity = explicitNumeric
+    ? Number.parseInt(explicitNumeric, 10)
+    : quantityWord
+      ? INVENTORY_QUANTITIES[quantityWord]!
+      : tokens.includes("same")
+        ? 1
+        : null;
+  const lexicalTokens = tokens.filter((token) => (
+    !/^\d+$/.test(token)
+    && INVENTORY_QUANTITIES[token] === undefined
+    && token !== "same"
+    && !ADDITIVE_INVENTORY_WORDS.has(token)
+  ));
+  const postNominalIndex = lexicalTokens.findIndex((token) => INVENTORY_POST_NOMINAL_MARKERS.has(token));
+  const identityTokens = postNominalIndex > 0 ? lexicalTokens.slice(0, postNominalIndex) : lexicalTokens;
+  const rawHead = identityTokens.at(-1) ?? lexicalTokens.at(-1) ?? tokens.at(-1) ?? "";
+  const head = singularizeInventoryHead(rawHead);
+  const inferredQuantity = quantity ?? (rawHead === head ? 1 : null);
+  return {
+    head,
+    quantity: inferredQuantity,
+    additive: tokens.some((token) => ADDITIVE_INVENTORY_WORDS.has(token)),
+    descriptors: new Set(identityTokens.slice(0, -1)),
+  };
+};
+
+const descriptorOverlap = (left: InventorySignature, right: InventorySignature): number => (
+  [...left.descriptors].filter((token) => right.descriptors.has(token)).length
+);
+
+export function terminalOnlyVisibleInventory(shot: Shot): string[] {
+  const opening = shot.frameStates.opening;
+  const terminal = shot.frameStates.terminal;
+  if (!opening || !terminal) return [];
+
+  const openingByHead = new Map<string, InventorySignature[]>();
+  for (const item of opening.visibleInventory) {
+    const signature = inventorySignature(item);
+    const signatures = openingByHead.get(signature.head) ?? [];
+    signatures.push(signature);
+    openingByHead.set(signature.head, signatures);
+  }
+
+  const terminalEntries = terminal.visibleInventory.map((item, index) => ({
+    index,
+    item,
+    signature: inventorySignature(item),
+  }));
+  const terminalByHead = new Map<string, typeof terminalEntries>();
+  for (const entry of terminalEntries) {
+    const entries = terminalByHead.get(entry.signature.head) ?? [];
+    entries.push(entry);
+    terminalByHead.set(entry.signature.head, entries);
+  }
+
+  const terminalOnlyIndexes = new Set<number>();
+  for (const [head, entries] of terminalByHead) {
+    const additiveEntries = entries.filter((entry) => entry.signature.additive);
+    additiveEntries.forEach((entry) => terminalOnlyIndexes.add(entry.index));
+    const candidates = entries.filter((entry) => !entry.signature.additive);
+    const openingSignatures = openingByHead.get(head);
+    if (!openingSignatures?.length) {
+      candidates.forEach((entry) => terminalOnlyIndexes.add(entry.index));
+      continue;
+    }
+    if (
+      openingSignatures.some((signature) => signature.quantity === null)
+      || candidates.some((entry) => entry.signature.quantity === null)
+    ) {
+      continue;
+    }
+
+    const openingQuantity = openingSignatures.reduce(
+      (sum, signature) => sum + (signature.quantity ?? 0),
+      0,
+    );
+    const terminalQuantity = candidates.reduce(
+      (sum, entry) => sum + (entry.signature.quantity ?? 0),
+      0,
+    );
+    let excessQuantity = terminalQuantity - openingQuantity;
+    if (excessQuantity <= 0) continue;
+
+    const leastLikeOpening = [...candidates].sort((left, right) => {
+      const leftOverlap = Math.max(...openingSignatures.map(
+        (openingSignature) => descriptorOverlap(left.signature, openingSignature),
+      ));
+      const rightOverlap = Math.max(...openingSignatures.map(
+        (openingSignature) => descriptorOverlap(right.signature, openingSignature),
+      ));
+      return leftOverlap - rightOverlap || right.index - left.index;
+    });
+    for (const entry of leastLikeOpening) {
+      if (excessQuantity <= 0) break;
+      terminalOnlyIndexes.add(entry.index);
+      excessQuantity -= entry.signature.quantity ?? 1;
+    }
+  }
+
+  return terminalEntries
+    .filter((entry) => terminalOnlyIndexes.has(entry.index))
+    .map((entry) => entry.item);
+}
+
 export function assessShotConstraintBudget(input: Shot): ShotConstraintBudget {
   const shot = ShotSchema.parse(input);
   const explicitRisks = new Set(shot.generationRisks);
@@ -224,6 +414,21 @@ export function assessShotRoute(input: Shot): ShotRouteAdvice {
     acceptanceChecks.add("Compare face, wardrobe, anatomy, and emotional amplitude across the full shot.");
   }
 
+  const delayedTerminalReveal = explicitRisks.has("DELAYED_TERMINAL_REVEAL")
+    || terminalOnlyVisibleInventory(shot).length > 0;
+  if (delayedTerminalReveal) {
+    risks.push({
+      code: "DELAYED_TERMINAL_REVEAL",
+      level: "high",
+      reason: "The terminal frame introduces visible inventory that must remain absent or occluded in the opening state.",
+      mitigation: "Split at a stable pre-reveal handoff. The first pass must omit every terminal-only term and asset; compile the reveal only after observing the accepted first pass's actual final frame.",
+    });
+    requiredAssets.add("explicit opening and terminal frame states for reveal isolation");
+    requiredAssets.add("accepted pre-reveal final frame for render-observed continuation compilation");
+    acceptanceChecks.add("Reject a pre-reveal pass whose prompt or pixels expose terminal-only inventory.");
+    acceptanceChecks.add("Reject a reveal continuation that resets, reframes, teleports, dissolves, morphs geometry, or omits the declared reveal.");
+  }
+
   if (explicitRisks.has("TRANSFORMATION_PHASES") || shot.frameworkId === "temporal-evolution"
     || contains(productionText, /\b(?:transform|transformation|turns into|particles? (?:assemble|travel|become))\b/)) {
     risks.push({
@@ -276,6 +481,7 @@ export function assessShotRoute(input: Shot): ShotRouteAdvice {
       : "low";
   const codes = new Set(risks.map((risk) => risk.code));
   const recommendedMode: GenerationMode = codes.has("COMPOUND_CONSTRAINT_OVERLOAD") || codes.has("EXACT_FLUID_COUNT")
+    || codes.has("DELAYED_TERMINAL_REVEAL")
     ? "split-pass"
     : codes.has("PRECISE_MECHANICAL_ASSEMBLY") || codes.has("CAUSAL_CONTACT_CHOREOGRAPHY")
       || codes.has("MULTI_SUBJECT_DYNAMICS") || codes.has("PRECISE_SPATIAL_CLEARANCE")

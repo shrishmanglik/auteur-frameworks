@@ -4,8 +4,10 @@ import {
   UniversalPacketSchema,
   assessShotConstraintBudget,
   assessShotRoute,
+  buildDelayedRevealSplitPlan,
   buildProductionKit,
   preflightPacket,
+  terminalOnlyVisibleInventory,
 } from "../src/index.js";
 
 const example = JSON.parse(fs.readFileSync(new URL("../examples/product-film.json", import.meta.url), "utf8"));
@@ -191,6 +193,396 @@ describe("route advisor", () => {
     const advice = assessShotRoute(shot);
     expect(advice.recommendedMode).toBe("first-last-frame");
     expect(advice.providerCapabilityStatus).toBe("UNKNOWN");
+  });
+
+  it("routes delayed terminal inventory to a lexically isolated split", () => {
+    const shot = structuredClone(baseShot);
+    shot.intent = "build dread before revealing the bronze bell";
+    shot.frameStates = {
+      opening: {
+        subject: "one diver with one lamp",
+        action: "the diver enters a timber gap",
+        environment: "green water and occluding timber",
+        visibleInventory: ["one diver", "one lamp", "one timber gap"],
+        paletteBase: ["cold green", "weathered timber"],
+        materials: ["waterlogged timber", "black drysuit fabric"],
+        imperfectionAnchors: ["uneven silt density"],
+        continuityLocks: ["same diver gear"],
+      },
+      terminal: {
+        subject: "the same diver with the same lamp",
+        action: "the lamp reveals one attached bell",
+        environment: "green water beside an attached bronze bell",
+        visibleInventory: ["one diver", "one lamp", "one attached bronze bell"],
+        paletteBase: ["cold green", "aged bronze"],
+        materials: ["waterlogged timber", "oxidized bronze"],
+        imperfectionAnchors: ["biofouling on the bell edge"],
+        continuityLocks: ["same diver gear", "bell stays attached"],
+      },
+    };
+
+    const advice = assessShotRoute(shot);
+    expect(advice.recommendedMode).toBe("split-pass");
+    expect(advice.risks).toContainEqual(expect.objectContaining({ code: "DELAYED_TERMINAL_REVEAL", level: "high" }));
+    expect(advice.requiredAssets).toContain("accepted pre-reveal final frame for render-observed continuation compilation");
+    expect(advice.acceptanceChecks).toContain("Reject a pre-reveal pass whose prompt or pixels expose terminal-only inventory.");
+
+    const plan = buildDelayedRevealSplitPlan(shot, [], [], {
+      productionTitle: "The bronze bell",
+      storyLogline: "A diver discovers a bronze bell inside a wreck.",
+      scenePurpose: "Reveal the bell only at the end.",
+    });
+    expect(plan.mode).toBe("split-pass");
+    expect(plan.terminalOnlyInventory).toEqual(["one attached bronze bell"]);
+    expect(plan.preReveal.lexicalAudit).toMatchObject({ passed: true, matches: [] });
+    expect(plan.preReveal.prompts.promptFidelity).toBe("FRAMEWORK_NATIVE");
+    expect(plan.preReveal.prompts.videoPrompt).not.toMatch(/bell|bronze/i);
+    expect(plan.preReveal.prompts.compactVideoPrompt).not.toMatch(/bell|bronze/i);
+    expect(plan.preReveal.prompts.openingFramePrompt).not.toMatch(/bell|bronze/i);
+    expect(plan.preReveal.prompts.terminalFramePrompt).not.toMatch(/bell|bronze/i);
+    expect(plan.preReveal.prompts.audioPrompt).not.toMatch(/bell|bronze/i);
+    expect(plan.preReveal.prompts.negativePrompt).not.toMatch(/bell|bronze/i);
+    expect(plan.revealContinuation.status).toBe("REQUIRES_RENDER_OBSERVED_FINAL_FRAME");
+    expect(plan.revealContinuation.targetFramePrompt).toContain("one attached bell");
+    expect(preflightPacket({
+      ...structuredClone(example),
+      shots: [shot],
+    }).issues).toContainEqual(expect.objectContaining({
+      code: "DELAYED_REVEAL_SINGLE_PASS_BLOCKED",
+      severity: "error",
+    }));
+  });
+
+  it("does not mistake material wording changes for new terminal inventory", () => {
+    const shot = structuredClone(baseShot);
+    shot.frameStates = {
+      opening: {
+        subject: "one diver",
+        action: "the diver enters",
+        environment: "green water",
+        visibleInventory: ["one diver", "one right-hand lamp", "two plain brushed-metal tanks"],
+        paletteBase: ["cold green"],
+        materials: ["black neoprene", "brushed metal"],
+        imperfectionAnchors: ["uneven silt"],
+        continuityLocks: ["same diver gear"],
+      },
+      terminal: {
+        subject: "the same diver",
+        action: "the lamp reveals one attached bronze bell",
+        environment: "green water",
+        visibleInventory: ["one diver", "one lamp", "two plain tanks", "one attached bronze bell"],
+        paletteBase: ["cold green", "aged bronze"],
+        materials: ["black neoprene", "oxidized bronze"],
+        imperfectionAnchors: ["uneven silt"],
+        continuityLocks: ["same diver gear"],
+      },
+    };
+
+    const plan = buildDelayedRevealSplitPlan(shot);
+    expect(plan.terminalOnlyInventory).toEqual(["one attached bronze bell"]);
+    expect(plan.preReveal.lexicalAudit.forbiddenTerms).toEqual(expect.arrayContaining(["bronze", "bell"]));
+    expect(plan.preReveal.lexicalAudit.forbiddenTerms).not.toContain("tanks");
+  });
+
+  it("treats an explicitly additional object as new even when its head noun already exists", () => {
+    const shot = structuredClone(baseShot);
+    shot.frameStates = {
+      opening: {
+        subject: "one diver",
+        action: "the diver waits",
+        environment: "green water",
+        visibleInventory: ["one diver", "two plain brushed-metal tanks"],
+        paletteBase: ["cold green"],
+        materials: ["black neoprene", "brushed metal"],
+        imperfectionAnchors: ["uneven silt"],
+        continuityLocks: ["same diver gear"],
+      },
+      terminal: {
+        subject: "the same diver",
+        action: "one additional oxygen tank enters beside the diver",
+        environment: "green water",
+        visibleInventory: ["one diver", "two plain tanks", "one additional oxygen tank"],
+        paletteBase: ["cold green"],
+        materials: ["black neoprene", "brushed metal"],
+        imperfectionAnchors: ["uneven silt"],
+        continuityLocks: ["same diver gear"],
+      },
+    };
+
+    expect(terminalOnlyVisibleInventory(shot)).toEqual(["one additional oxygen tank"]);
+  });
+
+  it("keeps the same counted object when only descriptive state changes", () => {
+    const shot = structuredClone(baseShot);
+    shot.frameStates = {
+      opening: {
+        subject: "one worker",
+        action: "the worker faces a closed door",
+        environment: "plain corridor",
+        visibleInventory: ["one worker", "one red steel door"],
+        paletteBase: ["neutral gray", "red"],
+        materials: ["painted steel"],
+        imperfectionAnchors: ["small paint scuffs"],
+        continuityLocks: ["same worker and door geometry"],
+      },
+      terminal: {
+        subject: "the same worker",
+        action: "blue light crosses the same closed door",
+        environment: "the same corridor",
+        visibleInventory: ["one worker", "one blue steel door"],
+        paletteBase: ["neutral gray", "blue"],
+        materials: ["painted steel"],
+        imperfectionAnchors: ["same paint scuffs"],
+        continuityLocks: ["same worker and door geometry"],
+      },
+    };
+
+    expect(terminalOnlyVisibleInventory(shot)).toEqual([]);
+  });
+
+  it("accounts for same-head inventory as a multiset and identifies the added instance", () => {
+    const shot = structuredClone(baseShot);
+    shot.frameStates = {
+      opening: {
+        subject: "one technician",
+        action: "the technician waits beside a table lamp",
+        environment: "a plain workshop",
+        visibleInventory: ["one technician", "one table lamp"],
+        paletteBase: ["neutral gray"],
+        materials: ["painted steel"],
+        imperfectionAnchors: ["small workbench scratches"],
+        continuityLocks: ["same technician and workshop"],
+      },
+      terminal: {
+        subject: "the same technician",
+        action: "a diving lamp is placed beside the table lamp",
+        environment: "the same workshop",
+        visibleInventory: ["one technician", "one table lamp", "one diving lamp"],
+        paletteBase: ["neutral gray"],
+        materials: ["painted steel"],
+        imperfectionAnchors: ["same workbench scratches"],
+        continuityLocks: ["same technician and workshop"],
+      },
+    };
+
+    expect(terminalOnlyVisibleInventory(shot)).toEqual(["one diving lamp"]);
+    expect(assessShotRoute(shot).recommendedMode).toBe("split-pass");
+  });
+
+  it("ignores post-nominal appearance changes when object count and head stay fixed", () => {
+    const shot = structuredClone(baseShot);
+    shot.frameStates = {
+      opening: {
+        subject: "one worker",
+        action: "the worker faces a closed door",
+        environment: "plain corridor",
+        visibleInventory: ["one worker", "one steel door painted red"],
+        paletteBase: ["neutral gray", "red"],
+        materials: ["painted steel"],
+        imperfectionAnchors: ["small paint scuffs"],
+        continuityLocks: ["same worker and door geometry"],
+      },
+      terminal: {
+        subject: "the same worker",
+        action: "blue light crosses the same closed door",
+        environment: "the same corridor",
+        visibleInventory: ["one worker", "one steel door painted blue"],
+        paletteBase: ["neutral gray", "blue"],
+        materials: ["painted steel"],
+        imperfectionAnchors: ["same paint scuffs"],
+        continuityLocks: ["same worker and door geometry"],
+      },
+    };
+
+    expect(terminalOnlyVisibleInventory(shot)).toEqual([]);
+  });
+
+  it("blocks singular and plural forms of terminal-only inventory across every prompt surface", () => {
+    const shot = structuredClone(baseShot);
+    shot.intent = "delay the bronze bells until the final state";
+    shot.camera.movement = "move toward one bell without changing axis";
+    shot.generationRisks = ["DELAYED_TERMINAL_REVEAL"];
+    shot.frameStates = {
+      opening: {
+        subject: "one diver with one lamp",
+        action: "the diver enters a timber gap",
+        environment: "green water and occluding timber",
+        visibleInventory: ["one diver", "one lamp", "one timber gap"],
+        paletteBase: ["cold green", "weathered timber"],
+        materials: ["waterlogged timber", "black drysuit fabric"],
+        imperfectionAnchors: ["uneven silt density"],
+        continuityLocks: ["same diver gear"],
+      },
+      terminal: {
+        subject: "the same diver with the same lamp",
+        action: "the lamp reaches two bronze bells",
+        environment: "green water beside two bronze bells",
+        visibleInventory: ["one diver", "one lamp", "two bronze bells"],
+        paletteBase: ["cold green", "aged bronze"],
+        materials: ["waterlogged timber", "oxidized bronze"],
+        imperfectionAnchors: ["biofouling on both bells"],
+        continuityLocks: ["same diver gear", "both bells stay attached"],
+      },
+    };
+
+    const plan = buildDelayedRevealSplitPlan(shot);
+    const preRevealSurfaces = [
+      plan.preReveal.prompts.videoPrompt,
+      plan.preReveal.prompts.compactVideoPrompt,
+      plan.preReveal.prompts.openingFramePrompt,
+      plan.preReveal.prompts.terminalFramePrompt,
+      plan.preReveal.prompts.framePrompt,
+      plan.preReveal.prompts.audioPrompt ?? "",
+      plan.preReveal.prompts.negativePrompt,
+    ].join("\n");
+
+    expect(plan.preReveal.lexicalAudit.forbiddenTerms).toEqual(expect.arrayContaining(["bell", "bells"]));
+    expect(plan.preReveal.lexicalAudit.passed).toBe(true);
+    expect(preRevealSurfaces).not.toMatch(/\bbells?\b/i);
+  });
+
+  it("normalizes irregular terminal nouns without treating persistence prose as a leak", () => {
+    const shot = structuredClone(baseShot);
+    shot.intent = "withhold two knives until the final state";
+    shot.camera.framing = "keep the singular knife position outside the opening crop";
+    shot.generationRisks = ["DELAYED_TERMINAL_REVEAL"];
+    shot.frameStates = {
+      opening: {
+        subject: "one chef at a workbench",
+        action: "the chef waits with both hands visible",
+        environment: "a plain prep kitchen",
+        visibleInventory: ["one chef", "one workbench"],
+        paletteBase: ["neutral steel", "soft white"],
+        materials: ["brushed steel", "worn wood"],
+        imperfectionAnchors: ["small workbench scratches"],
+        continuityLocks: ["same chef and workbench"],
+      },
+      terminal: {
+        subject: "the same chef at the same workbench",
+        action: "the chef opens a drawer containing two knives",
+        environment: "the same prep kitchen beside an open drawer",
+        visibleInventory: ["one chef", "one workbench", "two knives"],
+        paletteBase: ["neutral steel", "soft white"],
+        materials: ["brushed steel", "worn wood"],
+        imperfectionAnchors: ["same workbench scratches"],
+        continuityLocks: ["same chef and workbench", "both knives remain inside the drawer"],
+      },
+    };
+
+    const plan = buildDelayedRevealSplitPlan(shot);
+    const preRevealSurfaces = [
+      plan.preReveal.prompts.videoPrompt,
+      plan.preReveal.prompts.compactVideoPrompt,
+      plan.preReveal.prompts.openingFramePrompt,
+      plan.preReveal.prompts.terminalFramePrompt,
+      plan.preReveal.prompts.audioPrompt ?? "",
+      plan.preReveal.prompts.negativePrompt,
+    ].join("\n");
+
+    expect(plan.preReveal.lexicalAudit.forbiddenTerms).toEqual(expect.arrayContaining(["knife", "knives"]));
+    expect(plan.preReveal.lexicalAudit.forbiddenTerms).not.toContain("remains");
+    expect(plan.preReveal.lexicalAudit.passed).toBe(true);
+    expect(preRevealSurfaces).not.toMatch(/\b(?:knife|knives)\b/i);
+  });
+
+  it("does not confuse generic framework verbs with leaked terminal-object language", () => {
+    const shot = structuredClone(baseShot);
+    shot.generationRisks = ["DELAYED_TERMINAL_REVEAL"];
+    shot.camera.optics.lensModel = "Bell Prime";
+    shot.frameStates = {
+      opening: {
+        subject: "one diver with one lamp",
+        action: "the diver enters a timber gap",
+        environment: "green water and occluding timber",
+        visibleInventory: ["one diver", "one lamp", "one timber gap"],
+        paletteBase: ["cold green", "weathered timber"],
+        materials: ["waterlogged timber", "black drysuit fabric"],
+        imperfectionAnchors: ["uneven silt density"],
+        continuityLocks: ["same diver gear"],
+      },
+      terminal: {
+        subject: "the same diver with the same lamp",
+        action: "a new bell appears beyond the timber gap",
+        environment: "green water beside one bronze bell",
+        visibleInventory: ["one diver", "one lamp", "one bronze bell"],
+        paletteBase: ["cold green", "aged bronze"],
+        materials: ["waterlogged timber", "oxidized bronze"],
+        imperfectionAnchors: ["biofouling on the bell edge"],
+        continuityLocks: ["same diver gear", "the bell stays attached"],
+      },
+    };
+
+    const plan = buildDelayedRevealSplitPlan(shot);
+    expect(plan.preReveal.lexicalAudit.passed).toBe(true);
+    expect(plan.preReveal.lexicalAudit.matches).toEqual([]);
+    expect(plan.preReveal.prompts.videoPrompt).not.toMatch(/Bell Prime/i);
+    expect(plan.preReveal.prompts.openingFramePrompt).not.toMatch(/Bell Prime/i);
+    expect(plan.preReveal.shot.camera.optics.lensModel).toBe("provider-neutral cinema lens");
+    expect(plan.preReveal.lexicalAudit.forbiddenTerms).not.toEqual(expect.arrayContaining([
+      "new",
+      "appear",
+      "appears",
+    ]));
+  });
+
+  it("builds an explicit relationship reveal without requiring new terminal inventory", () => {
+    const packet = structuredClone(example);
+    const shot = packet.shots[0];
+    shot.intent = "hold emotional restraint until the daughter recognizes her father";
+    shot.subject = "one adult woman and one older man seated across a table";
+    shot.action = "the woman studies the man, recognizes her father, then reaches toward his hand";
+    shot.environment = "a quiet family kitchen at night";
+    shot.beats = [
+      { startSeconds: 0, endSeconds: 4, action: "the woman studies the man across the table" },
+      { startSeconds: 4, endSeconds: 8, action: "the woman recognizes her father and reaches toward his hand" },
+    ];
+    shot.physics = ["natural breathing and restrained hand movement"];
+    shot.continuityLocks = ["same two people", "same table geometry", "same screen direction"];
+    shot.generationRisks = ["DELAYED_TERMINAL_REVEAL"];
+    shot.dialogue = undefined;
+    shot.onScreenText = undefined;
+    shot.audioTrack = { soundDesignDirectives: ["quiet room tone"] };
+    shot.frameStates = {
+      opening: {
+        subject: "one adult woman and one older man",
+        action: "the woman studies the man across the table without recognition",
+        environment: "a quiet family kitchen at night",
+        visibleInventory: ["one woman", "one man", "one table"],
+        paletteBase: ["neutral tungsten", "muted blue"],
+        materials: ["worn wood", "cotton clothing"],
+        imperfectionAnchors: ["faint skin texture", "small table scratches"],
+        continuityLocks: ["same two people", "same table geometry", "same screen direction"],
+      },
+      terminal: {
+        subject: "the same adult woman and older man",
+        action: "the woman recognizes the man as her father and reaches toward his hand",
+        environment: "the same quiet family kitchen at night",
+        visibleInventory: ["one woman", "one man", "one table"],
+        paletteBase: ["neutral tungsten", "muted blue"],
+        materials: ["worn wood", "cotton clothing"],
+        imperfectionAnchors: ["faint skin texture", "small table scratches"],
+        continuityLocks: ["same two people", "same table geometry", "same screen direction"],
+      },
+    };
+
+    const plan = buildDelayedRevealSplitPlan(shot);
+    const preRevealSurfaces = [
+      plan.preReveal.prompts.videoPrompt,
+      plan.preReveal.prompts.compactVideoPrompt,
+      plan.preReveal.prompts.openingFramePrompt,
+      plan.preReveal.prompts.terminalFramePrompt,
+      plan.preReveal.prompts.audioPrompt ?? "",
+      plan.preReveal.prompts.negativePrompt,
+    ].join("\n");
+
+    expect(plan.terminalOnlyInventory).toEqual([]);
+    expect(plan.preReveal.lexicalAudit.passed).toBe(true);
+    expect(preRevealSurfaces).not.toMatch(/father|recognizes|recognition/i);
+    expect(plan.preReveal.shot.dialogue).toBeUndefined();
+    expect(plan.preReveal.shot.audioTrack.spokenText).toBeUndefined();
+    expect(plan.preReveal.shot.audioTrack.spokenWindow).toBeUndefined();
+    expect(plan.preReveal.shot.onScreenText).toBeUndefined();
+    expect(() => buildProductionKit(packet)).not.toThrow();
   });
 
   it("routes multi-subject dynamics and precise clearance without calling them assembly", () => {
