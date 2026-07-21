@@ -170,6 +170,47 @@ export function preflightShot(shot: Shot, audioRequired = false): PreflightIssue
     });
   }
 
+  const spokenText = shot.dialogue ?? shot.audioTrack.spokenText;
+  const spokenWindow = shot.audioTrack.spokenWindow;
+  if (spokenText && spokenWindow && shot.audioTrack.paceWpm) {
+    const wordCount = spokenText.trim().split(/\s+/).filter(Boolean).length;
+    const requiredSeconds = wordCount / shot.audioTrack.paceWpm * 60;
+    const availableSeconds = spokenWindow.endSeconds - spokenWindow.startSeconds;
+    if (requiredSeconds > availableSeconds + 0.01) {
+      issues.push({
+        code: "SPOKEN_WINDOW_PACE_CONFLICT",
+        severity: "error",
+        shotId: shot.id,
+        message: `${wordCount} words at ${shot.audioTrack.paceWpm} WPM require about ${requiredSeconds.toFixed(2)}s, but the spoken window allows ${availableSeconds.toFixed(2)}s.`,
+        action: "Shorten the approved line, increase the declared pace, or expand the spoken window before generation.",
+      });
+    }
+  }
+
+  if (shot.frameworkId === "avatar-a-roll-json" && spokenWindow) {
+    const frameRate = shot.camera.capture.frameRateFps ?? 24;
+    const freezePadFrames = shot.performance.freezePadFramesAtEnd ?? 8;
+    const latestSpeechEnd = shot.durationSeconds - freezePadFrames / frameRate;
+    if (spokenWindow.endSeconds > latestSpeechEnd + 0.001) {
+      issues.push({
+        code: "AROLL_TERMINAL_HOLD_CONFLICT",
+        severity: "error",
+        shotId: shot.id,
+        message: `Speech ends at ${spokenWindow.endSeconds}s, leaving fewer than ${freezePadFrames} terminal hold frames at ${frameRate}fps.`,
+        action: `End speech by ${latestSpeechEnd.toFixed(2)}s, reduce freezePadFramesAtEnd, or increase the shot duration.`,
+      });
+    }
+    if (spokenWindow.startSeconds > 0) {
+      issues.push({
+        code: "AROLL_DELAYED_SPEECH_RUNTIME_CHECK",
+        severity: "warning",
+        shotId: shot.id,
+        message: "The A-roll contract requests a silent lead-in, but provider timing adherence remains runtime evidence.",
+        action: "Measure returned audio onset and reject or reroute the shot if articulation starts before the declared window.",
+      });
+    }
+  }
+
   if ((shot.dialogue ?? shot.audioTrack.spokenText)
     && shot.generationRisks.includes("EXACT_DIALOGUE_AUDIO")
     && !shot.audioTrack.spokenWindow) {

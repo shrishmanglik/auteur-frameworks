@@ -328,8 +328,15 @@ describe("compiler", () => {
       .performance_manifest.facial_constraints.head_movement_max_degrees).toBe(3);
     expect(manifest.layer_iv_scene_blueprint.keyframe_directives["4_audio_and_sensory_sync"]
       .locked_audio_profile.phoneme_alignment.acceptance_target_ms).toBe(20);
+    expect(manifest.layer_iv_scene_blueprint.keyframe_directives["4_audio_and_sensory_sync"]
+      .locked_audio_profile.phoneme_alignment.confidence_min).toBe(0.99);
+    expect(manifest.layer_i_global_creative_directive.render_specifications.freeze_pad_frames_at_end).toBe(8);
+    expect(manifest.layer_iv_scene_blueprint.keyframe_directives["1_subjects_kinetics_and_phenomenology"]
+      .performance_manifest.terminal_hold.freeze_pad_frames_at_end).toBe(8);
     expect(manifest.layer_vi_ai_model_constraints.triple_lock_protocol.script_lock.rule).toContain("verbatim once");
     expect(compactManifest.manifest_version).toBe(manifest.manifest_version);
+    expect(compactManifest.global_creative_directive.freeze_pad_frames_at_end).toBe(8);
+    expect(compactManifest.scene_blueprint.audio_vocal_lock.lip_sync_confidence_min).toBe(0.99);
     expect(compiled.videoPrompt.match(/We spent three weeks/g)).toHaveLength(1);
     expect(compiled.compactPromptReport.frameworkPreserved).toBe(true);
     expect(compiled.compactPromptReport.omittedExclusions).toEqual([]);
@@ -372,8 +379,36 @@ describe("compiler", () => {
     expect(compiled.videoPrompt).toContain("no paraphrase");
     expect(compiled.videoPrompt).toContain("no later action");
     expect(compiled.videoPrompt).toContain("no new action");
-    expect(compiled.compactVideoPrompt).toContain("no paraphrase");
-    expect(compiled.compactVideoPrompt).toContain("no later beat starts early");
+    expect(compiled.compactVideoPrompt).toContain("no rewrite");
+    expect(compiled.compactVideoPrompt).toContain("no early beat");
+  });
+
+  it("blocks impossible A-roll speech windows and terminal holds", () => {
+    const packet = UniversalPacketSchema.parse(JSON.parse(
+      fs.readFileSync(new URL("../examples/a-roll.json", import.meta.url), "utf8"),
+    ));
+    const shot = structuredClone(packet.shots[0]!);
+    shot.durationSeconds = 8;
+    shot.dialogue = "Most AI videos fail before the model generates a frame because the idea never became a production plan.";
+    shot.audioTrack.spokenText = shot.dialogue;
+    shot.audioTrack.paceWpm = 138;
+    shot.audioTrack.spokenWindow = { startSeconds: 0.4, endSeconds: 7.9 };
+    shot.performance.freezePadFramesAtEnd = 8;
+    shot.beats = [
+      { startSeconds: 0, endSeconds: 0.4, action: "hold closed lips" },
+      { startSeconds: 0.4, endSeconds: 7.9, action: "say the approved line" },
+      { startSeconds: 7.9, endSeconds: 8, action: "hold the terminal frame" },
+    ];
+
+    const issues = preflightPacket({
+      ...packet,
+      metadata: { ...packet.metadata, targetDurationSeconds: 8 },
+      scenes: [{ ...packet.scenes[0]!, shotIds: [shot.id] }],
+      shots: [shot],
+    }).issues;
+    expect(issues.map((issue) => issue.code)).toContain("SPOKEN_WINDOW_PACE_CONFLICT");
+    expect(issues.map((issue) => issue.code)).toContain("AROLL_TERMINAL_HOLD_CONFLICT");
+    expect(issues.map((issue) => issue.code)).toContain("AROLL_DELAYED_SPEECH_RUNTIME_CHECK");
   });
 
   it("compiles brand control as a positive blank-surface state", () => {

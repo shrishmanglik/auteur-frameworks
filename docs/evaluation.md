@@ -115,6 +115,10 @@ Version 0.8 therefore routes A-roll to `avatar-a-roll-json`. The full contract r
 
 Any A-roll render produced through the former `continuous-take` route is retained only as failure evidence. It does not validate the corrected architecture. Provider quality remains unproven until a new JSON-native render is downloaded and audited.
 
+The first v0.8 JSON-native Flow run did not clear that gate. It reproduced the approved line once and kept identity, set, camera, wardrobe, light, and microphone broadly stable, but local transcription placed speech at 0.00-6.90 seconds instead of the declared 0.40-7.40 seconds. A 0.735-second silent tail appeared, yet the terminal frame reopened the mouth. Independent rubric review scored the new render 20.5/30 versus 19.5/30 for the superseded prose baseline, a 5.1% relative gain. Both remained blocked by timing and terminal-handoff defects, and no continuation was generated.
+
+That audit exposed a deterministic packet defect as well as provider non-adherence: 18 words at 138 WPM require about 7.83 seconds, while the packet allowed 7.0 seconds. Version 0.8.1 blocks contradictory word-count, pace, and speech-window combinations; reserves an explicit terminal frame pad; and carries a corpus-derived lip-sync confidence acceptance target. The sanitized observation is [`a-roll-json-flow-cycle-2026-07-21.json`](evidence/a-roll-json-flow-cycle-2026-07-21.json).
+
 ### Framework-native rejection loop
 
 Maintainers then submitted three full `continuous-take` prompts for the same rain-cab contract. All three returned continuous eight-second H.264/AAC media with exact speech, plausible wet materials, and stable identity; all three were rejected. The first scored 92/100 but invented vehicle lettering and spoke 0.83 seconds early. The timing/surface repair scored 81/100, retained lettering, added visible subtitles, closed a locked-open door, and still spoke 0.70 seconds early. The no-anticipation/affirmative-surface repair scored 76/100: the door was already open in frame one, speech began 1.32 seconds early, subtitles remained, and a large roof mark appeared.

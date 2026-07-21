@@ -103,6 +103,7 @@ export const PerformanceSchema = z.object({
   headMovementMaxDegrees: z.number().min(0).max(45).optional(),
   jawMovementMaxDeviationMm: z.number().min(0).max(25).optional(),
   emotionalExpressionSource: z.string().min(1).optional(),
+  freezePadFramesAtEnd: z.number().int().min(0).max(240).optional(),
 }).default({});
 
 export const AudioTrackSchema = z.object({
@@ -122,6 +123,7 @@ export const AudioTrackSchema = z.object({
   paceWpm: z.number().min(60).max(240).optional(),
   deliveryStyle: z.string().min(1).optional(),
   phonemeToleranceMs: z.number().min(0).max(250).optional(),
+  lipSyncConfidenceMin: z.number().min(0).max(1).optional(),
   mix: z.object({
     integratedLufs: z.number().min(-70).max(0).optional(),
     truePeakDbfsMax: z.number().min(-20).max(0).optional(),

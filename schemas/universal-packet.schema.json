@@ -659,6 +659,11 @@
               "emotionalExpressionSource": {
                 "type": "string",
                 "minLength": 1
+              },
+              "freezePadFramesAtEnd": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 240
               }
             },
             "additionalProperties": false
@@ -724,6 +729,11 @@
                 "type": "number",
                 "minimum": 0,
                 "maximum": 250
+              },
+              "lipSyncConfidenceMin": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
               },
               "mix": {
                 "type": "object",

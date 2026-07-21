@@ -148,7 +148,8 @@
         "lipArticulationStyle": "economical natural movement",
         "headMovementMaxDegrees": 3,
         "jawMovementMaxDeviationMm": 5,
-        "emotionalExpressionSource": "eyes and brows, with one restrained lean at the rule"
+        "emotionalExpressionSource": "eyes and brows, with one restrained lean at the rule",
+        "freezePadFramesAtEnd": 8
       },
       "audioTrack": {
         "spokenText": "We spent three weeks automating a refund handoff and made every refund slower. The embarrassing part was not the model. Sales thought support approved the refund; support thought sales did. We had automated an argument. Our rule now is simple: if two humans cannot run the same version of a process, software should not run it yet.",
@@ -167,6 +168,7 @@
         "paceWpm": 135,
         "deliveryStyle": "plainspoken close-mic founder delivery",
         "phonemeToleranceMs": 20,
+        "lipSyncConfidenceMin": 0.99,
         "mix": {
           "integratedLufs": -14,
           "truePeakDbfsMax": -1,

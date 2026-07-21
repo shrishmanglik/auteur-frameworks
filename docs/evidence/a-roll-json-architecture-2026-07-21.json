@@ -72,5 +72,32 @@
       "explicit rejection tests and a clean terminal handoff"
     ]
   },
+  "crossArchitectureSignals": {
+    "scope": "All 452 private records classified as JSON cinematic scene contracts with audio",
+    "strictJsonRecords": 367,
+    "terminalPad": {
+      "recordsWithFreezePadFramesAtEnd": 70,
+      "valueOccurrences": {
+        "0": 89,
+        "2": 5,
+        "3": 1,
+        "6": 9,
+        "8": 46
+      },
+      "interpretation": "Eight frames is the most common nonzero terminal pad. This is a cross-architecture prompt practice, not an A-roll success-rate or provider-capability claim.",
+      "hashPinnedExemplar": {
+        "promptLfNormalizedSha256": "3d0e300bd2fe927cf8686e59248e615b0802187945346cd9cd77104ffa71102d",
+        "characterCount": 5589
+      }
+    },
+    "lipSyncConfidence": {
+      "interpretation": "The A-roll lineage carries explicit lip-sync confidence acceptance targets in addition to phoneme timing.",
+      "hashPinnedExemplar": {
+        "promptLfNormalizedSha256": "fef28858ea8d4037387dfed0f8ac8c2874082e6944587abb46cd81ed680e1c59",
+        "characterCount": 787,
+        "lipSyncConfidenceMin": 0.99
+      }
+    }
+  },
   "claimBoundary": "This audit establishes a recurring prompt architecture in the private corpus. It does not prove a provider capability, a product limit, a success rate, or render quality. Returned media requires a separate observed-output audit."
 }

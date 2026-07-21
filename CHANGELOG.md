@@ -2,6 +2,21 @@
 
 All notable public changes are recorded here. The project follows semantic versioning while the API matures; versions below `1.0.0` may contain documented breaking changes.
 
+## 0.8.1 - 2026-07-21
+
+### Fixed
+
+- Added a blocking speech-window feasibility check: exact A-roll dialogue can no longer declare a word count, pace, and time window that contradict one another.
+- Added an explicit terminal frame pad to the A-roll performance contract; pre-flight rejects windows that leave too few end-hold frames.
+- Added a corpus-derived minimum lip-sync confidence acceptance target alongside the existing phoneme-tolerance target.
+- Added a runtime warning for delayed speech onsets so a provider ignoring a silent lead-in cannot pass on prompt intent alone.
+
+### Evidence
+
+- The first JSON-native A-roll Flow render preserved the exact sentence, identity, set, camera, wardrobe, and microphone, but began speech at 0.00s instead of 0.40s and ended on an open mouth after a silent tail. Independent scoring measured only 5.1% improvement over the superseded prose render, below the 10% project gate, so the asset was rejected and not extended.
+- The failed packet declared 18 words at 138 WPM inside a 7.0-second window even though that pace requires about 7.83 seconds. This contradiction had incorrectly passed pre-flight; v0.8.1 blocks it deterministically.
+- In the 452-record JSON-contract corpus, 367 prompts parse as strict JSON. Seventy records carry `freeze_pad_frames_at_end`; among nonzero values, eight frames is the most common. The A-roll lineage also carries explicit `lip_sync_conf_min` targets. These are corpus contract practices and acceptance targets, not provider capabilities.
+
 ## 0.8.0 - 2026-07-21
 
 ### Fixed

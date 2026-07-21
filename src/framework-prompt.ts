@@ -333,21 +333,24 @@ const compileAvatarARollJson = (
   const spokenWindow = shot.audioTrack.spokenWindow;
   const performerRef = shot.characterIds[0] ?? "PRIMARY_SPEAKER";
   const performance = shot.performance;
+  const freezePadFramesAtEnd = performance.freezePadFramesAtEnd ?? 8;
+  const lipSyncConfidenceMin = shot.audioTrack.lipSyncConfidenceMin ?? 0.99;
   if (context.compactSurface) {
     const compactContract = {
       project_manifest: {
         manifest_version: "AUTEUR A-Roll JSON 1.0",
         global_creative_directive: {
           format: "A-Roll",
-          fidelity: "photoreal; natural skin, speech, breath, weight, optics",
+          fidelity: "photoreal speech, skin, optics",
           duration_seconds: shot.durationSeconds,
           aspect_ratio: context.aspectRatio ?? "UNKNOWN",
           frame_rate_fps: shot.camera.capture.frameRateFps ?? 24,
+          freeze_pad_frames_at_end: freezePadFramesAtEnd,
         },
         character_asset_bible: {
           speaker: {
             ref_id: performerRef,
-            reference: "attached identity",
+            reference: "attached",
             identity_lock: shot.continuityLocks,
           },
           vocal_lock: {
@@ -402,14 +405,15 @@ const compileAvatarARollJson = (
               ? [spokenWindow.startSeconds, spokenWindow.endSeconds]
               : [0, shot.durationSeconds],
             phoneme_acceptance_ms: shot.audioTrack.phonemeToleranceMs ?? 20,
+            lip_sync_confidence_min: lipSyncConfidenceMin,
             sound: shot.audioTrack.soundDesignDirectives,
             music: shot.audioTrack.musicDirective ?? "no score",
           },
         },
         triple_lock_protocol: {
-          script: "verbatim once; no paraphrase, repeat, subtitle, or early speech",
-          identity: "lock supplied face, wardrobe, anatomy, eye line, and voice",
-          temporal: "one take; no later beat starts early",
+          script: "exact once; no rewrite/repeat/subtitle/early speech",
+          identity: "lock face, wardrobe, anatomy, eye line, voice",
+          temporal: "one take; no early beat; " + freezePadFramesAtEnd + "-frame closed-lip end",
         },
         constraints: {
           physics: shot.physics,
@@ -417,10 +421,10 @@ const compileAvatarARollJson = (
         },
         acceptance_tests: [
           "script exact once",
-          "sync within target",
+          "sync target",
           "identity/camera/set stable",
-          "natural micro-motion",
-          "closed-lip handoff",
+          "natural motion",
+          freezePadFramesAtEnd + "-frame closed-lip handoff",
         ],
       },
     };
@@ -445,6 +449,7 @@ const compileAvatarARollJson = (
           duration_seconds: shot.durationSeconds,
           aspect_ratio: context.aspectRatio ?? "UNKNOWN",
           frame_rate_fps: shot.camera.capture.frameRateFps ?? 24,
+          freeze_pad_frames_at_end: freezePadFramesAtEnd,
         },
       },
       layer_iii_character_and_asset_bible: {
@@ -478,6 +483,10 @@ const compileAvatarARollJson = (
                 lip_articulation_style: performance.lipArticulationStyle ?? "economical natural movement",
                 head_movement_max_degrees: performance.headMovementMaxDegrees ?? 2,
                 emotional_expression_source: performance.emotionalExpressionSource ?? "eyes and brows with restrained mouth movement",
+              },
+              terminal_hold: {
+                freeze_pad_frames_at_end: freezePadFramesAtEnd,
+                state: "lips gently sealed, jaw relaxed, eyes naturally open, no new gesture or articulation",
               },
               timeline: shot.beats.map((beat) => ({
                 time_range_seconds: [beat.startSeconds, beat.endSeconds],
@@ -521,6 +530,7 @@ const compileAvatarARollJson = (
               phoneme_alignment: {
                 mode: "strict",
                 acceptance_target_ms: shot.audioTrack.phonemeToleranceMs ?? 20,
+                confidence_min: lipSyncConfidenceMin,
               },
               mix: shot.audioTrack.mix ?? { stereoWidth: "neutral_centered" },
             },
@@ -539,7 +549,8 @@ const compileAvatarARollJson = (
               : "complete naturally inside the declared shot window",
           },
           identity_lock: "preserve the supplied face, wardrobe, anatomy, eye line, and voice signature",
-          temporal_lock: "single continuous take; " + temporalBoundaryRule(),
+          temporal_lock: "single continuous take; " + temporalBoundaryRule() + " Final "
+            + freezePadFramesAtEnd + " frames hold closed lips, relaxed jaw, stable eye line, and no new action.",
         },
         physics_rules: shot.physics,
         negative_exclusions: exclusions,
@@ -548,7 +559,7 @@ const compileAvatarARollJson = (
           "visible articulation aligns to the accepted audio within the declared target tolerance",
           "speaker identity, wardrobe, camera, background, light, and microphone geometry remain stable",
           "performance retains natural blinks, micro-saccades, breath, facial asymmetry, and restrained head motion",
-          "terminal frame is a clean closed-lip handoff with no new action",
+          "final " + freezePadFramesAtEnd + " frames form a clean closed-lip handoff with no new action",
         ],
       },
     },

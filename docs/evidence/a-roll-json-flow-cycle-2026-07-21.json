@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "1.0.0",
+  "auditDate": "2026-07-21",
+  "providerSession": {
+    "provider": "Google Flow",
+    "visibleModelLabel": "Veo 3.1 - Fast",
+    "durationSeconds": 8,
+    "aspectRatio": "16:9",
+    "variations": 1,
+    "visibleCreditCost": 10
+  },
+  "framework": {
+    "version": "0.8.0",
+    "commit": "cbc46ef54cc325231d8fe25acb2becef51be0ef4",
+    "frameworkId": "avatar-a-roll-json",
+    "manifestVersion": "AUTEUR A-Roll JSON 1.0",
+    "submittedPromptSha256": "16a4480d24316c19eb15feb738bdec9e18afd15b25dcb0f2e6a9e1c089939604",
+    "submittedPromptCharacters": 3970
+  },
+  "returnedAsset": {
+    "sha256": "9b018195ad54629440d51e6fe34936608fd9a4e1889701887ac47e7630e1d74c",
+    "containerDurationSeconds": 8,
+    "video": "H.264 1280x720 24fps",
+    "audio": "AAC stereo 48kHz"
+  },
+  "observations": {
+    "transcript": "Approved sentence recovered once",
+    "speechStartSeconds": 0,
+    "speechEndSeconds": 6.9,
+    "declaredSpeechWindowSeconds": [0.4, 7.4],
+    "tailSilenceSeconds": [6.966, 7.701],
+    "identityAndSet": "Broadly stable across 16 sampled frames",
+    "terminalFrame": "Open mouth; clean closed-lip handoff failed",
+    "fineLipSync": "UNKNOWN from sampled frames and transcript timing alone"
+  },
+  "independentComparison": {
+    "supersededProseBaselineTotal": 19.5,
+    "jsonRenderTotal": 20.5,
+    "scaleMaximum": 30,
+    "relativeImprovementPercent": 5.1,
+    "requiredImprovementPercent": 10,
+    "decision": "REJECT",
+    "continuationAllowed": false
+  },
+  "repairs": [
+    "Block word-count, pace, and speech-window contradictions before dispatch",
+    "Carry a numeric terminal frame pad and reject windows that consume it",
+    "Carry a lip-sync confidence acceptance target alongside phoneme timing",
+    "Measure delayed speech onset in returned audio; prompt intent alone is not proof"
+  ],
+  "claimBoundary": "One authenticated provider render is returned-media evidence for this exact packet only. It does not establish a permanent provider capability, universal framework quality, or fine lip-sync accuracy."
+}
