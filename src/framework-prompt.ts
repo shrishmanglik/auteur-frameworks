@@ -5,6 +5,7 @@ import { ShotSchema, type Shot } from "./schemas.js";
 export interface FrameworkPromptContext {
   aspectRatio?: string;
   audience?: string;
+  compactSurface?: boolean;
   contentFormat?: string;
   dramaticQuestion?: string;
   globalExclusions?: readonly string[];
@@ -51,13 +52,29 @@ const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\
 
 const withoutDuplicateDialogue = (value: string, spokenText?: string): string => {
   if (!spokenText) return value;
+  const withoutTerminalPunctuation = spokenText.replace(/[.!?]+$/, "");
   const variants = unique([
     spokenText,
-    spokenText.replace(/[.!?]+$/, ""),
+    ...(withoutTerminalPunctuation.includes(" ") || withoutTerminalPunctuation.length >= 8
+      ? [withoutTerminalPunctuation]
+      : []),
   ]).sort((left, right) => right.length - left.length);
   return variants.reduce((current, variant) => (
     current.replace(new RegExp(escapeRegExp(variant), "gi"), "the approved line")
   ), value);
+};
+
+const withoutDuplicateDialogueInTree = <T>(value: T, spokenText?: string): T => {
+  if (typeof value === "string") return withoutDuplicateDialogue(value, spokenText) as T;
+  if (Array.isArray(value)) {
+    return value.map((item) => withoutDuplicateDialogueInTree(item, spokenText)) as T;
+  }
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value as Record<string, unknown>).map(([key, item]) => (
+      [key, withoutDuplicateDialogueInTree(item, spokenText)]
+    ))) as T;
+  }
+  return value;
 };
 
 const spokenTextFor = (shot: Shot): string | undefined => (
@@ -304,6 +321,241 @@ const compileJsonSceneContract = (
   return JSON.stringify(contract, null, 2);
 };
 
+const compileAvatarARollJson = (
+  inputShot: Shot,
+  inputContext: FrameworkPromptContext,
+  inputExclusions: readonly string[],
+): string => {
+  const spokenText = spokenTextFor(inputShot);
+  const shot = withoutDuplicateDialogueInTree(inputShot, spokenText);
+  const context = withoutDuplicateDialogueInTree(inputContext, spokenText);
+  const exclusions = inputExclusions.map((value) => withoutDuplicateDialogue(value, spokenText));
+  const spokenWindow = shot.audioTrack.spokenWindow;
+  const performerRef = shot.characterIds[0] ?? "PRIMARY_SPEAKER";
+  const performance = shot.performance;
+  if (context.compactSurface) {
+    const compactContract = {
+      project_manifest: {
+        manifest_version: "AUTEUR A-Roll JSON 1.0",
+        global_creative_directive: {
+          format: "A-Roll",
+          fidelity: "photoreal; natural skin, speech, breath, weight, optics",
+          duration_seconds: shot.durationSeconds,
+          aspect_ratio: context.aspectRatio ?? "UNKNOWN",
+          frame_rate_fps: shot.camera.capture.frameRateFps ?? 24,
+        },
+        character_asset_bible: {
+          speaker: {
+            ref_id: performerRef,
+            reference: "attached identity",
+            identity_lock: shot.continuityLocks,
+          },
+          vocal_lock: {
+            profile: shot.audioTrack.voiceProfileId ?? "REFERENCE_AUDIO_IF_SUPPLIED",
+            language: shot.audioTrack.language ?? "English",
+            pace_wpm: shot.audioTrack.paceWpm ?? "NATURAL_FOR_WINDOW",
+            delivery: shot.audioTrack.deliveryStyle ?? performance.deliveryStyle ?? "restrained direct conversation",
+            immutable: true,
+          },
+        },
+        scene_blueprint: {
+          narrative_beat: shot.intent,
+          performance_manifest: {
+            posture: performance.basePosture ?? "reference posture; grounded breathing",
+            eye_line: performance.eyeLine ?? "near lens; no scanning",
+            facial_constraints: {
+              jaw_mm: performance.jawMovementMaxDeviationMm ?? 4,
+              lip_style: performance.lipArticulationStyle ?? "economical natural movement",
+              head_degrees: performance.headMovementMaxDegrees ?? 2,
+              expression_source: performance.emotionalExpressionSource ?? "eyes/brows; restrained mouth",
+            },
+            timeline: shot.beats.map((beat) => ({
+              seconds: [beat.startSeconds, beat.endSeconds],
+              action: withoutDuplicateDialogue(beat.action, spokenText),
+            })),
+          },
+          cinematography_optics_psychology: {
+            shot_type: shot.camera.shotType.toLowerCase().includes("a-roll")
+              ? shot.camera.shotType
+              : "A-Roll: " + shot.camera.shotType,
+            camera: shot.camera.optics.cameraBody ?? "cinema camera",
+            lens: shot.camera.optics.lensModel ?? "portrait prime",
+            focal_length_mm: shot.camera.optics.focalLengthMm,
+            t_stop: shot.camera.optics.tStop,
+            subject_distance_m: shot.camera.optics.subjectDistanceMeters,
+            movement: shot.camera.movement,
+            framing: shot.camera.framing,
+            focus: shot.camera.focusBehavior,
+          },
+          environment_photometry: {
+            environment: shot.environment,
+            key: shot.lighting.primarySource,
+            motivation: shot.lighting.motivation,
+            palette: shot.lighting.paletteBase,
+            materials: shot.materials,
+            realism_anchors: shot.imperfectionAnchors,
+          },
+          audio_vocal_lock: {
+            verbatim_script: spokenText ?? null,
+            exact_once: Boolean(spokenText),
+            spoken_window_seconds: spokenWindow
+              ? [spokenWindow.startSeconds, spokenWindow.endSeconds]
+              : [0, shot.durationSeconds],
+            phoneme_acceptance_ms: shot.audioTrack.phonemeToleranceMs ?? 20,
+            sound: shot.audioTrack.soundDesignDirectives,
+            music: shot.audioTrack.musicDirective ?? "no score",
+          },
+        },
+        triple_lock_protocol: {
+          script: "verbatim once; no paraphrase, repeat, subtitle, or early speech",
+          identity: "lock supplied face, wardrobe, anatomy, eye line, and voice",
+          temporal: "one take; no later beat starts early",
+        },
+        constraints: {
+          physics: shot.physics,
+          negative_exclusions: exclusions,
+        },
+        acceptance_tests: [
+          "script exact once",
+          "sync within target",
+          "identity/camera/set stable",
+          "natural micro-motion",
+          "closed-lip handoff",
+        ],
+      },
+    };
+    return JSON.stringify(compactContract, null, 2);
+  }
+  const contract = {
+    project_manifest: {
+      manifest_version: "AUTEUR A-Roll JSON 1.0",
+      project_title: contextValue(context.productionTitle, shot.title),
+      evidence_class: "PROMPT_CORPUS",
+      layer_0_intent_and_provenance: {
+        narrative_beat: shot.intent,
+        execution_target: "one credible uninterrupted A-roll performance from the supplied speaker reference",
+      },
+      layer_i_global_creative_directive: {
+        fidelity_mandate: "Strict photographic realism with natural skin, articulation, breath, weight, and optical behavior; reject uncanny or presenter-like motion.",
+        aesthetic_dna: {
+          format: "A-Roll",
+          qualities: unique([...(context.globalStyle ?? []), "restrained human performance", "clean live-action plate"]),
+        },
+        render_specifications: {
+          duration_seconds: shot.durationSeconds,
+          aspect_ratio: context.aspectRatio ?? "UNKNOWN",
+          frame_rate_fps: shot.camera.capture.frameRateFps ?? 24,
+        },
+      },
+      layer_iii_character_and_asset_bible: {
+        character_consistency: {
+          PRIMARY_SPEAKER: {
+            ref_id: performerRef,
+            reference_source: "attached or declared speaker identity asset",
+            identity_and_wardrobe_lock: shot.continuityLocks,
+          },
+        },
+        vocal_signature_lock: {
+          voice_profile_id: shot.audioTrack.voiceProfileId ?? "REFERENCE_AUDIO_IF_SUPPLIED",
+          language: shot.audioTrack.language ?? "English",
+          pace_wpm: shot.audioTrack.paceWpm ?? "NATURAL_FOR_SCRIPT_WINDOW",
+          delivery: shot.audioTrack.deliveryStyle ?? performance.deliveryStyle ?? "restrained, direct, conversational",
+          immutable_across_sequence: true,
+        },
+      },
+      layer_iv_scene_blueprint: {
+        scene_title: context.sceneTitle ?? shot.sceneId,
+        narrative_beat: shot.intent,
+        time_block_seconds: [0, shot.durationSeconds],
+        keyframe_directives: {
+          "1_subjects_kinetics_and_phenomenology": {
+            subjects: [{ ref_id: "PRIMARY_SPEAKER" }],
+            performance_manifest: {
+              base_posture: performance.basePosture ?? "preserve the supplied reference posture with grounded breathing",
+              eye_line: performance.eyeLine ?? "stable near-lens attention without teleprompter scanning",
+              facial_constraints: {
+                jaw_movement_max_deviation_mm: performance.jawMovementMaxDeviationMm ?? 4,
+                lip_articulation_style: performance.lipArticulationStyle ?? "economical natural movement",
+                head_movement_max_degrees: performance.headMovementMaxDegrees ?? 2,
+                emotional_expression_source: performance.emotionalExpressionSource ?? "eyes and brows with restrained mouth movement",
+              },
+              timeline: shot.beats.map((beat) => ({
+                time_range_seconds: [beat.startSeconds, beat.endSeconds],
+                action: withoutDuplicateDialogue(beat.action, spokenText),
+              })),
+            },
+          },
+          "2_cinematography_optics_and_psychology": {
+            shot_type: shot.camera.shotType.toLowerCase().includes("a-roll")
+              ? shot.camera.shotType
+              : "A-Roll: " + shot.camera.shotType,
+            psychological_framing: shot.intent,
+            lens: {
+              camera_body: shot.camera.optics.cameraBody ?? "cinema camera",
+              lens_model: shot.camera.optics.lensModel ?? "portrait prime",
+              focal_length_mm: shot.camera.optics.focalLengthMm,
+              aperture_t_stop: shot.camera.optics.tStop,
+              subject_distance_meters: shot.camera.optics.subjectDistanceMeters,
+            },
+            camera_movement: shot.camera.movement,
+            composition: shot.camera.framing,
+            focus: shot.camera.focusBehavior,
+          },
+          "3_environment_photometry_and_atmosphere": {
+            environment: shot.environment,
+            lighting: {
+              primary_source: shot.lighting.primarySource,
+              motivation: shot.lighting.motivation,
+              palette: shot.lighting.paletteBase,
+            },
+            materials: shot.materials,
+            realism_anchors: shot.imperfectionAnchors,
+          },
+          "4_audio_and_sensory_sync": {
+            locked_audio_profile: {
+              verbatim: Boolean(spokenText),
+              script_for_timing: spokenText ?? null,
+              spoken_window_seconds: spokenWindow
+                ? [spokenWindow.startSeconds, spokenWindow.endSeconds]
+                : [0, shot.durationSeconds],
+              phoneme_alignment: {
+                mode: "strict",
+                acceptance_target_ms: shot.audioTrack.phonemeToleranceMs ?? 20,
+              },
+              mix: shot.audioTrack.mix ?? { stereoWidth: "neutral_centered" },
+            },
+            sound_design: shot.audioTrack.soundDesignDirectives,
+            music_boundary: shot.audioTrack.musicDirective ?? "no score",
+          },
+        },
+      },
+      layer_vi_ai_model_constraints: {
+        triple_lock_protocol: {
+          script_lock: {
+            rule: "verbatim once; no paraphrase, repetition, subtitle, or early articulation",
+            timing: spokenWindow
+              ? "do not begin articulation before " + spokenWindow.startSeconds + "s; complete by "
+                + spokenWindow.endSeconds + "s"
+              : "complete naturally inside the declared shot window",
+          },
+          identity_lock: "preserve the supplied face, wardrobe, anatomy, eye line, and voice signature",
+          temporal_lock: "single continuous take; " + temporalBoundaryRule(),
+        },
+        physics_rules: shot.physics,
+        negative_exclusions: exclusions,
+        acceptance_tests: [
+          "dialogue transcript matches the approved script word for word exactly once",
+          "visible articulation aligns to the accepted audio within the declared target tolerance",
+          "speaker identity, wardrobe, camera, background, light, and microphone geometry remain stable",
+          "performance retains natural blinks, micro-saccades, breath, facial asymmetry, and restrained head motion",
+          "terminal frame is a clean closed-lip handoff with no new action",
+        ],
+      },
+    },
+  };
+  return JSON.stringify(contract, null, 2);
+};
+
 const compileTemporalEvolution = (
   shot: Shot,
   context: FrameworkPromptContext,
@@ -453,6 +705,9 @@ export function compileFrameworkVideoPrompt(
       break;
     case "json-scene-contract":
       prompt = compileJsonSceneContract(shot, context, exclusions);
+      break;
+    case "avatar-a-roll-json":
+      prompt = compileAvatarARollJson(shot, context, exclusions);
       break;
     case "temporal-evolution":
       prompt = compileTemporalEvolution(shot, context, exclusions);

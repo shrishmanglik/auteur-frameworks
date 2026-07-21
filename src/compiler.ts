@@ -4,6 +4,7 @@ import {
   compileFrameworkVideoPrompt,
   type FrameworkPromptContext,
 } from "./framework-prompt.js";
+import { getFramework } from "./frameworks.js";
 import { opticsToProse } from "./optics.js";
 import { preflightPacket, preflightShot, type PreflightIssue } from "./qc.js";
 
@@ -94,13 +95,14 @@ export function compileCompactVideoPromptWithReport(
 
   const compactContext: FrameworkPromptContext = {
     ...options.context,
+    compactSurface: true,
     globalExclusions: [],
     globalStyle,
   };
   const compileWith = (exclusions: readonly string[]): string => {
     const candidateShot = ShotSchema.parse({ ...shot, exclusions });
     const result = compileFrameworkVideoPrompt(candidateShot, compactContext);
-    if (result.frameworkId === "json-scene-contract") {
+    if (getFramework(result.frameworkId).architectureStyle === "json-contract") {
       return JSON.stringify(JSON.parse(result.prompt));
     }
     return result.prompt.replace(/\s*\n+\s*/g, " ").replace(/\s{2,}/g, " ").trim();
@@ -124,7 +126,7 @@ export function compileCompactVideoPromptWithReport(
   let prompt = compileWith(selectedExclusions);
   const truncatedSections: string[] = [];
   if (prompt.length > toolkitBudget) {
-    if (shot.frameworkId === "json-scene-contract") {
+    if (getFramework(shot.frameworkId).architectureStyle === "json-contract") {
       throw new Error(
         "Compact JSON Scene Contract exceeds the toolkit-owned character budget. ACTION: use the full videoPrompt or reduce the shot contract without deleting safeguards.",
       );

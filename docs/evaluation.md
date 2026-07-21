@@ -26,7 +26,7 @@ Checks the first-second hook, 9:16 composition, short temporal windows, loop con
 
 Fixture: `examples/a-roll.json`
 
-Checks continuous-take grammar, spoken-performance deduplication, evidence-led dialogue, eye line, room sound, and natural imperfection.
+Checks the JSON performance manifest, spoken-performance deduplication, evidence-led dialogue, facial-motion limits, vocal lock, eye line, room sound, and natural imperfection.
 
 ### Tool integrator
 
@@ -106,6 +106,14 @@ This smoke does **not** prove a permanent Flow capability, exact frame-zero matc
 On 2026-07-21, maintainers submitted ten separately compiled eight-second generations through an authenticated Google Flow interface showing `Veo 3.1 - Fast`, one variation at a time. The visible submission cost was 10 credits per generation. Runs 1-2 used 9:16; runs 3-10 used 16:9. Every prompt came from the public compact compiler. Each returned asset was downloaded, sampled at one frame per second, and reviewed against its shot contract. Exact A-roll speech was additionally checked with local `faster-whisper` transcription. The sanitized, session-scoped evidence manifest is [`flow-rapid-matrix-2026-07-21.json`](evidence/flow-rapid-matrix-2026-07-21.json).
 
 **Architecture correction:** those ten runs used the pre-0.5 compact compiler, which flattened every `frameworkId` into the same generic `Intent / Scene / Camera / Beats / Light / Physics / Lock / Audio / Avoid` envelope. The runs remain valid evidence for returned-media defects, route advice, and QC rules, but they do not validate framework-native prompting. Version 0.5 replaces that label-only behavior with distinct framework compilers and regression tests; new provider validation must submit the corrected `videoPrompt` surface.
+
+### A-roll architecture correction
+
+A later bounded re-audit found that the public toolkit still routed `a-roll` to generic continuous prose even though the private Flow corpus repeatedly encoded avatar, presenter, monologue, dialogue, and lip-sync work as JSON performance contracts. Of 910 private Flow prompt records, 131 matched the A-roll topic filter while carrying the `JSON cinematic scene contract with audio` classification; 97 parsed as strict JSON. Recurrent lineages included Vocal Lock, Facial Constraint Protocol, Viral Monologue Execution, and Triple Lock.
+
+Version 0.8 therefore routes A-roll to `avatar-a-roll-json`. The full contract retains a project manifest, creative directive, character/asset bible, performance limits, optics and psychological framing, audio/vocal lock, script-identity-temporal triple lock, and acceptance tests. Its compact surface remains JSON and must preserve every exclusion. The aggregate, hash-pinned audit is [`a-roll-json-architecture-2026-07-21.json`](evidence/a-roll-json-architecture-2026-07-21.json); it publishes no raw prompts or private identifiers.
+
+Any A-roll render produced through the former `continuous-take` route is retained only as failure evidence. It does not validate the corrected architecture. Provider quality remains unproven until a new JSON-native render is downloaded and audited.
 
 ### Framework-native rejection loop
 

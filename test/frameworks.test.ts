@@ -37,6 +37,23 @@ describe("universal packet", () => {
       expect(schema, filename).toContain('"additionalProperties": false');
     }
   });
+
+  it("keeps defaulted performance controls optional in published input schemas", () => {
+    const universal = JSON.parse(fs.readFileSync(
+      new URL("../schemas/universal-packet.schema.json", import.meta.url),
+      "utf8",
+    ));
+    const continuation = JSON.parse(fs.readFileSync(
+      new URL("../schemas/continuation-input.schema.json", import.meta.url),
+      "utf8",
+    ));
+
+    expect(universal.properties.shots.items.properties.performance).toBeTypeOf("object");
+    expect(universal.properties.shots.items.required).not.toContain("performance");
+    expect(continuation.properties.shot.properties.performance).toBeTypeOf("object");
+    expect(continuation.properties.shot.required).not.toContain("performance");
+    expect(UniversalPacketSchema.parse(example).shots[0]?.performance).toEqual({});
+  });
 });
 
 describe("development contract", () => {
@@ -93,7 +110,7 @@ describe("development contract", () => {
       "short-film": "act-shot-master-spec",
       ad: "cinematic-prose-stack",
       reel: "timed-social-sequence",
-      "a-roll": "continuous-take",
+      "a-roll": "avatar-a-roll-json",
       "b-roll": "cinematic-prose-stack",
       "music-video": "act-shot-master-spec",
       "product-film": "cinematic-prose-stack",
@@ -222,6 +239,7 @@ describe("compiler", () => {
       "cinematic-prose-stack": "PREMISE:",
       "act-shot-master-spec": "TECHNICAL MASTER SPECIFICATIONS:",
       "json-scene-contract": "\"metadata\"",
+      "avatar-a-roll-json": "\"project_manifest\"",
       "temporal-evolution": "INITIAL STATE (0.0s):",
       "timed-social-sequence": "HOOK (FIRST 2 SECONDS):",
       "practical-stunt-contract": "CONTINUOUS CAMERA MOVE (8000ms):",
@@ -275,7 +293,7 @@ describe("compiler", () => {
   });
 
   it("emits exact dialogue once even when action and beat text repeat it", () => {
-    for (const frameworkId of ["continuous-take", "audio-contract"]) {
+    for (const frameworkId of ["avatar-a-roll-json", "continuous-take", "audio-contract"]) {
       const shot = structuredClone(UniversalPacketSchema.parse(example).shots[0]!);
       shot.frameworkId = frameworkId;
       shot.dialogue = "Hold the frame.";
@@ -288,6 +306,74 @@ describe("compiler", () => {
       expect(compiled.videoPrompt, frameworkId).toContain("do not begin articulation before 6s");
       expect(compiled.audioPrompt, frameworkId).toContain("Spoken timing: 6-8s");
     }
+  });
+
+  it("compiles A-roll as a corpus-native JSON triple-lock contract", () => {
+    const packet = UniversalPacketSchema.parse(JSON.parse(
+      fs.readFileSync(new URL("../examples/a-roll.json", import.meta.url), "utf8"),
+    ));
+    const compiled = compileShot(packet.shots[0]!, packet.globalExclusions, packet.globalStyle, {
+      aspectRatio: packet.metadata.aspectRatio,
+      contentFormat: packet.metadata.format,
+      productionTitle: packet.metadata.title,
+      sceneTitle: packet.scenes[0]!.title,
+    });
+    const manifest = JSON.parse(compiled.videoPrompt).project_manifest;
+    const compactManifest = JSON.parse(compiled.compactVideoPrompt).project_manifest;
+
+    expect(compiled.frameworkId).toBe("avatar-a-roll-json");
+    expect(manifest.manifest_version).toContain("A-Roll JSON");
+    expect(manifest.layer_iii_character_and_asset_bible.vocal_signature_lock.pace_wpm).toBe(135);
+    expect(manifest.layer_iv_scene_blueprint.keyframe_directives["1_subjects_kinetics_and_phenomenology"]
+      .performance_manifest.facial_constraints.head_movement_max_degrees).toBe(3);
+    expect(manifest.layer_iv_scene_blueprint.keyframe_directives["4_audio_and_sensory_sync"]
+      .locked_audio_profile.phoneme_alignment.acceptance_target_ms).toBe(20);
+    expect(manifest.layer_vi_ai_model_constraints.triple_lock_protocol.script_lock.rule).toContain("verbatim once");
+    expect(compactManifest.manifest_version).toBe(manifest.manifest_version);
+    expect(compiled.videoPrompt.match(/We spent three weeks/g)).toHaveLength(1);
+    expect(compiled.compactPromptReport.frameworkPreserved).toBe(true);
+    expect(compiled.compactPromptReport.omittedExclusions).toEqual([]);
+    expect(compiled.compactPromptReport.truncatedSections).toEqual([]);
+  });
+
+  it("hard-routes legacy A-roll packets and emits their exact dialogue once", () => {
+    const legacy = structuredClone(JSON.parse(
+      fs.readFileSync(new URL("../examples/a-roll.json", import.meta.url), "utf8"),
+    ));
+    const exactLine = legacy.shots[0].audioTrack.spokenText;
+    legacy.shots[0].frameworkId = "continuous-take";
+    legacy.shots[0].intent = `The speaker proves the point by saying ${exactLine}`;
+
+    const compiled = compilePacket(legacy).shots[0]!;
+    expect(compiled.frameworkId).toBe("avatar-a-roll-json");
+    expect(() => JSON.parse(compiled.videoPrompt)).not.toThrow();
+    expect(() => JSON.parse(compiled.compactVideoPrompt)).not.toThrow();
+    expect(compiled.videoPrompt.split(exactLine)).toHaveLength(2);
+    expect(compiled.compactVideoPrompt.split(exactLine)).toHaveLength(2);
+  });
+
+  it("does not let one-word A-roll dialogue rewrite fixed safeguards", () => {
+    const packet = structuredClone(JSON.parse(
+      fs.readFileSync(new URL("../examples/a-roll.json", import.meta.url), "utf8"),
+    ));
+    packet.shots[0].dialogue = "No.";
+    packet.shots[0].audioTrack.spokenText = "No.";
+    packet.shots[0].intent = "The speaker answers No. without theatrical emphasis.";
+    packet.shots[0].beats = [
+      { startSeconds: 0, endSeconds: 4, action: "The speaker listens and breathes naturally." },
+      { startSeconds: 4, endSeconds: 8, action: "The speaker answers No. and returns to neutral." },
+    ];
+    packet.shots[0].durationSeconds = 8;
+    packet.metadata.targetDurationSeconds = 8;
+
+    const compiled = compilePacket(packet).shots[0]!;
+    expect(compiled.videoPrompt.split("No.")).toHaveLength(2);
+    expect(compiled.compactVideoPrompt.split("No.")).toHaveLength(2);
+    expect(compiled.videoPrompt).toContain("no paraphrase");
+    expect(compiled.videoPrompt).toContain("no later action");
+    expect(compiled.videoPrompt).toContain("no new action");
+    expect(compiled.compactVideoPrompt).toContain("no paraphrase");
+    expect(compiled.compactVideoPrompt).toContain("no later beat starts early");
   });
 
   it("compiles brand control as a positive blank-surface state", () => {

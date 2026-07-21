@@ -95,6 +95,16 @@ export const LightingSchema = z.object({
   isCrushedBlacks: z.boolean().default(false),
 });
 
+export const PerformanceSchema = z.object({
+  basePosture: z.string().min(1).optional(),
+  eyeLine: z.string().min(1).optional(),
+  deliveryStyle: z.string().min(1).optional(),
+  lipArticulationStyle: z.string().min(1).optional(),
+  headMovementMaxDegrees: z.number().min(0).max(45).optional(),
+  jawMovementMaxDeviationMm: z.number().min(0).max(25).optional(),
+  emotionalExpressionSource: z.string().min(1).optional(),
+}).default({});
+
 export const AudioTrackSchema = z.object({
   spokenText: z.string().min(1).optional(),
   spokenWindow: z.object({
@@ -107,6 +117,16 @@ export const AudioTrackSchema = z.object({
   }).optional(),
   soundDesignDirectives: z.array(z.string().min(1)).default([]),
   musicDirective: z.string().min(1).optional(),
+  voiceProfileId: z.string().min(1).optional(),
+  language: z.string().min(1).optional(),
+  paceWpm: z.number().min(60).max(240).optional(),
+  deliveryStyle: z.string().min(1).optional(),
+  phonemeToleranceMs: z.number().min(0).max(250).optional(),
+  mix: z.object({
+    integratedLufs: z.number().min(-70).max(0).optional(),
+    truePeakDbfsMax: z.number().min(-20).max(0).optional(),
+    stereoWidth: z.string().min(1).optional(),
+  }).optional(),
 });
 
 export const CharacterSchema = z.object({
@@ -158,6 +178,7 @@ export const ShotSchema = z.object({
   beats: z.array(BeatSchema).min(1),
   continuityLocks: z.array(z.string().min(1)).min(1),
   imperfectionAnchors: z.array(z.string().min(1)).default([]),
+  performance: PerformanceSchema,
   audioTrack: AudioTrackSchema.default({
     soundDesignDirectives: [],
   }),
@@ -287,11 +308,20 @@ export type GenerationRiskCode = z.infer<typeof GenerationRiskCodeSchema>;
 export type DevelopmentRequest = z.infer<typeof DevelopmentRequestSchema>;
 export type Optics = z.infer<typeof OpticsSchema>;
 export type Capture = z.infer<typeof CaptureSchema>;
+export type Performance = z.infer<typeof PerformanceSchema>;
 export type Shot = z.infer<typeof ShotSchema>;
 export type ContinuationContract = z.infer<typeof ContinuationContractSchema>;
 export type ContinuationInput = z.infer<typeof ContinuationInputSchema>;
 export type UniversalPacket = z.infer<typeof UniversalPacketSchema>;
 
 export function parseUniversalPacket(input: unknown): UniversalPacket {
-  return UniversalPacketSchema.parse(input);
+  const packet = UniversalPacketSchema.parse(input);
+  if (packet.metadata.format !== "a-roll") return packet;
+  return {
+    ...packet,
+    shots: packet.shots.map((shot): Shot => ({
+      ...shot,
+      frameworkId: "avatar-a-roll-json",
+    })),
+  };
 }

@@ -2,7 +2,7 @@
 
 AUTEUR frameworks are executable prompt structures, not labels. The compiler must change the order, language, and required blocks of the generated prompt when `frameworkId` changes.
 
-Use one primary framework for the production problem. Add audio, repair, or continuation through their dedicated surfaces. Do not concatenate all ten frameworks into one oversized prompt; that destroys hierarchy and makes the generation target ambiguous.
+Use one primary framework for the production problem. Add audio, repair, or continuation through their dedicated surfaces. Do not concatenate all eleven frameworks into one oversized prompt; that destroys hierarchy and makes the generation target ambiguous.
 
 Exact speech should carry `audioTrack.spokenWindow` boundaries so the compiler can forbid early articulation and pre-flight can reject out-of-range timing. Shots with `BRAND_OR_TEXT_CONTROL` compile blankness as a positive material/color state; negative logo and text lists remain necessary but are not treated as sufficient.
 
@@ -17,6 +17,7 @@ Prompt prose is not the final control layer. Before compilation, the route advis
 | Cinematic Prose Stack | Premise -> reality anchor -> optics and camera -> timed sequence -> expression and exclusions | One premium shot where physical realism, optics, materials, and restraint carry the result |
 | Act and Shot Master Spec | Core concept -> themes -> technical master specification -> act/shot block -> continuity spine -> audio -> payoff | A shot belongs to a causal multi-shot production and must retain story function and sequence continuity |
 | JSON Scene Contract | Metadata -> scene -> subject -> camera -> lighting -> timeline -> audio -> constraints -> compiled prompt | A host needs parseable, versionable, auditable scene data |
+| Avatar A-Roll JSON Contract | Project manifest -> global creative directive -> character/asset bible -> performance manifest -> cinematography/optics/psychology -> audio/vocal lock -> triple-lock protocol -> acceptance tests | A referenced speaker must deliver exact dialogue with controlled eye line, facial motion, identity, voice, sound, and a clean terminal handoff |
 | Temporal Evolution | Transformation goal -> initial state -> final state -> immutable keys -> phase plan -> physics -> fail-closed negatives | A visible transformation or VFX state change is the hard problem |
 | Timed Social Sequence | Platform and goal -> first-two-second hook -> beat timeline -> visual language -> retention/payoff -> audio/editing -> negatives | Retention, reveal timing, loop, or social pacing is the hard problem |
 | Practical Stunt Contract | Core concept -> acquisition stack (sensor, recording, rig, lens, frame rate, shutter) -> reality anchor -> millisecond camera choreography -> mass/contact/momentum -> image science -> synchronized audio -> hard exclusions | Contact, pursuit, rescue, machinery, or stunt physics must feel physically photographed |
@@ -47,3 +48,5 @@ When any safeguard or block is omitted, submit the full `videoPrompt`, reduce th
 ## Routing rule
 
 The development contract chooses a primary framework from the creative request. A structured-output model may override a shot only when that shot has a more specific production problem. Provider capability, pricing, duration limits, and prompt limits remain external evidence; a framework route is not a provider capability claim.
+
+`a-roll` is a hard route to `avatar-a-roll-json`. Its audio and identity controls are part of that one JSON contract; `audio-contract` remains a separate primary route for audio-first non-A-roll work. `continuous-take` remains available for unbroken physical action and character-scene problems, but it is not the A-roll fallback.

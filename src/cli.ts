@@ -32,7 +32,7 @@ Usage:
   auteur-frameworks <command> [input.json] [--out result.json]
 
 Commands:
-  frameworks              List the ten production frameworks
+  frameworks              List the eleven production frameworks
   develop <request.json>  Build an LLM-ready development contract
   validate <packet.json>  Validate a Universal Packet
   preflight <packet.json> Run continuity, timing, audio, and realism checks

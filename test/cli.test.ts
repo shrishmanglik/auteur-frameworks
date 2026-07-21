@@ -2,6 +2,7 @@ import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { runCli } from "../src/cli.js";
+import { FRAMEWORKS } from "../src/frameworks.js";
 import { PACKAGE_VERSION } from "../src/version.js";
 
 const capture = () => {
@@ -28,7 +29,7 @@ describe("CLI", () => {
   it("lists frameworks and builds an LLM development contract", () => {
     const frameworks = capture();
     expect(runCli(["frameworks"], frameworks.io)).toBe(0);
-    expect(JSON.parse(frameworks.output().stdout)).toHaveLength(10);
+    expect(JSON.parse(frameworks.output().stdout)).toHaveLength(FRAMEWORKS.length);
 
     const requestPath = fileURLToPath(new URL("../examples/requests/short-film.json", import.meta.url));
     const development = capture();

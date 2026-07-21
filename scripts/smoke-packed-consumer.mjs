@@ -29,7 +29,7 @@ try {
   const importProof = execFileSync(process.execPath, [
     "--input-type=module",
     "-e",
-    "import { FRAMEWORKS, compilePacket, buildDevelopmentContract, compileContinuationPrompt, buildProductionKit, assessShotRoute } from 'auteur-frameworks'; if (FRAMEWORKS.length !== 10 || typeof compilePacket !== 'function' || typeof buildDevelopmentContract !== 'function' || typeof compileContinuationPrompt !== 'function' || typeof buildProductionKit !== 'function' || typeof assessShotRoute !== 'function') process.exit(1); console.log(FRAMEWORKS.length);",
+    "import { FRAMEWORKS, compilePacket, buildDevelopmentContract, compileContinuationPrompt, buildProductionKit, assessShotRoute } from 'auteur-frameworks'; if (!FRAMEWORKS.some((item) => item.id === 'avatar-a-roll-json') || typeof compilePacket !== 'function' || typeof buildDevelopmentContract !== 'function' || typeof compileContinuationPrompt !== 'function' || typeof buildProductionKit !== 'function' || typeof assessShotRoute !== 'function') process.exit(1); console.log(FRAMEWORKS.length);",
   ], { cwd: temp, encoding: "utf8" }).trim();
 
   const cli = path.join(temp, "node_modules", "auteur-frameworks", "dist", "cli.js");

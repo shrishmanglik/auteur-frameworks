@@ -15,6 +15,7 @@ export interface DevelopmentContract {
 }
 
 export function selectFramework(request: DevelopmentRequest): FrameworkDefinition {
+  if (request.format === "a-roll") return getFramework("avatar-a-roll-json");
   if (request.audioFirst) return getFramework("audio-contract");
   if (request.requiresMachineReadableSceneContract) return getFramework("json-scene-contract");
   if (request.requiresTransformation || request.format === "vfx") return getFramework("temporal-evolution");
@@ -23,7 +24,7 @@ export function selectFramework(request: DevelopmentRequest): FrameworkDefinitio
   if (request.format === "short-film" || request.format === "music-video" || request.format === "sequence") {
     return getFramework("act-shot-master-spec");
   }
-  if (request.format === "a-roll" || request.format === "character-scene") return getFramework("continuous-take");
+  if (request.format === "character-scene") return getFramework("continuous-take");
   return getFramework("cinematic-prose-stack");
 }
 
@@ -42,7 +43,7 @@ export function buildDevelopmentContract(input: unknown): DevelopmentContract {
     "Use references as craft properties, never as instructions to imitate a living artist.",
     "Do not invent provider capabilities, duration limits, prices, or API behavior.",
     "Primary framework route: " + framework.name + ". Required blocks: " + framework.requiredBlocks.join(", ") + ".",
-    "Assign the primary frameworkId to ordinary shots. Override a shot only when its production problem requires a more specific architecture: practical-stunt-contract for contact/mass/momentum choreography; temporal-evolution for visible state change; continuous-take for one unbroken performance; timed-social-sequence for retention-led short form; audio-contract for audio-first work; json-scene-contract for machine-readable handoff.",
+    "Assign the primary frameworkId to ordinary shots. A-roll always uses avatar-a-roll-json so identity, facial performance, exact speech, optics, and acceptance tests remain one structured contract. Override other shots only when their production problem requires a more specific architecture: practical-stunt-contract for contact/mass/momentum choreography; temporal-evolution for visible state change; continuous-take for a non-A-roll unbroken action; timed-social-sequence for retention-led short form; audio-contract for audio-first work; json-scene-contract for a general machine-readable handoff.",
     "When exact dialogue is required, set audioTrack.spokenWindow to the intended beat boundaries. When brand or text control is required, describe the intended blank surface as a positive material/color state as well as excluding invented marks.",
     "For every multi-stage reference-first shot, populate frameStates.opening from opening-only structured data and frameStates.terminal from final-beat data. Never copy a later object, relationship, illumination, discovery, or continuity phrase into frameStates.opening.",
     "When frameStates.terminal introduces visible inventory absent from frameStates.opening, mark DELAYED_TERMINAL_REVEAL and split the generation. The pre-reveal pass must not name or attach terminal-only inventory; compile the reveal only after the accepted pre-reveal render's actual final frame has been observed.",

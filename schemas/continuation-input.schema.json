@@ -133,12 +133,7 @@
               "required": [
                 "subject",
                 "action",
-                "environment",
-                "visibleInventory",
-                "paletteBase",
-                "materials",
-                "imperfectionAnchors",
-                "continuityLocks"
+                "environment"
               ],
               "additionalProperties": false
             },
@@ -205,12 +200,7 @@
               "required": [
                 "subject",
                 "action",
-                "environment",
-                "visibleInventory",
-                "paletteBase",
-                "materials",
-                "imperfectionAnchors",
-                "continuityLocks"
+                "environment"
               ],
               "additionalProperties": false
             }
@@ -309,8 +299,7 @@
             "movement",
             "framing",
             "focusBehavior",
-            "optics",
-            "capture"
+            "optics"
           ],
           "additionalProperties": false
         },
@@ -345,9 +334,7 @@
           "required": [
             "primarySource",
             "motivation",
-            "paletteBase",
-            "isDesaturated",
-            "isCrushedBlacks"
+            "paletteBase"
           ],
           "additionalProperties": false
         },
@@ -410,6 +397,43 @@
             "minLength": 1
           }
         },
+        "performance": {
+          "default": {},
+          "type": "object",
+          "properties": {
+            "basePosture": {
+              "type": "string",
+              "minLength": 1
+            },
+            "eyeLine": {
+              "type": "string",
+              "minLength": 1
+            },
+            "deliveryStyle": {
+              "type": "string",
+              "minLength": 1
+            },
+            "lipArticulationStyle": {
+              "type": "string",
+              "minLength": 1
+            },
+            "headMovementMaxDegrees": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 45
+            },
+            "jawMovementMaxDeviationMm": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 25
+            },
+            "emotionalExpressionSource": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        },
         "audioTrack": {
           "default": {
             "soundDesignDirectives": []
@@ -449,11 +473,51 @@
             "musicDirective": {
               "type": "string",
               "minLength": 1
+            },
+            "voiceProfileId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "language": {
+              "type": "string",
+              "minLength": 1
+            },
+            "paceWpm": {
+              "type": "number",
+              "minimum": 60,
+              "maximum": 240
+            },
+            "deliveryStyle": {
+              "type": "string",
+              "minLength": 1
+            },
+            "phonemeToleranceMs": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 250
+            },
+            "mix": {
+              "type": "object",
+              "properties": {
+                "integratedLufs": {
+                  "type": "number",
+                  "minimum": -70,
+                  "maximum": 0
+                },
+                "truePeakDbfsMax": {
+                  "type": "number",
+                  "minimum": -20,
+                  "maximum": 0
+                },
+                "stereoWidth": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "additionalProperties": false
             }
           },
-          "required": [
-            "soundDesignDirectives"
-          ],
+          "required": [],
           "additionalProperties": false
         },
         "dialogue": {
@@ -481,23 +545,16 @@
         "id",
         "sceneId",
         "title",
-        "characterIds",
-        "generationRisks",
         "durationSeconds",
         "intent",
         "subject",
         "action",
         "environment",
-        "frameStates",
         "camera",
         "lighting",
         "physics",
-        "materials",
         "beats",
         "continuityLocks",
-        "imperfectionAnchors",
-        "audioTrack",
-        "exclusions",
         "frameworkId"
       ],
       "additionalProperties": false
@@ -623,8 +680,7 @@
             "startSeconds",
             "endSeconds",
             "speaker",
-            "delivery",
-            "mixPriority"
+            "delivery"
           ],
           "additionalProperties": false
         },
@@ -654,8 +710,7 @@
         "firstMotion",
         "spatialBridge",
         "physicsInvariants",
-        "finalFrameHandoff",
-        "forbiddenTransitions"
+        "finalFrameHandoff"
       ],
       "additionalProperties": false
     },
@@ -678,9 +733,7 @@
   },
   "required": [
     "shot",
-    "contract",
-    "globalStyle",
-    "globalExclusions"
+    "contract"
   ],
   "additionalProperties": false
 }

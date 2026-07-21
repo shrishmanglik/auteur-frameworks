@@ -2,6 +2,20 @@
 
 All notable public changes are recorded here. The project follows semantic versioning while the API matures; versions below `1.0.0` may contain documented breaking changes.
 
+## 0.8.0 - 2026-07-21
+
+### Fixed
+
+- Corrected the A-roll route from the generic `continuous-take` prose compiler to a dedicated `avatar-a-roll-json` architecture.
+- Added optional performer controls for posture, eye line, delivery, lip movement, head movement, jaw movement, and expression source.
+- Added optional vocal controls for voice-reference ID, language, pace, delivery, phoneme-alignment acceptance target, and mix intent.
+- Added a compact JSON handoff that retains the project manifest, character/asset bible, performance manifest, optics, vocal lock, triple-lock protocol, constraints, and acceptance tests without dropping exclusions.
+
+### Evidence
+
+- A bounded re-audit of the private 910-record Flow prompt corpus found 131 A-roll, avatar, presenter, monologue, dialogue, or lip-sync records classified as JSON cinematic scene contracts with audio; 97 parsed as strict JSON. Recurrent lineages included Vocal Lock, Facial Constraint Protocol, Viral Monologue Execution, and Triple Lock. The aggregate, hash-pinned audit is published without raw prompts or private identifiers in `docs/evidence/a-roll-json-architecture-2026-07-21.json`.
+- The prior `a-roll -> continuous-take` route is treated as a synthesis defect. Its generated media may still inform failure analysis, but it is not evidence that the corrected A-roll architecture has been validated.
+
 ## 0.7.2 - 2026-07-21
 
 ### Fixed

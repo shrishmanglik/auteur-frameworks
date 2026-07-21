@@ -128,7 +128,7 @@ const extension = compileContinuationPrompt(yourRenderObservedContinuation);
 
 ## What ships
 
-- **Universal Packet and continuation JSON Schemas** for story, scenes, shots, characters, capture stack, optics, lighting, materials, physics, timing, bounded spoken-performance windows, audio, continuity, exclusions, and render-observed handoffs.
+- **Universal Packet and continuation JSON Schemas** for story, scenes, shots, characters, capture stack, optics, lighting, materials, physics, timing, performer and facial controls, bounded spoken-performance windows, vocal locks, audio, continuity, exclusions, and render-observed handoffs.
 - **Development contract** that turns a brief into model instructions plus JSON Schema.
 - **Framework-native deterministic compiler** whose prose, JSON, timing, stunt, transformation, continuous-take, and audio architectures change with the selected framework; the full surface preserves that structure, the compact surface reports whenever budgeting degrades it, and generated reference-frame prompts carry an affirmative clean-surface lock.
 - **Complete production-kit compiler** that projects story, scenes, bibles, storyboard, shot list, sound, references, continuity, prompts, QC, repairs, and exports in one call.
@@ -148,10 +148,11 @@ const extension = compileContinuationPrompt(yourRenderObservedContinuation);
 | Cinematic Prose Stack | Premium product shots, ads, B-roll, and character moments |
 | Act and Shot Master Spec | Short films, sequences, music videos, and narrative ads |
 | JSON Scene Contract | Parseable, versioned production handoffs |
+| Avatar A-Roll JSON Contract | Referenced speakers, exact monologues, restrained facial performance, vocal locks, and clean handoffs |
 | Temporal Evolution | Transformations, animation, and VFX state changes |
 | Timed Social Sequence | Reels, hooks, reveals, and loopable short-form work |
 | Practical Stunt Contract | Mass, contact, momentum, and camera choreography |
-| Continuous Take | A-roll, dialogue, character scenes, and unbroken actions |
+| Continuous Take | Character scenes, B-roll, product actions, and other unbroken takes |
 | Constrained Repair Pass | One-defect corrections that preserve shot identity |
 | Audio Contract | Dialogue, sound hierarchy, sync, acoustic space, and music boundaries |
 | Render-Observed Continuation | Sequential extensions grounded in the actual previous final frame |
@@ -171,7 +172,7 @@ The framework ID is executable structure, not a display tag. See [Framework-Nati
 | Narrative director | [`examples/short-film.json`](examples/short-film.json) | causal beats, scene ownership, continuity, choice, audio |
 | Commercial director | [`examples/product-film.json`](examples/product-film.json) | material truth, product geometry, optics, settling physics |
 | Vertical creator | [`examples/vertical-reel.json`](examples/vertical-reel.json) | first-second hook, 9:16 route, timing, loop, text risk |
-| A-roll operator | [`examples/a-roll.json`](examples/a-roll.json) | continuous take, spoken performance, eye line, room sound |
+| A-roll operator | [`examples/a-roll.json`](examples/a-roll.json) | JSON performance manifest, facial limits, exact speech, vocal lock, eye line, room sound |
 | Tool integrator | [`examples/requests/`](examples/requests/) | raw brief to schema-bound LLM contract |
 
 Run the full matrix:
@@ -297,7 +298,7 @@ Start with [CONTRIBUTING.md](CONTRIBUTING.md) or open a [framework proposal](htt
 
 ## Status
 
-Version `0.4.0` is an early public API. Provider adapters and commercial execution remain outside core. Breaking changes will be documented in [CHANGELOG.md](CHANGELOG.md) until the API reaches `1.0.0`.
+Version `0.8.0` is an early public API. Provider adapters and commercial execution remain outside core. Breaking changes will be documented in [CHANGELOG.md](CHANGELOG.md) until the API reaches `1.0.0`.
 
 ## License and citation
 

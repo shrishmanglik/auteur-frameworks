@@ -141,14 +141,37 @@
         "paper edge is visibly dog-eared",
         "subtle chair fabric tension when he leans forward"
       ],
+      "performance": {
+        "basePosture": "seated and grounded, facing slightly off lens until the closing rule",
+        "eyeLine": "stable near-lens attention with no teleprompter scanning",
+        "deliveryStyle": "candid, specific, and dryly self-aware",
+        "lipArticulationStyle": "economical natural movement",
+        "headMovementMaxDegrees": 3,
+        "jawMovementMaxDeviationMm": 5,
+        "emotionalExpressionSource": "eyes and brows, with one restrained lean at the rule"
+      },
       "audioTrack": {
         "spokenText": "We spent three weeks automating a refund handoff and made every refund slower. The embarrassing part was not the model. Sales thought support approved the refund; support thought sales did. We had automated an argument. Our rule now is simple: if two humans cannot run the same version of a process, software should not run it yet.",
+        "spokenWindow": {
+          "startSeconds": 0.5,
+          "endSeconds": 29.5
+        },
         "soundDesignDirectives": [
           "clean close dialogue",
           "low room tone",
           "one paper rustle at the proof beat"
         ],
-        "musicDirective": "no score"
+        "musicDirective": "no score",
+        "voiceProfileId": "approved-founder-voice-reference",
+        "language": "English",
+        "paceWpm": 135,
+        "deliveryStyle": "plainspoken close-mic founder delivery",
+        "phonemeToleranceMs": 20,
+        "mix": {
+          "integratedLufs": -14,
+          "truePeakDbfsMax": -1,
+          "stereoWidth": "neutral_centered"
+        }
       },
       "dialogue": "We spent three weeks automating a refund handoff and made every refund slower. The embarrassing part was not the model. Sales thought support approved the refund; support thought sales did. We had automated an argument. Our rule now is simple: if two humans cannot run the same version of a process, software should not run it yet.",
       "exclusions": [
@@ -157,7 +180,7 @@
         "no background screen animation",
         "no beauty-filter skin"
       ],
-      "frameworkId": "continuous-take",
+      "frameworkId": "avatar-a-roll-json",
       "characterIds": [
         "founder"
       ],

@@ -42,7 +42,7 @@ describe("expert creator fixtures", () => {
       expect(compiled.shots.every((shot) => shot.compactPromptReport.frameworkPreserved)).toBe(true);
       for (const shot of compiled.shots) {
         expect(shot.videoPrompt, `${persona.name} missing camera specificity`).toMatch(/CAMERA|Camera|camera/);
-        expect(shot.videoPrompt, `${persona.name} missing temporal specificity`).toMatch(/SEQUENCE|BEAT|Beat|0-/);
+        expect(shot.videoPrompt, `${persona.name} missing temporal specificity`).toMatch(/SEQUENCE|BEAT|Beat|timeline|time_range_seconds|0-/);
         expect(shot.videoPrompt, `${persona.name} missing audio contract`).toMatch(/AUDIO|Audio|audio/);
         expect(shot.videoPrompt, `${persona.name} missing exclusions`).toMatch(/DO NOT RENDER|NEGATIVES|EXCLUSIONS|no identity drift/);
       }
@@ -68,7 +68,9 @@ describe("expert creator fixtures", () => {
   it("gives the A-roll operator one non-duplicated spoken performance", () => {
     const packet = parseUniversalPacket(load("a-roll"));
     const compiled = compilePacket(packet).shots[0]!;
-    expect(packet.shots[0]?.frameworkId).toBe("continuous-take");
+    expect(packet.shots[0]?.frameworkId).toBe("avatar-a-roll-json");
+    expect(JSON.parse(compiled.videoPrompt).project_manifest.layer_vi_ai_model_constraints
+      .triple_lock_protocol.script_lock.rule).toContain("verbatim once");
     expect(compiled.audioPrompt?.match(/We spent three weeks/g)).toHaveLength(1);
     expect(compiled.videoPrompt.match(/We spent three weeks/g)).toHaveLength(1);
   });
