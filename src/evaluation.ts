@@ -2,6 +2,29 @@ import { z } from "zod";
 
 const ScoreSchema = z.number().min(0).max(5);
 
+const AudioExpectationSchema = z.enum(["exact-speech", "no-speech", "nonverbal"]);
+
+export const AudioVerificationSchema = z.discriminatedUnion("status", [
+  z.object({
+    expectation: AudioExpectationSchema,
+    status: z.literal("verified"),
+    method: z.string().min(3),
+    evidence: z.string().min(8),
+  }),
+  z.object({
+    expectation: AudioExpectationSchema,
+    status: z.literal("failed"),
+    method: z.string().min(3),
+    evidence: z.string().min(8),
+  }),
+  z.object({
+    expectation: AudioExpectationSchema,
+    status: z.literal("not-run"),
+    method: z.null().optional(),
+    evidence: z.null().optional(),
+  }),
+]);
+
 export const RenderObservationSchema = z.object({
   cycleId: z.string().min(1),
   packetVersion: z.string().min(1),
@@ -22,6 +45,7 @@ export const RenderObservationSchema = z.object({
     description: z.string().min(1),
     timecode: z.string().min(1).optional(),
   })).default([]),
+  audioVerification: AudioVerificationSchema.optional(),
   evidenceNote: z.string().min(1),
 });
 
@@ -42,6 +66,14 @@ export interface RenderScore {
   score: number;
   grade: "blocked" | "needs-repair" | "production-candidate" | "exceptional";
   criticalDefects: number;
+  audioGate: {
+    expectation: "exact-speech" | "no-speech" | "nonverbal" | null;
+    status: "verified" | "failed" | "not-run";
+    method: string | null;
+    evidence: string | null;
+    qualityAccepted: boolean;
+    minimumRubricScore: 3;
+  };
 }
 
 export function scoreRender(input: unknown): RenderScore {
@@ -50,16 +82,37 @@ export function scoreRender(input: unknown): RenderScore {
     total + observation.scores[criterion as keyof typeof weights] * weight * 20
   ), 0);
   const roundedScore = Math.round(score * 10) / 10;
-  const criticalDefects = observation.defects.filter((defect) => defect.severity === "critical").length;
-  const grade = criticalDefects > 0 || roundedScore < 60
+  const audioGate = observation.audioVerification
+    ? {
+        expectation: observation.audioVerification.expectation,
+        status: observation.audioVerification.status,
+        method: observation.audioVerification.method ?? null,
+        evidence: observation.audioVerification.evidence ?? null,
+        qualityAccepted: observation.audioVerification.status === "verified" && observation.scores.audio >= 3,
+        minimumRubricScore: 3 as const,
+      }
+    : {
+        expectation: null,
+        status: "not-run" as const,
+        method: null,
+        evidence: null,
+        qualityAccepted: false,
+        minimumRubricScore: 3 as const,
+      };
+  const criticalDefects = observation.defects.filter((defect) => defect.severity === "critical").length
+    + (audioGate.status === "failed" ? 1 : 0);
+  const rubricGrade = criticalDefects > 0 || roundedScore < 60
     ? "blocked"
     : roundedScore < 75
       ? "needs-repair"
       : roundedScore < 90
         ? "production-candidate"
         : "exceptional";
+  const grade = !audioGate.qualityAccepted && (rubricGrade === "production-candidate" || rubricGrade === "exceptional")
+    ? "needs-repair"
+    : rubricGrade;
 
-  return { cycleId: observation.cycleId, shotId: observation.shotId, score: roundedScore, grade, criticalDefects };
+  return { cycleId: observation.cycleId, shotId: observation.shotId, score: roundedScore, grade, criticalDefects, audioGate };
 }
 
 export interface RenderCycleComparison {
@@ -91,6 +144,7 @@ export function compareRenderCycles(previousInput: unknown, currentInput: unknow
     meetsTenPercentThreshold: relativeImprovementPercent !== null
       && relativeImprovementPercent >= 10
       && current.grade !== "blocked"
-      && current.criticalDefects === 0,
+      && current.criticalDefects === 0
+      && current.audioGate.qualityAccepted,
   };
 }

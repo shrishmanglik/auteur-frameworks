@@ -2,6 +2,19 @@
 
 All notable public changes are recorded here. The project follows semantic versioning while the API matures; versions below `1.0.0` may contain documented breaking changes.
 
+## 0.7.0 - 2026-07-21
+
+### Added
+
+- Added typed render-audio verification for exact speech, no-speech, and nonverbal contracts. Failed verification is a critical defect; missing evidence or an audio rubric score below 3/5 prevents production acceptance even when the weighted score is high.
+- Documented VAD-aware review for instrumental and environmental tracks so unconstrained transcription hallucinations are retained as diagnostics rather than accepted as speech.
+- Added an affirmative surface lock to every generated reference-frame prompt so route assets do not silently omit the clean-material state enforced by the video contract.
+
+### Evidence
+
+- The first route-compliant framework-native Flow run used a generated identity reference and a `continuous-take` prompt. It preserved performer identity, hand-to-instrument interaction, one uninterrupted action arc, and requested nonverbal sound, scoring 95/100. VAD-enabled transcription found no speech; a no-VAD decode hallucinated a sentence from the trumpet audio, which exposed the need for an explicit audio-evidence gate.
+- A subsequent `cinematic-prose-stack` reference generation produced a credible diver and shipwreck but invented markings on otherwise unspecified equipment surfaces. The reference was rejected before video dispatch; the finding moved clean-surface control into frame-prompt compilation rather than adding more video-only negative wording.
+
 ## 0.6.0 - 2026-07-21
 
 ### Added

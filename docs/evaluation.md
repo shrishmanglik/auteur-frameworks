@@ -81,6 +81,10 @@ Record each observed result as a `RenderObservation` and score six criteria from
 
 Use `auteur-frameworks score-render observation.json` for the weighted score. Use `auteur-frameworks compare-renders before.json after.json` to calculate relative improvement. A refinement cycle meets the project threshold only when the measured score rises by at least 10% relative to the immediately preceding render of the same shot. A critical defect always blocks the result regardless of score.
 
+Production acceptance also requires an explicit `audioVerification` result. Declare whether the contract expects exact speech, no speech, or nonverbal sound, then record the method and evidence. A failed audio check is a critical defect. A missing or `not-run` check caps an otherwise high-scoring render at `needs-repair`; a `verified` result also requires an audio rubric score of at least 3/5. An audio stream by itself is never proof that the requested sound occurred.
+
+For instrumental or environmental audio, combine a VAD-enabled speech scan with waveform, timing-envelope, and spectral inspection. Do not accept unconstrained transcription as speech evidence when it is decoding music or noise: retain the transcript as diagnostic evidence, compare its no-speech probability, and fail only when the speech finding is supported by the audio review.
+
 Scores are observations, not model capability claims. Preserve the provider/model label visible at runtime and state whether review was human, vision-assisted, or both in `evidenceNote`.
 
 ## Maintainer live smoke: Flow extension loop

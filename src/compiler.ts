@@ -206,6 +206,9 @@ export function compileShot(
     context,
   });
   const { prompt: compactVideoPrompt, ...compactPromptReport } = compact;
+  const frameSurfaceLock = shot.generationRisks.includes("BRAND_OR_TEXT_CONTROL")
+    ? "Production design lock: declared clean surfaces remain uninterrupted base material, color, finish, and geometry."
+    : "Reference surface lock: every visible surface contains only its declared base material, color, finish, wear, and geometry; otherwise it remains plain and unbranded.";
 
   const framePrompt = [
     shot.subject + " in " + shot.environment + ".",
@@ -215,9 +218,7 @@ export function compileShot(
     shot.lighting.primarySource + "; " + shot.lighting.paletteBase.join(", ") + ".",
     shot.materials.length ? "Materials: " + shot.materials.join(", ") + "." : null,
     shot.imperfectionAnchors.length ? "Realism anchors: " + shot.imperfectionAnchors.join("; ") + "." : null,
-    shot.generationRisks.includes("BRAND_OR_TEXT_CONTROL")
-      ? "Production design lock: declared clean surfaces remain uninterrupted base material, color, finish, and geometry."
-      : null,
+    frameSurfaceLock,
     "Continuity: " + shot.continuityLocks.join("; ") + ".",
   ].filter((part): part is string => Boolean(part)).join(" ");
 

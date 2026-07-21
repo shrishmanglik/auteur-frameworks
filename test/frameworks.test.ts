@@ -136,6 +136,9 @@ describe("compiler", () => {
     expect(compiled.compactVideoPrompt).toContain("no identity drift");
     expect(compiled.compactPromptReport.frameworkPreserved).toBe(true);
     expect(compiled.framePrompt).toContain("tiny trapped bubbles");
+    expect(compiled.framePrompt).toContain("Reference surface lock:");
+    expect(compiled.framePrompt).toContain("otherwise it remains plain and unbranded");
+    expect(compiled.framePrompt).not.toContain("No glyph, letter, number");
     expect(compiled.audioPrompt).toContain("liquid pour");
     expect(compiled.negativePrompt).toContain("no identity drift");
   });

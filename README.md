@@ -130,13 +130,13 @@ const extension = compileContinuationPrompt(yourRenderObservedContinuation);
 
 - **Universal Packet and continuation JSON Schemas** for story, scenes, shots, characters, capture stack, optics, lighting, materials, physics, timing, bounded spoken-performance windows, audio, continuity, exclusions, and render-observed handoffs.
 - **Development contract** that turns a brief into model instructions plus JSON Schema.
-- **Framework-native deterministic compiler** whose prose, JSON, timing, stunt, transformation, continuous-take, and audio architectures change with the selected framework; the full surface preserves that structure and the compact surface reports whenever budgeting degrades it.
+- **Framework-native deterministic compiler** whose prose, JSON, timing, stunt, transformation, continuous-take, and audio architectures change with the selected framework; the full surface preserves that structure, the compact surface reports whenever budgeting degrades it, and generated reference-frame prompts carry an affirmative clean-surface lock.
 - **Complete production-kit compiler** that projects story, scenes, bibles, storyboard, shot list, sound, references, continuity, prompts, QC, repairs, and exports in one call.
 - **Risk-aware route advisor** that directs causal contact, mechanical assembly, multi-subject dynamics, and precise spatial clearance to first/last-frame workflows; exact fluid counts and compound constraint overload to split passes; and identity or brand control to reference-first workflows. A deterministic constraint budget blocks short shots that combine too many fragile controls, rather than pretending more prose will fix the route. Provider support remains `UNKNOWN` until the host verifies it.
 - **Storyboard projection** with ordered panels, action, camera, duration, continuity, audio, and frame-generation instructions.
 - **Pre-flight QC** for temporal coverage, production duration, scene ownership, continuity, audio, typography risk, and realism anchors.
 - **Repair engine** for identity drift, anatomy, topology, object loss, broken physics, lip sync, branding, material drift, and other recurring defects.
-- **Measured refinement loop** with a typed render-observation schema, weighted scoring, and a relative-improvement gate.
+- **Measured refinement loop** with a typed render-observation schema, weighted scoring, a relative-improvement gate, and fail-closed audio verification before a render can become a production candidate.
 - **Render-observed continuation compiler** with a match-frame instruction, first-motion deadline, physical spatial bridge, single-camera-path guard, time-boxed dialogue cue, and final-frame handoff. Provider output must still be audited; the instruction is not a frame-match guarantee.
 - **Four executable creator fixtures** covering a product film, short film, vertical reel, and A-roll monologue.
 - **CLI and typed API** designed for local tools, agents, desktop apps, servers, and CI.
