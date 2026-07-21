@@ -1,0 +1,533 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "format": {
+          "type": "string",
+          "enum": [
+            "short-film",
+            "ad",
+            "reel",
+            "a-roll",
+            "b-roll",
+            "music-video",
+            "product-film",
+            "character-scene",
+            "vfx",
+            "animation",
+            "image",
+            "sequence",
+            "other"
+          ]
+        },
+        "aspectRatio": {
+          "type": "string",
+          "enum": [
+            "16:9",
+            "9:16",
+            "1:1",
+            "4:5",
+            "2.39:1",
+            "custom"
+          ]
+        },
+        "targetDurationSeconds": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "audience": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tone": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "providerTarget": {
+          "default": "provider-neutral",
+          "type": "string",
+          "minLength": 1
+        },
+        "continuityStrictness": {
+          "default": "standard",
+          "type": "string",
+          "enum": [
+            "relaxed",
+            "standard",
+            "strict"
+          ]
+        },
+        "audioRequired": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "title",
+        "format",
+        "aspectRatio",
+        "targetDurationSeconds",
+        "audience",
+        "tone",
+        "providerTarget",
+        "continuityStrictness",
+        "audioRequired"
+      ],
+      "additionalProperties": false
+    },
+    "story": {
+      "type": "object",
+      "properties": {
+        "logline": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dramaticQuestion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "beats": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1
+              },
+              "purpose": {
+                "type": "string",
+                "minLength": 1
+              },
+              "emotionalTurn": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "purpose",
+              "emotionalTurn"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "logline",
+        "dramaticQuestion",
+        "beats"
+      ],
+      "additionalProperties": false
+    },
+    "characters": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "role": {
+            "type": "string",
+            "minLength": 1
+          },
+          "identityLock": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "wardrobeLock": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "role",
+          "identityLock",
+          "wardrobeLock"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "scenes": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "purpose": {
+            "type": "string",
+            "minLength": 1
+          },
+          "location": {
+            "type": "string",
+            "minLength": 1
+          },
+          "timeOfDay": {
+            "type": "string",
+            "minLength": 1
+          },
+          "shotIds": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "purpose",
+          "location",
+          "timeOfDay",
+          "shotIds"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "shots": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sceneId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "durationSeconds": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "maximum": 300
+          },
+          "intent": {
+            "type": "string",
+            "minLength": 1
+          },
+          "subject": {
+            "type": "string",
+            "minLength": 1
+          },
+          "action": {
+            "type": "string",
+            "minLength": 1
+          },
+          "environment": {
+            "type": "string",
+            "minLength": 1
+          },
+          "camera": {
+            "type": "object",
+            "properties": {
+              "shotType": {
+                "type": "string",
+                "minLength": 1
+              },
+              "movement": {
+                "type": "string",
+                "minLength": 1
+              },
+              "framing": {
+                "type": "string",
+                "minLength": 1
+              },
+              "focusBehavior": {
+                "type": "string",
+                "minLength": 1
+              },
+              "optics": {
+                "type": "object",
+                "properties": {
+                  "cameraBody": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "lensModel": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "focalLengthMm": {
+                    "type": "number",
+                    "minimum": 8,
+                    "maximum": 1200
+                  },
+                  "tStop": {
+                    "type": "number",
+                    "minimum": 0.7,
+                    "maximum": 32
+                  },
+                  "subjectDistanceMeters": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "maximum": 10000
+                  }
+                },
+                "required": [
+                  "focalLengthMm",
+                  "tStop",
+                  "subjectDistanceMeters"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "shotType",
+              "movement",
+              "framing",
+              "focusBehavior",
+              "optics"
+            ],
+            "additionalProperties": false
+          },
+          "lighting": {
+            "type": "object",
+            "properties": {
+              "primarySource": {
+                "type": "string",
+                "minLength": 1
+              },
+              "motivation": {
+                "type": "string",
+                "minLength": 1
+              },
+              "paletteBase": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "isDesaturated": {
+                "default": false,
+                "type": "boolean"
+              },
+              "isCrushedBlacks": {
+                "default": false,
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "primarySource",
+              "motivation",
+              "paletteBase",
+              "isDesaturated",
+              "isCrushedBlacks"
+            ],
+            "additionalProperties": false
+          },
+          "physics": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "materials": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "beats": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "startSeconds": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "endSeconds": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                "action": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "startSeconds",
+                "endSeconds",
+                "action"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "continuityLocks": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "imperfectionAnchors": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "audioTrack": {
+            "default": {
+              "soundDesignDirectives": []
+            },
+            "type": "object",
+            "properties": {
+              "spokenText": {
+                "type": "string",
+                "minLength": 1
+              },
+              "soundDesignDirectives": {
+                "default": [],
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "musicDirective": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "soundDesignDirectives"
+            ],
+            "additionalProperties": false
+          },
+          "dialogue": {
+            "type": "string",
+            "minLength": 1
+          },
+          "onScreenText": {
+            "type": "string",
+            "minLength": 1
+          },
+          "exclusions": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "frameworkId": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "id",
+          "sceneId",
+          "title",
+          "durationSeconds",
+          "intent",
+          "subject",
+          "action",
+          "environment",
+          "camera",
+          "lighting",
+          "physics",
+          "materials",
+          "beats",
+          "continuityLocks",
+          "imperfectionAnchors",
+          "audioTrack",
+          "exclusions",
+          "frameworkId"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "globalStyle": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "globalExclusions": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "metadata",
+    "story",
+    "characters",
+    "scenes",
+    "shots",
+    "globalStyle",
+    "globalExclusions"
+  ],
+  "additionalProperties": false
+}

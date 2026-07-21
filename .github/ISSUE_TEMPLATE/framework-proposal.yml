@@ -1,0 +1,37 @@
+name: Framework proposal
+description: Propose a new production framework or QC rule.
+title: "[Framework]: "
+labels: ["framework-proposal"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Production problem
+      description: What repeatable creative or generation problem does this address?
+    validations:
+      required: true
+  - type: dropdown
+    id: evidence
+    attributes:
+      label: Evidence class
+      options:
+        - PROMPT_CORPUS
+        - RENDER_VALIDATED
+        - COMBINED
+        - PROPOSED
+    validations:
+      required: true
+  - type: textarea
+    id: contract
+    attributes:
+      label: Proposed contract
+      description: Required inputs, outputs, guards, and failure conditions.
+    validations:
+      required: true
+  - type: textarea
+    id: boundary
+    attributes:
+      label: Publication boundary
+      description: Confirm that no private prompts, media, identifiers, mappings, or credentials are included.
+    validations:
+      required: true

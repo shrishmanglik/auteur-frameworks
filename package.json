@@ -1,0 +1,66 @@
+{
+  "name": "auteur-frameworks",
+  "version": "0.1.0",
+  "description": "Provider-neutral frameworks and deterministic tooling for cinematic AI content planning, prompt compilation, continuity, QC, and repair.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "auteur-frameworks": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "schemas",
+    "docs",
+    "examples",
+    "README.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "scripts": {
+    "audit:package": "node scripts/audit-package-manifest.mjs",
+    "audit:public": "node scripts/audit-publication-boundary.mjs",
+    "build": "tsc -p tsconfig.json",
+    "schema": "tsx scripts/generate-schema.ts",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "check": "npm run schema && npm run typecheck && npm run test && npm run build && npm run audit:public && npm run audit:package && npm pack --dry-run"
+  },
+  "dependencies": {
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "tsx": "^4.23.1",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  },
+  "keywords": [
+    "ai-video",
+    "cinematic-prompts",
+    "storyboard",
+    "prompt-engineering",
+    "continuity",
+    "creative-ai"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shrishmanglik/auteur-frameworks.git"
+  },
+  "bugs": {
+    "url": "https://github.com/shrishmanglik/auteur-frameworks/issues"
+  },
+  "homepage": "https://github.com/shrishmanglik/auteur-frameworks#readme"
+}

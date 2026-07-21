@@ -1,0 +1,84 @@
+{
+  "schemaVersion": "1.0.0",
+  "metadata": {
+    "title": "The Quiet Pour",
+    "format": "product-film",
+    "aspectRatio": "16:9",
+    "targetDurationSeconds": 8,
+    "audience": "design-conscious adults",
+    "tone": ["tactile", "restrained", "premium"],
+    "providerTarget": "provider-neutral",
+    "continuityStrictness": "strict",
+    "audioRequired": true
+  },
+  "story": {
+    "logline": "A handmade glass earns its value through one precise pour.",
+    "dramaticQuestion": "Can a simple material action feel ceremonial without becoming artificial?",
+    "beats": [
+      {"id": "beat-1", "title": "Anticipation", "purpose": "Establish the glass and empty space.", "emotionalTurn": "Stillness becomes expectation."},
+      {"id": "beat-2", "title": "Pour", "purpose": "Reveal material behavior and craftsmanship.", "emotionalTurn": "Expectation resolves into tactile satisfaction."}
+    ]
+  },
+  "characters": [],
+  "scenes": [
+    {"id": "scene-1", "title": "Workshop Table", "purpose": "Make the product feel physically real and considered.", "location": "quiet glass workshop", "timeOfDay": "late afternoon", "shotIds": ["shot-1"]}
+  ],
+  "shots": [
+    {
+      "id": "shot-1",
+      "sceneId": "scene-1",
+      "title": "The Pour",
+      "durationSeconds": 8,
+      "intent": "Turn material detail into the product argument.",
+      "subject": "a hand-blown clear tumbler on a scarred walnut workbench",
+      "action": "amber liquid enters the glass, curls around the base, rises, and settles",
+      "environment": "a working glass studio with a distant furnace glow",
+      "camera": {
+        "shotType": "macro product close-up",
+        "movement": "a slow 20-centimeter lateral slider move",
+        "framing": "glass centered low with negative space above the rim",
+        "focusBehavior": "focus holds on the front rim then transfers to the liquid surface",
+        "optics": {"cameraBody": "full-frame cinema camera", "lensModel": "100mm macro prime", "focalLengthMm": 100, "tStop": 4, "subjectDistanceMeters": 0.65}
+      },
+      "lighting": {
+        "primarySource": "large north-facing workshop window",
+        "motivation": "late-afternoon daylight with furnace warmth from frame right",
+        "paletteBase": ["neutral daylight", "amber", "walnut"],
+        "isDesaturated": false,
+        "isCrushedBlacks": false
+      },
+      "physics": [
+        "liquid obeys gravity and glass-wall adhesion",
+        "surface settles with diminishing concentric waves",
+        "glass remains fixed to the workbench"
+      ],
+      "materials": ["hand-blown glass", "amber liquid", "worn walnut", "fine workshop dust"],
+      "beats": [
+        {"startSeconds": 0, "endSeconds": 2, "action": "hold on the empty glass while furnace reflections move faintly"},
+        {"startSeconds": 2, "endSeconds": 6, "action": "the pour enters from above frame and visibly fills the lower two-thirds"},
+        {"startSeconds": 6, "endSeconds": 8, "action": "the stream stops and the liquid surface settles into a clean final composition"}
+      ],
+      "continuityLocks": [
+        "same tumbler geometry and rim thickness",
+        "same workbench scratches and glass position",
+        "same daylight direction"
+      ],
+      "imperfectionAnchors": [
+        "tiny trapped bubbles in the hand-blown glass",
+        "fine dust visible only in the backlight",
+        "subtle edge halation at the furnace reflection"
+      ],
+      "audioTrack": {
+        "soundDesignDirectives": [
+          "close liquid pour with a detailed glass resonance",
+          "quiet workshop room tone and distant furnace breath"
+        ],
+        "musicDirective": "no score"
+      },
+      "exclusions": ["no floating liquid", "no changing glass geometry", "no glossy computer-generated surfaces"],
+      "frameworkId": "cinematic-prose-stack"
+    }
+  ],
+  "globalStyle": ["observational luxury", "physical material truth", "restrained contrast"],
+  "globalExclusions": ["no synthetic showroom", "no decorative typography"]
+}
