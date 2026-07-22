@@ -1,5 +1,5 @@
 import type { Shot, UniversalPacket } from "./schemas.js";
-import { parseUniversalPacket, ShotSchema } from "./schemas.js";
+import { assertARollShotPerformance, parseUniversalPacket, ShotSchema } from "./schemas.js";
 import {
   compileFrameworkVideoPrompt,
   type FrameworkPromptContext,
@@ -187,6 +187,7 @@ export function compileShot(
   context: FrameworkPromptContext = {},
 ): CompiledShot {
   const shot = ShotSchema.parse(input);
+  if (shot.frameworkId === "avatar-a-roll-json") assertARollShotPerformance(shot);
   const optics = opticsToProse(shot.camera.optics);
   const spokenText = shot.dialogue ?? shot.audioTrack.spokenText;
   const audioParts = [

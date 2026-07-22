@@ -147,6 +147,7 @@
         "subtle chair fabric tension when he leans forward"
       ],
       "performance": {
+        "mode": "single-gesture",
         "basePosture": "seated and grounded, facing slightly off lens until the closing rule",
         "eyeLine": "stable near-lens attention with no teleprompter scanning",
         "deliveryStyle": "candid, specific, and dryly self-aware",
@@ -154,7 +155,7 @@
         "headMovementMaxDegrees": 3,
         "jawMovementMaxDeviationMm": 5,
         "emotionalExpressionSource": "eyes and brows, with one restrained lean at the rule",
-        "freezePadFramesAtEnd": 8,
+        "freezePadFramesAtEnd": 3,
         "gestureBounds": {
           "handsEnabled": true,
           "amplitudeDegreesMax": 7,
@@ -174,9 +175,11 @@
         "gestureCues": [
           {
             "timeSeconds": 18,
+            "keyword": "rule",
             "hand": "right",
             "type": "small open-hand emphasis",
             "scale": "under 10cm",
+            "durationSeconds": 1,
             "purpose": "mark the closing rule once"
           }
         ]

@@ -59,7 +59,7 @@ export const FRAMEWORKS: readonly FrameworkDefinition[] = [
       "triple-lock-protocol",
       "acceptance-tests",
     ],
-    evidenceClass: "PROMPT_CORPUS",
+    evidenceClass: "COMBINED",
     compilerSurface: "shot",
     architectureStyle: "json-contract",
   },

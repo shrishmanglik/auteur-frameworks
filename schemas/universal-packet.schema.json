@@ -630,6 +630,16 @@
             "default": {},
             "type": "object",
             "properties": {
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "restrained-stillness",
+                  "facial-only",
+                  "single-gesture",
+                  "posture-shift",
+                  "object-interaction"
+                ]
+              },
               "basePosture": {
                 "type": "string",
                 "minLength": 1
@@ -738,6 +748,10 @@
                       "minimum": 0,
                       "maximum": 300
                     },
+                    "keyword": {
+                      "type": "string",
+                      "minLength": 1
+                    },
                     "hand": {
                       "type": "string",
                       "minLength": 1
@@ -750,6 +764,11 @@
                       "type": "string",
                       "minLength": 1
                     },
+                    "durationSeconds": {
+                      "type": "number",
+                      "exclusiveMinimum": 0,
+                      "maximum": 4
+                    },
                     "purpose": {
                       "type": "string",
                       "minLength": 1
@@ -758,6 +777,41 @@
                   "required": [
                     "timeSeconds",
                     "type"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "microExpressionCues": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "timeSeconds": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 300
+                    },
+                    "keyword": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "action": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "intensity": {
+                      "default": "restrained",
+                      "type": "string",
+                      "enum": [
+                        "barely-perceptible",
+                        "restrained",
+                        "visible"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "timeSeconds",
+                    "action"
                   ],
                   "additionalProperties": false
                 }

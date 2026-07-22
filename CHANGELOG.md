@@ -2,6 +2,27 @@
 
 All notable public changes are recorded here. The project follows semantic versioning while the API matures; versions below `1.0.0` may contain documented breaking changes.
 
+## 0.9.0 - 2026-07-22
+
+### Added
+
+- Added A-Roll JSON 2.0 performance modes: restrained stillness, facial-only, single gesture, posture shift, and object interaction.
+- Added separate timed micro-expression cues and optional gesture keywords/durations.
+- Added sequence validation that blocks ambiguous hand alternatives, more than one hand cue per eight seconds, and reuse of the same gesture type in consecutive A-roll shots.
+- Added a hash-pinned, sanitized audit of eight historical A-roll prompt-to-output pairs and an installable Flow validation skill.
+
+### Changed
+
+- Cue-free A-roll now disables hand choreography even when a legacy packet carries stale `handsEnabled: true` metadata.
+- Replaced the two-second theatrical terminal hold and eight-frame pad with a 0.75-second natural settle and three-frame handoff; deterministic post-flight evidence remains required before continuation.
+- Reclassified the A-roll framework as `COMBINED` evidence because v2 joins private prompt-corpus structure with returned-media observations.
+
+### Evidence
+
+- Six of eight historical samples reproduced exact dialogue; one omitted part of its line and one malformed duplicated contract was unscorable. Fine lip sync remained `UNKNOWN`.
+- Repeated precision gestures, symmetrical hand motion, simulated coverage, and long frozen holds were rejected as defaults. Grounded stillness, one asymmetric action, and a single readable expression arc were adopted.
+- Textual voice-profile, pitch, mix, and onset fields remain instructions, not proof of provider adherence.
+
 ## 0.8.7 - 2026-07-22
 
 ### Changed

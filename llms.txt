@@ -35,6 +35,7 @@ Documentation:
 - docs/provider-handoff.md
 - docs/evaluation.md
 - docs/research-boundary.md
+- skills/auteur-flow-a-roll-validation/SKILL.md
 
 Public API modules:
 - src/schemas.ts

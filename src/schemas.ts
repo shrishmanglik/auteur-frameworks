@@ -95,7 +95,33 @@ export const LightingSchema = z.object({
   isCrushedBlacks: z.boolean().default(false),
 });
 
+export const ARollPerformanceModeSchema = z.enum([
+  "restrained-stillness",
+  "facial-only",
+  "single-gesture",
+  "posture-shift",
+  "object-interaction",
+]);
+
+const GestureCueSchema = z.object({
+  timeSeconds: z.number().min(0).max(300),
+  keyword: z.string().min(1).optional(),
+  hand: z.string().min(1).optional(),
+  type: z.string().min(1),
+  scale: z.string().min(1).optional(),
+  durationSeconds: z.number().positive().max(4).optional(),
+  purpose: z.string().min(1).optional(),
+});
+
+const MicroExpressionCueSchema = z.object({
+  timeSeconds: z.number().min(0).max(300),
+  keyword: z.string().min(1).optional(),
+  action: z.string().min(1),
+  intensity: z.enum(["barely-perceptible", "restrained", "visible"]).default("restrained"),
+});
+
 export const PerformanceSchema = z.object({
+  mode: ARollPerformanceModeSchema.optional(),
   basePosture: z.string().min(1).optional(),
   eyeLine: z.string().min(1).optional(),
   deliveryStyle: z.string().min(1).optional(),
@@ -120,13 +146,8 @@ export const PerformanceSchema = z.object({
     breathingPattern: z.string().min(1).optional(),
     breathsPerMinute: z.number().min(4).max(40).optional(),
   }).optional(),
-  gestureCues: z.array(z.object({
-    timeSeconds: z.number().min(0).max(300),
-    hand: z.string().min(1).optional(),
-    type: z.string().min(1),
-    scale: z.string().min(1).optional(),
-    purpose: z.string().min(1).optional(),
-  })).optional(),
+  gestureCues: z.array(GestureCueSchema).optional(),
+  microExpressionCues: z.array(MicroExpressionCueSchema).optional(),
 }).default({});
 
 export const AudioTrackSchema = z.object({
@@ -232,6 +253,15 @@ export const ShotSchema = z.object({
         code: "custom",
         path: ["performance", "gestureCues", index, "timeSeconds"],
         message: "gesture cue must occur before the shot ends",
+      });
+    }
+  });
+  shot.performance.microExpressionCues?.forEach((cue, index) => {
+    if (cue.timeSeconds >= shot.durationSeconds) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["performance", "microExpressionCues", index, "timeSeconds"],
+        message: "micro-expression cue must occur before the shot ends",
       });
     }
   });
@@ -363,14 +393,73 @@ export type ContinuationContract = z.infer<typeof ContinuationContractSchema>;
 export type ContinuationInput = z.infer<typeof ContinuationInputSchema>;
 export type UniversalPacket = z.infer<typeof UniversalPacketSchema>;
 
+const normalizedGestureType = (value: string): string => value
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, " ")
+  .trim();
+
+export function assertARollShotPerformance(
+  shot: Shot,
+  previousGestureTypes: ReadonlySet<string> = new Set<string>(),
+): Set<string> {
+    const cues = shot.performance.gestureCues ?? [];
+    const orderedCues = [...cues].sort((left, right) => left.timeSeconds - right.timeSeconds);
+    orderedCues.forEach((cue, cueIndex) => {
+      const nextCue = orderedCues[cueIndex + 1];
+      if (nextCue && nextCue.timeSeconds - cue.timeSeconds < 8) {
+        throw new Error(
+          `A-roll shot ${shot.id} places multiple hand gestures inside one eight-second window.`,
+        );
+      }
+    });
+    if (["restrained-stillness", "facial-only", "posture-shift"].includes(shot.performance.mode ?? "")
+      && cues.length > 0) {
+      throw new Error(`A-roll shot ${shot.id} uses ${shot.performance.mode} but also declares a hand gesture.`);
+    }
+    if (shot.performance.mode === "single-gesture" && cues.length !== 1) {
+      throw new Error(`A-roll shot ${shot.id} uses single-gesture mode and must declare exactly one hand gesture.`);
+    }
+    const currentGestureTypes = new Set<string>();
+    cues.forEach((cue) => {
+      if (/\b(?:and|or|either)\b|[\/;]/i.test(cue.type)) {
+        throw new Error(
+          `A-roll shot ${shot.id} has an ambiguous gesture cue; declare one exact physical action instead of alternatives.`,
+        );
+      }
+      const type = normalizedGestureType(cue.type);
+      if (currentGestureTypes.has(type)) {
+        throw new Error(`A-roll shot ${shot.id} repeats the same gesture cue inside one performance.`);
+      }
+      if (previousGestureTypes.has(type)) {
+        throw new Error(
+          `A-roll shot ${shot.id} repeats the previous shot's ${cue.type} gesture; vary performance or use stillness.`,
+        );
+      }
+      currentGestureTypes.add(type);
+    });
+    return currentGestureTypes;
+}
+
+export function assertARollSequencePerformance(packet: UniversalPacket): void {
+  if (packet.metadata.format !== "a-roll") return;
+
+  let previousGestureTypes = new Set<string>();
+  packet.shots.forEach((shot) => {
+    const currentGestureTypes = assertARollShotPerformance(shot, previousGestureTypes);
+    previousGestureTypes = currentGestureTypes;
+  });
+}
+
 export function parseUniversalPacket(input: unknown): UniversalPacket {
   const packet = UniversalPacketSchema.parse(input);
   if (packet.metadata.format !== "a-roll") return packet;
-  return {
+  const routedPacket: UniversalPacket = {
     ...packet,
     shots: packet.shots.map((shot): Shot => ({
       ...shot,
       frameworkId: "avatar-a-roll-json",
     })),
   };
+  assertARollSequencePerformance(routedPacket);
+  return routedPacket;
 }

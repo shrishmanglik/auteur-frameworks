@@ -376,13 +376,26 @@ const compileAvatarARollJson = (
     room_tone: shot.audioTrack.roomTone,
     immutable_across_sequence: true,
   };
+  const gestureCues = performance.gestureCues ?? [];
+  const microExpressionCues = performance.microExpressionCues ?? [];
+  const performanceMode = performance.mode
+    ?? (gestureCues.length > 0
+      ? "single-gesture"
+      : microExpressionCues.length > 0
+        ? "facial-only"
+        : "restrained-stillness");
   const movementContract = {
-    gesture_bounds: performance.gestureBounds ?? {
-      handsEnabled: true,
-      amplitudeDegreesMax: 7,
-      ratePer8SecondsMax: 2,
-      style: "subtle, asymmetric, and phrase-motivated; return to the resting position",
+    performance_mode: performanceMode,
+    gesture_bounds: {
+      ...performance.gestureBounds,
+      amplitudeDegreesMax: Math.min(performance.gestureBounds?.amplitudeDegreesMax ?? 7, 7),
+      ratePer8SecondsMax: 1,
+      style: "one exact asymmetric phrase-motivated action, then return fully to rest",
+      handsEnabled: gestureCues.length > 0,
     },
+    gesture_policy: gestureCues.length
+      ? "perform only the declared gesture exactly once; do not invent, repeat, mirror, alternate, or loop it"
+      : "hands remain naturally supported; do not invent presenter gestures or rhythmic emphasis",
     head_motion: performance.headMotion ?? {
       yawDegreesMax: performance.headMovementMaxDegrees ?? 4,
       pitchDegreesMax: Math.min(performance.headMovementMaxDegrees ?? 3, 3),
@@ -393,7 +406,8 @@ const compileAvatarARollJson = (
       breathingPattern: "calm, visible diaphragmatic breathing; no frozen torso or breath pumping",
       breathsPerMinute: 12,
     },
-    gesture_cues: performance.gestureCues ?? [],
+    micro_expression_cues: microExpressionCues,
+    gesture_cues: gestureCues,
   };
   const terminalSettleProtocol = {
     speech_end_deadline_seconds: spokenWindow?.endSeconds ?? null,
@@ -401,7 +415,7 @@ const compileAvatarARollJson = (
       ? [spokenWindow.endSeconds, shot.durationSeconds]
       : null,
     minimum_settle_seconds: A_ROLL_CONTRACT_DEFAULTS.minimumTerminalSettleSeconds,
-    natural_settle_state: "after the final phoneme, keep lips closed while completing a quiet exhale and tiny shoulder release; one natural blink may finish before the boundary lock begins",
+    natural_settle_state: "after the final phoneme, close the lips naturally and let the face, breath, and shoulders resolve without a theatrical freeze; one natural blink may finish before the boundary lock begins",
     boundary_lock_window_seconds: [boundaryLockStartSeconds, shot.durationSeconds],
     boundary_lock_seconds: A_ROLL_CONTRACT_DEFAULTS.terminalBoundaryLockSeconds,
     boundary_state: "lips gently sealed, jaw neutral, eyes naturally open, stable eye line, head and hands at rest",
@@ -415,7 +429,8 @@ const compileAvatarARollJson = (
   if (context.compactSurface) {
     const compactContract = {
       project_manifest: {
-        manifest_version: "AUTEUR A-Roll JSON 1.0",
+        manifest_version: "AUTEUR A-Roll JSON 2.0",
+        evidence_class: "COMBINED",
         global_creative_directive: {
           format: "A-Roll",
           duration_seconds: shot.durationSeconds,
@@ -429,7 +444,6 @@ const compileAvatarARollJson = (
             identity_lock: shot.continuityLocks,
           },
           vocal_lock: {
-            profile: vocalSignature.voice_profile_id,
             ...vocalSignature,
           },
         },
@@ -448,7 +462,7 @@ const compileAvatarARollJson = (
             terminal_hold: {
               window: spokenWindow ? [spokenWindow.endSeconds, shot.durationSeconds] : null,
               min_seconds: A_ROLL_CONTRACT_DEFAULTS.minimumTerminalSettleSeconds,
-              settle: "lips closed; quiet exhale and tiny shoulder release; one blink allowed before boundary lock",
+              settle: "close lips naturally; resolve breath and expression without a theatrical freeze; one blink allowed before boundary lock",
               boundary_lock_window: [boundaryLockStartSeconds, shot.durationSeconds],
               boundary_lock_seconds: A_ROLL_CONTRACT_DEFAULTS.terminalBoundaryLockSeconds,
               boundary_state: "lips sealed; jaw neutral; eyes open; head and hands at rest; no new blink, mouth, head, hand, or expression cycle",
@@ -514,15 +528,15 @@ const compileAvatarARollJson = (
   }
   const contract = {
     project_manifest: {
-      manifest_version: "AUTEUR A-Roll JSON 1.0",
+      manifest_version: "AUTEUR A-Roll JSON 2.0",
       project_title: contextValue(context.productionTitle, shot.title),
-      evidence_class: "PROMPT_CORPUS",
+      evidence_class: "COMBINED",
       layer_0_intent_and_provenance: {
         narrative_beat: shot.intent,
         execution_target: "one credible uninterrupted A-roll performance from the supplied speaker reference",
       },
       layer_i_global_creative_directive: {
-        fidelity_mandate: "Strict photographic realism with natural skin, articulation, breath, weight, and optical behavior; reject uncanny or presenter-like motion.",
+        fidelity_mandate: "Strict photographic realism with natural skin, articulation, breath, weight, and optical behavior. Prefer controlled stillness and one psychologically motivated action over presenter motion.",
         aesthetic_dna: {
           format: "A-Roll",
           qualities: unique([...(context.globalStyle ?? []), "restrained human performance", "clean live-action plate"]),
@@ -629,7 +643,7 @@ const compileAvatarARollJson = (
               : "complete naturally inside the declared shot window",
           },
           identity_lock: "preserve the supplied face, wardrobe, anatomy, eye line, and voice signature",
-          temporal_lock: "single continuous take; " + temporalBoundaryRule() + " After speech, allow a quiet closed-mouth exhale and at most one blink before "
+          temporal_lock: "single continuous take; " + temporalBoundaryRule() + " After speech, close the lips naturally, resolve the breath without a theatrical freeze, and allow at most one blink before "
             + boundaryLockStartSeconds + "s. From " + boundaryLockStartSeconds + "s through " + shot.durationSeconds + "s lock sealed lips, relaxed jaw, naturally open eyes, stable eye line, and resting head/hands. Final "
             + freezePadFramesAtEnd + " frames remain unchanged. Once the final phoneme ends, never reopen or silently move the mouth.",
         },

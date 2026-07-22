@@ -35,6 +35,19 @@ For a single-shot video workflow:
 5. evaluate action completion, geometry, physical behavior, identity, audio, and final state;
 6. use `buildRepairPrompt` for one observed defect at a time.
 
+### Fail-closed editor-state gate
+
+Rich-text provider fields can display text that has not entered the application's controlled state. Before spending credits:
+
+1. confirm the opening or continuation reference is visibly attached in the intended slot;
+2. confirm the editor contains a real text leaf, not only a zero-width placeholder;
+3. compare the committed character count or hash with the exact compiled surface;
+4. move focus with a keyboard action or uniquely identified control and confirm the text persists unchanged; never use an unverified fixed-coordinate blur click;
+5. confirm the provider's final create control is enabled without forcing it;
+6. after generation, open the media detail and verify the recorded prompt contains the expected manifest version, framework ID, and exact dialogue.
+
+A visible paste, enabled-looking shell, or generated asset title is not prompt-provenance evidence. If the media detail records only a seed character, an empty prompt, or a different route, exclude the asset from framework validation even when the pixels look useful. Never force a disabled extension control. If native extension is unavailable, a new reference-first clip may use an accepted saved boundary frame, but label it as a chained clip rather than native-extension proof.
+
 ## Sequential extension
 
 Do not compile an extension from the planned shot alone. First inspect the actual final frame of the accepted render, then encode that evidence in a continuation contract:

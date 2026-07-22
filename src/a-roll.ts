@@ -2,10 +2,10 @@ import { z } from "zod";
 
 export const A_ROLL_CONTRACT_DEFAULTS = {
   frameRateFps: 24,
-  freezePadFramesAtEnd: 8,
+  freezePadFramesAtEnd: 3,
   lipSyncConfidenceMin: 0.99,
-  minimumTerminalSettleSeconds: 2,
-  terminalBoundaryLockSeconds: 0.75,
+  minimumTerminalSettleSeconds: 0.75,
+  terminalBoundaryLockSeconds: 0.25,
   minimumStableBoundaryFrames: 3,
   speechTimingSlackMultiplier: 1.2,
 } as const;

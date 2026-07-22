@@ -148,7 +148,7 @@ const extension = compileContinuationPrompt(yourRenderObservedContinuation);
 | Cinematic Prose Stack | Premium product shots, ads, B-roll, and character moments |
 | Act and Shot Master Spec | Short films, sequences, music videos, and narrative ads |
 | JSON Scene Contract | Parseable, versioned production handoffs |
-| Avatar A-Roll JSON Contract | Referenced speakers, exact monologues, restrained facial performance, vocal locks, and clean handoffs |
+| Avatar A-Roll JSON Contract | Referenced speakers, exact monologues, explicit stillness/gesture modes, vocal locks, and audited handoffs |
 | Temporal Evolution | Transformations, animation, and VFX state changes |
 | Timed Social Sequence | Reels, hooks, reveals, and loopable short-form work |
 | Practical Stunt Contract | Mass, contact, momentum, and camera choreography |
@@ -172,7 +172,7 @@ The framework ID is executable structure, not a display tag. See [Framework-Nati
 | Narrative director | [`examples/short-film.json`](examples/short-film.json) | causal beats, scene ownership, continuity, choice, audio |
 | Commercial director | [`examples/product-film.json`](examples/product-film.json) | material truth, product geometry, optics, settling physics |
 | Vertical creator | [`examples/vertical-reel.json`](examples/vertical-reel.json) | first-second hook, 9:16 route, timing, loop, text risk |
-| A-roll operator | [`examples/a-roll.json`](examples/a-roll.json) | JSON performance manifest, facial limits, feasible speech timing, vocal and lip-sync locks, terminal frame pad, eye line, room sound |
+| A-roll operator | [`examples/a-roll.json`](examples/a-roll.json) | JSON v2 performance mode, zero-or-one exact gesture, feasible speech timing, voice intent, terminal handoff, eye line, room sound |
 | Tool integrator | [`examples/requests/`](examples/requests/) | raw brief to schema-bound LLM contract |
 
 Run the full matrix:
@@ -219,6 +219,9 @@ At handoff time:
 7. record observed defects and compile a constrained repair.
 
 See [Provider Handoff](docs/provider-handoff.md).
+
+For agent-assisted Google Flow validation, install or load the bundled
+[`auteur-flow-a-roll-validation` skill](skills/auteur-flow-a-roll-validation/SKILL.md). It enforces one-generation-at-a-time dispatch, committed-prompt verification, returned-media audit, and render-observed continuation boundaries.
 
 ## LLM and agent integration
 
@@ -273,6 +276,7 @@ Runtime dependencies are audited separately in CI.
 | [`src/repair.ts`](src/repair.ts) | Constrained failure repair |
 | [`schemas/`](schemas/) | Generated Universal Packet and continuation JSON Schemas |
 | [`examples/`](examples/) | Synthetic production and request fixtures |
+| [`skills/`](skills/) | Installable agent workflows for provider validation |
 | [`docs/`](docs/) | Quickstart, integration, evaluation, and architecture guides |
 
 ## Documentation
@@ -298,7 +302,7 @@ Start with [CONTRIBUTING.md](CONTRIBUTING.md) or open a [framework proposal](htt
 
 ## Status
 
-Version `0.8.7` is an early public API. Provider adapters and commercial execution remain outside core. Breaking changes will be documented in [CHANGELOG.md](CHANGELOG.md) until the API reaches `1.0.0`.
+Version `0.9.0` is an early public API. Provider adapters and commercial execution remain outside core. Breaking changes will be documented in [CHANGELOG.md](CHANGELOG.md) until the API reaches `1.0.0`.
 
 ## License and citation
 

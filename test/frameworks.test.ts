@@ -330,19 +330,19 @@ describe("compiler", () => {
       .locked_audio_profile.phoneme_alignment.acceptance_target_ms).toBe(20);
     expect(manifest.layer_iv_scene_blueprint.keyframe_directives["4_audio_and_sensory_sync"]
       .locked_audio_profile.phoneme_alignment.confidence_min).toBe(0.99);
-    expect(manifest.layer_i_global_creative_directive.render_specifications.freeze_pad_frames_at_end).toBe(8);
+    expect(manifest.layer_i_global_creative_directive.render_specifications.freeze_pad_frames_at_end).toBe(3);
     expect(manifest.layer_iv_scene_blueprint.keyframe_directives["1_subjects_kinetics_and_phenomenology"]
-      .performance_manifest.terminal_hold.freeze_pad_frames_at_end).toBe(8);
+      .performance_manifest.terminal_hold.freeze_pad_frames_at_end).toBe(3);
     expect(manifest.layer_iv_scene_blueprint.keyframe_directives["1_subjects_kinetics_and_phenomenology"]
-      .performance_manifest.terminal_hold.minimum_settle_seconds).toBe(2);
+      .performance_manifest.terminal_hold.minimum_settle_seconds).toBe(0.75);
     expect(manifest.layer_iv_scene_blueprint.keyframe_directives["1_subjects_kinetics_and_phenomenology"]
       .performance_manifest.terminal_hold.forbidden_during_boundary_lock).toContain(
       "mouth reopening or silent mouthing",
     );
     expect(manifest.layer_iv_scene_blueprint.keyframe_directives["1_subjects_kinetics_and_phenomenology"]
-      .performance_manifest.terminal_hold.boundary_lock_seconds).toBe(0.75);
+      .performance_manifest.terminal_hold.boundary_lock_seconds).toBe(0.25);
     expect(manifest.layer_iv_scene_blueprint.keyframe_directives["1_subjects_kinetics_and_phenomenology"]
-      .performance_manifest.terminal_hold.boundary_lock_window_seconds).toEqual([29.25, 30]);
+      .performance_manifest.terminal_hold.boundary_lock_window_seconds).toEqual([29.75, 30]);
     expect(manifest.layer_iv_scene_blueprint.keyframe_directives["1_subjects_kinetics_and_phenomenology"]
       .performance_manifest.terminal_hold.natural_settle_state).toContain("one natural blink");
     expect(manifest.layer_iv_scene_blueprint.keyframe_directives["1_subjects_kinetics_and_phenomenology"]
@@ -357,20 +357,24 @@ describe("compiler", () => {
     expect(compactManifest.scene_blueprint.audio_vocal_lock.mix.integratedLufs).toBe(-14);
     expect(compactManifest.scene_blueprint.audio_vocal_lock.mix.truePeakDbfsMax).toBe(-1);
     expect(compactManifest.character_asset_bible.vocal_lock.accent).toContain("South Asian English");
-    expect(compactManifest.character_asset_bible.vocal_lock.profile)
-      .toBe(compactManifest.character_asset_bible.vocal_lock.voice_profile_id);
+    expect(compactManifest.character_asset_bible.vocal_lock.voice_profile_id)
+      .toBe("approved-founder-voice-reference");
     expect(compactManifest.character_asset_bible.vocal_lock.base_pitch_hz).toBe(110);
     expect(compactManifest.character_asset_bible.vocal_lock.cadence).toContain("deliberate");
     expect(compactManifest.character_asset_bible.vocal_lock.articulation).toContain("precise");
     expect(compactManifest.character_asset_bible.vocal_lock.immutable_across_sequence).toBe(true);
     expect(compactManifest.scene_blueprint.performance_manifest.natural_kinetics.gesture_cues[0].type)
       .toContain("open-hand");
-    expect(compactManifest.scene_blueprint.performance_manifest.terminal_hold.min_seconds).toBe(2);
+    expect(compactManifest.scene_blueprint.performance_manifest.natural_kinetics.performance_mode)
+      .toBe("single-gesture");
+    expect(compactManifest.scene_blueprint.performance_manifest.natural_kinetics.gesture_policy)
+      .toContain("exactly once");
+    expect(compactManifest.scene_blueprint.performance_manifest.terminal_hold.min_seconds).toBe(0.75);
     expect(compactManifest.scene_blueprint.performance_manifest.terminal_hold.settle).toContain("one blink allowed");
-    expect(compactManifest.scene_blueprint.performance_manifest.terminal_hold.boundary_lock_seconds).toBe(0.75);
-    expect(compactManifest.scene_blueprint.performance_manifest.terminal_hold.boundary_lock_window).toEqual([29.25, 30]);
+    expect(compactManifest.scene_blueprint.performance_manifest.terminal_hold.boundary_lock_seconds).toBe(0.25);
+    expect(compactManifest.scene_blueprint.performance_manifest.terminal_hold.boundary_lock_window).toEqual([29.75, 30]);
     expect(compactManifest.scene_blueprint.performance_manifest.terminal_hold.boundary_state).toContain("no new blink");
-    expect(compactManifest.scene_blueprint.performance_manifest.terminal_hold.freeze_frames).toBe(8);
+    expect(compactManifest.scene_blueprint.performance_manifest.terminal_hold.freeze_frames).toBe(3);
     expect(compactManifest.triple_lock_protocol.temporal).toContain("no early beat/reset");
     expect(compiled.videoPrompt.match(/We spent three weeks/g)).toHaveLength(1);
     expect(compiled.compactPromptReport.frameworkPreserved).toBe(true);
@@ -386,6 +390,8 @@ describe("compiler", () => {
     delete legacy.shots[0].performance.headMotion;
     delete legacy.shots[0].performance.bodyMotion;
     delete legacy.shots[0].performance.gestureCues;
+    delete legacy.shots[0].performance.microExpressionCues;
+    delete legacy.shots[0].performance.mode;
     for (const key of [
       "accent", "basePitchHz", "personaTone", "cadenceStyle", "articulation",
       "intonationNotes", "timbre", "micStyle", "roomTone", "emphasisCues",
@@ -395,6 +401,81 @@ describe("compiler", () => {
     expect(parsed.shots[0]?.performance.gestureBounds).toBeUndefined();
     expect(parsed.shots[0]?.audioTrack.basePitchHz).toBeUndefined();
     expect(() => compilePacket(parsed)).not.toThrow();
+  });
+
+  it("rejects ambiguous A-roll gesture alternatives before compilation", () => {
+    const packet = structuredClone(JSON.parse(
+      fs.readFileSync(new URL("../examples/a-roll.json", import.meta.url), "utf8"),
+    ));
+    packet.shots[0].performance.gestureCues[0].type = "precision pinch or half-open palm";
+    expect(() => compilePacket(packet)).toThrow(/one exact physical action/);
+
+    packet.shots[0].performance.gestureCues[0].type = "precision pinch and half-open palm";
+    expect(() => compilePacket(packet)).toThrow(/one exact physical action/);
+
+    packet.shots[0].performance.gestureCues[0].type = "precision pinch; half-open palm";
+    expect(() => compilePacket(packet)).toThrow(/one exact physical action/);
+  });
+
+  it("requires single-gesture mode to declare exactly one cue", () => {
+    const packet = structuredClone(JSON.parse(
+      fs.readFileSync(new URL("../examples/a-roll.json", import.meta.url), "utf8"),
+    ));
+    packet.shots[0].performance.mode = "single-gesture";
+    packet.shots[0].performance.gestureCues = [];
+    expect(() => compilePacket(packet)).toThrow(/must declare exactly one hand gesture/);
+    expect(() => compileShot(packet.shots[0])).toThrow(/must declare exactly one hand gesture/);
+  });
+
+  it("rejects hand cues that cluster inside any rolling eight-second window", () => {
+    const packet = structuredClone(JSON.parse(
+      fs.readFileSync(new URL("../examples/a-roll.json", import.meta.url), "utf8"),
+    ));
+    packet.shots[0].durationSeconds = 16;
+    packet.shots[0].performance.gestureCues = [
+      { timeSeconds: 1, type: "right palm presentation" },
+      { timeSeconds: 7.9, type: "left fingertip desk contact" },
+    ];
+    expect(() => compilePacket(packet)).toThrow(/inside one eight-second window/);
+  });
+
+  it("prevents caller gesture bounds from weakening the compiled A-roll contract", () => {
+    const packet = structuredClone(JSON.parse(
+      fs.readFileSync(new URL("../examples/a-roll.json", import.meta.url), "utf8"),
+    ));
+    packet.shots[0].performance.gestureBounds.ratePer8SecondsMax = 12;
+    packet.shots[0].performance.gestureBounds.amplitudeDegreesMax = 30;
+    const manifest = JSON.parse(compilePacket(packet).shots[0]!.compactVideoPrompt).project_manifest;
+    const bounds = manifest.scene_blueprint.performance_manifest.natural_kinetics.gesture_bounds;
+    expect(bounds.ratePer8SecondsMax).toBe(1);
+    expect(bounds.amplitudeDegreesMax).toBe(7);
+  });
+
+  it("rejects a repeated hand-gesture loop across consecutive A-roll shots", () => {
+    const packet = structuredClone(JSON.parse(
+      fs.readFileSync(new URL("../examples/a-roll.json", import.meta.url), "utf8"),
+    ));
+    const secondShot = structuredClone(packet.shots[0]);
+    secondShot.id = "shot-2";
+    secondShot.title = "The next sentence";
+    secondShot.dialogue = "The next sentence advances the argument without repeating the same performance.";
+    secondShot.audioTrack.spokenText = secondShot.dialogue;
+    packet.shots.push(secondShot);
+    packet.scenes[0].shotIds.push(secondShot.id);
+    expect(() => compilePacket(packet)).toThrow(/repeats the previous shot/);
+  });
+
+  it("defaults cue-free A-roll to restrained stillness without invented presenter gestures", () => {
+    const packet = structuredClone(JSON.parse(
+      fs.readFileSync(new URL("../examples/a-roll.json", import.meta.url), "utf8"),
+    ));
+    packet.shots[0].performance.mode = "restrained-stillness";
+    packet.shots[0].performance.gestureCues = [];
+    const manifest = JSON.parse(compilePacket(packet).shots[0]!.compactVideoPrompt).project_manifest;
+    const kinetics = manifest.scene_blueprint.performance_manifest.natural_kinetics;
+    expect(kinetics.performance_mode).toBe("restrained-stillness");
+    expect(kinetics.gesture_bounds.handsEnabled).toBe(false);
+    expect(kinetics.gesture_policy).toContain("do not invent presenter gestures");
   });
 
   it("rejects impossible A-roll pitch and movement bounds", () => {
@@ -418,7 +499,7 @@ describe("compiler", () => {
     })).toThrow(/gesture cue must occur before the shot ends/);
 
     const insideBoundary = structuredClone(packet.shots[0]!);
-    insideBoundary.performance.gestureCues = [{ timeSeconds: 29.5, type: "late gesture" }];
+    insideBoundary.performance.gestureCues = [{ timeSeconds: 29.8, type: "late gesture" }];
     expect(() => compileShot(insideBoundary)).toThrow(/terminal boundary lock/);
   });
 
@@ -450,6 +531,7 @@ describe("compiler", () => {
       { startSeconds: 4, endSeconds: 8, action: "The speaker answers No. and returns to neutral." },
     ];
     packet.shots[0].durationSeconds = 8;
+    packet.shots[0].performance.mode = "restrained-stillness";
     packet.shots[0].performance.gestureCues = [];
     packet.metadata.targetDurationSeconds = 8;
 
@@ -469,6 +551,7 @@ describe("compiler", () => {
     ));
     const shot = structuredClone(packet.shots[0]!);
     shot.durationSeconds = 8;
+    shot.performance.mode = "restrained-stillness";
     shot.performance.gestureCues = [];
     shot.dialogue = "Most AI videos fail before the model generates a frame because the idea never became a production plan.";
     shot.audioTrack.spokenText = shot.dialogue;
@@ -502,11 +585,11 @@ describe("compiler", () => {
     shot.dialogue = "One production contract keeps face, voice, timing, and handoff coherent.";
     shot.audioTrack.spokenText = shot.dialogue;
     shot.audioTrack.paceWpm = 140;
-    shot.audioTrack.spokenWindow = { startSeconds: 0, endSeconds: 6 };
+    shot.audioTrack.spokenWindow = { startSeconds: 0, endSeconds: 7.25 };
     shot.performance.freezePadFramesAtEnd = 8;
     shot.beats = [
-      { startSeconds: 0, endSeconds: 6, action: "say the approved line exactly once" },
-      { startSeconds: 6, endSeconds: 8, action: "hold the closed-lip terminal state" },
+      { startSeconds: 0, endSeconds: 7.25, action: "say the approved line exactly once" },
+      { startSeconds: 7.25, endSeconds: 8, action: "settle naturally into the closed-lip terminal state" },
     ];
 
     const safeIssues = preflightPacket({
@@ -517,7 +600,7 @@ describe("compiler", () => {
     }).issues;
     expect(safeIssues.map((issue) => issue.code)).not.toContain("AROLL_TERMINAL_HOLD_CONFLICT");
 
-    shot.audioTrack.spokenWindow.endSeconds = 6.1;
+    shot.audioTrack.spokenWindow.endSeconds = 7.3;
     const unsafeIssues = preflightPacket({
       ...packet,
       metadata: { ...packet.metadata, targetDurationSeconds: 8 },
@@ -536,11 +619,11 @@ describe("compiler", () => {
     shot.performance.gestureCues = [];
     shot.dialogue = "Most videos fail before generation because the idea never became a production plan.";
     shot.audioTrack.spokenText = shot.dialogue;
-    shot.audioTrack.paceWpm = 138;
-    shot.audioTrack.spokenWindow = { startSeconds: 0, endSeconds: 6.1 };
+    shot.audioTrack.paceWpm = 120;
+    shot.audioTrack.spokenWindow = { startSeconds: 0, endSeconds: 7.3 };
     shot.beats = [
-      { startSeconds: 0, endSeconds: 6.1, action: "say the approved line exactly once" },
-      { startSeconds: 6.1, endSeconds: 8, action: "hold the closed-lip terminal state" },
+      { startSeconds: 0, endSeconds: 7.3, action: "say the approved line exactly once" },
+      { startSeconds: 7.3, endSeconds: 8, action: "settle naturally into the closed-lip terminal state" },
     ];
 
     const issues = preflightPacket({
@@ -581,6 +664,7 @@ describe("compiler", () => {
     ));
     const shot = structuredClone(packet.shots[0]!);
     shot.durationSeconds = 8;
+    shot.performance.mode = "restrained-stillness";
     shot.performance.gestureCues = [];
     shot.dialogue = "Hold the production line.";
     shot.audioTrack.spokenText = shot.dialogue;

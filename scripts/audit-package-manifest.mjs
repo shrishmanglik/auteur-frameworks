@@ -5,7 +5,7 @@ import path from "node:path";
 
 const root = process.cwd();
 const npmCli = process.env.npm_execpath;
-const allowedRoots = ["dist/", "docs/", "examples/", "schemas/", "src/"];
+const allowedRoots = ["dist/", "docs/", "examples/", "schemas/", "skills/", "src/"];
 const allowedRootFiles = new Set([
   "CONTRIBUTING.md",
   "CHANGELOG.md",
@@ -38,6 +38,7 @@ const requiredFiles = new Set([
   "examples/vertical-reel.json",
   "GOVERNANCE.md",
   "llms.txt",
+  "skills/auteur-flow-a-roll-validation/SKILL.md",
   "SUPPORT.md",
 ]);
 const bannedExtensions = new Set([
