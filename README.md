@@ -136,7 +136,7 @@ const extension = compileContinuationPrompt(yourRenderObservedContinuation);
 - **Storyboard projection** with ordered panels, action, camera, duration, continuity, audio, and distinct opening/terminal frame-generation instructions. Explicit `frameStates.opening` data owns the opening asset; without it, the compiler labels and warns on a minimal fallback instead of copying a composite scene into frame zero. The legacy `framePrompt` aliases the opening state.
 - **Pre-flight QC** for temporal coverage, production duration, scene ownership, continuity, audio, typography risk, and realism anchors.
 - **Repair engine** for identity drift, anatomy, topology, object loss, broken physics, lip sync, branding, material drift, and other recurring defects.
-- **Measured refinement loop** with a typed render-observation schema, weighted scoring, a relative-improvement gate, and fail-closed audio verification before a render can become a production candidate.
+- **Measured refinement loop** with a typed render-observation schema, weighted scoring, a relative-improvement gate, fail-closed audio and lip-sync verification, and an A-roll post-flight planner that distinguishes regeneration from deterministic trim/master salvage.
 - **Render-observed continuation compiler** with a match-frame instruction, first-motion deadline, physical spatial bridge, single-camera-path guard, time-boxed dialogue cue, and final-frame handoff. Provider output must still be audited; the instruction is not a frame-match guarantee.
 - **Four executable creator fixtures** covering a product film, short film, vertical reel, and A-roll monologue.
 - **CLI and typed API** designed for local tools, agents, desktop apps, servers, and CI.
@@ -298,7 +298,7 @@ Start with [CONTRIBUTING.md](CONTRIBUTING.md) or open a [framework proposal](htt
 
 ## Status
 
-Version `0.8.5` is an early public API. Provider adapters and commercial execution remain outside core. Breaking changes will be documented in [CHANGELOG.md](CHANGELOG.md) until the API reaches `1.0.0`.
+Version `0.8.6` is an early public API. Provider adapters and commercial execution remain outside core. Breaking changes will be documented in [CHANGELOG.md](CHANGELOG.md) until the API reaches `1.0.0`.
 
 ## License and citation
 

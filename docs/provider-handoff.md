@@ -22,7 +22,7 @@ The core package is provider-neutral. This guide describes a safe manual handoff
 
 The `videoPrompt` already contains exclusions. Do not append the same negative list twice.
 
-`compactVideoPrompt` uses a toolkit-owned 4,000-character ceiling; this is not a provider limit. Inspect `compactPromptReport` before dispatch. `frameworkPreserved` must be true, and high-stakes generation requires empty `omittedExclusions` and `truncatedSections`. Otherwise use the full prompt, reduce the shot safely, or pass omitted safeguards through a supported separate negative field.
+`compactVideoPrompt` uses a toolkit-owned 6,500-character ceiling; this is not a provider limit. Inspect `compactPromptReport` before dispatch. `frameworkPreserved` must be true, and high-stakes generation requires empty `omittedExclusions` and `truncatedSections`. Otherwise use the full prompt, reduce the shot safely, or pass omitted safeguards through a supported separate negative field.
 
 ## Manual Flow-style smoke
 
@@ -77,3 +77,5 @@ Record:
 - repair decision.
 
 Never place credentials, account identifiers, private source paths, or customer media inside the Universal Packet.
+
+For A-roll, call `planARollPostflight` after transcript, identity, fine lip-sync, terminal-frame, and loudness inspection. Failed exact dialogue, identity, or fine lip sync requires regeneration. A failed terminal boundary may be salvaged only when a post-speech stable frame is proven; the returned trim time preserves the full floating-point duration of one frame at the observed frame rate. A timestamp too close to the clip end to preserve that frame routes to manual review instead of being silently clamped. Loudness repair is deterministic mastering, followed by a new integrated-LUFS and true-peak measurement. `SALVAGE_AND_REVIEW` never authorizes continuation by itself: re-audit the finished asset first.

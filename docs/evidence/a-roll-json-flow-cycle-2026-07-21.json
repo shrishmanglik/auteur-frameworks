@@ -120,7 +120,46 @@
       "Bound hand gestures, head yaw and pitch, nod count, posture shifts, and breathing",
       "Allow a natural closed-mouth exhale and early blink before a 0.75-second strict terminal boundary lock"
     ],
-    "evidenceStatus": "TESTED LOCALLY; PROVIDER RESULT UNKNOWN"
+    "evidenceStatus": "TESTED LOCALLY; PROVIDER RESULT RETURNED AND AUDITED BELOW"
+  },
+  "repairAttemptV085ReturnedAsset": {
+    "frameworkVersion": "0.8.5",
+    "frameworkCommit": "b9ce70159a94c6a146dbcf9252ae5ccbdeabc575",
+    "submittedPromptSha256": "f3e1d902584f9bddfa8a0f08c52cfaae0c56e2f54f797cdd23fdf7e25fbc84dc",
+    "submittedPromptCharacters": 6071,
+    "returnedAssetSha256": "a06b408b753a5a1323b9876c65637967c62a7e8e34bf25cce29eaaa2eef7cdd2",
+    "media": "H.264 High 1280x720 24fps, 8.000 seconds; AAC stereo 48kHz",
+    "transcript": "Most videos fail because the idea never became a production plan.",
+    "transcriptExactOnce": true,
+    "measuredSpeechSeconds": [0, 5.72],
+    "measuredTailSilenceSeconds": [5.842437, 7.878375],
+    "approximateMedianPitchHz": 115.1,
+    "authoredBasePitchHz": 110,
+    "integratedLufs": -22.59,
+    "truePeakDbfs": -2.84,
+    "authoredMixTarget": {
+      "integratedLufs": -14,
+      "truePeakDbfsMax": -1
+    },
+    "identityAndSet": "Broadly stable identity, set, camera/framing, lighting, wardrobe, and microphone across the sampled take; restrained hand and head motion remained natural.",
+    "terminalObservation": "The face reached a stable closed-lip/open-eye state before 7.5 seconds, then the mouth reopened through the actual final frame.",
+    "fineLipSync": "UNKNOWN without a validated audiovisual sync scorer",
+    "decision": "REJECT_FOR_DIRECT_EXTENSION",
+    "continuationAllowed": false
+  },
+  "postflightSalvageV086": {
+    "frameworkVersion": "0.8.6",
+    "method": "Trim after the last proven post-speech stable frame, master audio, then re-measure and re-inspect.",
+    "derivedAssetSha256": "effb840777cfd7dd334f6ddbf40793616c9d04509d5cd372f5b597b29522fba4",
+    "durationSeconds": 7.466,
+    "videoFrames": 179,
+    "loudnormMeasuredIntegratedLufs": -14.07,
+    "loudnormMeasuredTruePeakDbfs": -1.64,
+    "terminalObservation": "Final decoded frame is closed-lip/open-eye with stable identity and set.",
+    "fineLipSync": "UNKNOWN without a validated audiovisual sync scorer",
+    "decision": "DERIVED_SALVAGE_CANDIDATE_PENDING_REAUDIT",
+    "continuationAllowed": false,
+    "claimBoundary": "The derivative is an editorial salvage candidate. It does not prove provider adherence and cannot authorize continuation until the finished derivative is explicitly re-audited."
   },
   "repairs": [
     "Block word-count, pace, and speech-window contradictions before dispatch",
@@ -132,5 +171,5 @@
     "Separate the natural settle from a final 0.75-second open-eye boundary lock instead of freezing the face for two seconds",
     "Never drop authored mix, vocal-signature, or micro-performance controls from the compact dispatch contract"
   ],
-  "claimBoundary": "One authenticated provider render is returned-media evidence for this exact packet only. It does not establish a permanent provider capability, universal framework quality, or fine lip-sync accuracy."
+  "claimBoundary": "Each authenticated provider render is returned-media evidence for its exact packet only. The deterministic derivative is evidence for a local salvage workflow only. Neither establishes a permanent provider capability, universal framework quality, or fine lip-sync accuracy."
 }

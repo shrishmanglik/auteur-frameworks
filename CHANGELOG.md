@@ -2,6 +2,20 @@
 
 All notable public changes are recorded here. The project follows semantic versioning while the API matures; versions below `1.0.0` may contain documented breaking changes.
 
+## 0.8.6 - 2026-07-21
+
+### Added
+
+- Added `planARollPostflight`, a typed deterministic decision layer for accepting, regenerating, manually reviewing, or salvaging a returned A-roll clip. Acceptance requires explicit fine lip-sync evidence; transcript accuracy alone cannot authorize continuation.
+- A terminal failure can route to frame-accurate trim plus re-audit only when exact dialogue and identity passed and a post-speech stable frame was actually observed.
+- Mix measurements outside a one-LU tolerance or above the declared true-peak ceiling route to deterministic mastering and re-measurement rather than another paid prompt retry.
+
+### Evidence
+
+- The v0.8.5 Flow return reproduced the approved line exactly once from 0.00-5.72 seconds and held identity, set, camera, wardrobe, and microphone broadly stable. Approximate median pitch was 115 Hz against a 110 Hz authored target.
+- The provider output measured -22.59 LUFS and -2.84 dBFS despite the transmitted -14 LUFS / -1 dBFS contract, and mouth motion restarted around 7.5 seconds despite the terminal lock. Direct extension remains rejected.
+- A deterministic 7.466-second trim at the last observed stable frame plus audio mastering produced a closed-lip/open-eye boundary at -14.07 LUFS / -1.64 dBFS. This is a derived editorial salvage candidate pending fine lip-sync and subjective voice re-audit, not evidence that the provider obeyed the original mix or terminal instructions.
+
 ## 0.8.5 - 2026-07-21
 
 ### Added
