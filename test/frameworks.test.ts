@@ -336,20 +336,90 @@ describe("compiler", () => {
     expect(manifest.layer_iv_scene_blueprint.keyframe_directives["1_subjects_kinetics_and_phenomenology"]
       .performance_manifest.terminal_hold.minimum_settle_seconds).toBe(2);
     expect(manifest.layer_iv_scene_blueprint.keyframe_directives["1_subjects_kinetics_and_phenomenology"]
-      .performance_manifest.terminal_hold.forbidden_after_final_phoneme).toContain(
+      .performance_manifest.terminal_hold.forbidden_during_boundary_lock).toContain(
       "mouth reopening or silent mouthing",
     );
+    expect(manifest.layer_iv_scene_blueprint.keyframe_directives["1_subjects_kinetics_and_phenomenology"]
+      .performance_manifest.terminal_hold.boundary_lock_seconds).toBe(0.75);
+    expect(manifest.layer_iv_scene_blueprint.keyframe_directives["1_subjects_kinetics_and_phenomenology"]
+      .performance_manifest.terminal_hold.boundary_lock_window_seconds).toEqual([29.25, 30]);
+    expect(manifest.layer_iv_scene_blueprint.keyframe_directives["1_subjects_kinetics_and_phenomenology"]
+      .performance_manifest.terminal_hold.natural_settle_state).toContain("one natural blink");
+    expect(manifest.layer_iv_scene_blueprint.keyframe_directives["1_subjects_kinetics_and_phenomenology"]
+      .performance_manifest.natural_kinetics.gesture_bounds.amplitudeDegreesMax).toBe(7);
+    expect(manifest.layer_iv_scene_blueprint.keyframe_directives["1_subjects_kinetics_and_phenomenology"]
+      .performance_manifest.natural_kinetics.head_motion.nodsMax).toBe(1);
+    expect(manifest.layer_iv_scene_blueprint.keyframe_directives["1_subjects_kinetics_and_phenomenology"]
+      .performance_manifest.natural_kinetics.body_motion.breathsPerMinute).toBe(12);
     expect(manifest.layer_vi_ai_model_constraints.triple_lock_protocol.script_lock.rule).toContain("verbatim once");
     expect(compactManifest.manifest_version).toBe(manifest.manifest_version);
     expect(compactManifest.scene_blueprint.audio_vocal_lock.lip_sync_confidence_min).toBe(0.99);
+    expect(compactManifest.scene_blueprint.audio_vocal_lock.mix.integratedLufs).toBe(-14);
+    expect(compactManifest.scene_blueprint.audio_vocal_lock.mix.truePeakDbfsMax).toBe(-1);
+    expect(compactManifest.character_asset_bible.vocal_lock.accent).toContain("South Asian English");
+    expect(compactManifest.character_asset_bible.vocal_lock.profile)
+      .toBe(compactManifest.character_asset_bible.vocal_lock.voice_profile_id);
+    expect(compactManifest.character_asset_bible.vocal_lock.base_pitch_hz).toBe(110);
+    expect(compactManifest.character_asset_bible.vocal_lock.cadence).toContain("deliberate");
+    expect(compactManifest.character_asset_bible.vocal_lock.articulation).toContain("precise");
+    expect(compactManifest.character_asset_bible.vocal_lock.immutable_across_sequence).toBe(true);
+    expect(compactManifest.scene_blueprint.performance_manifest.natural_kinetics.gesture_cues[0].type)
+      .toContain("open-hand");
     expect(compactManifest.scene_blueprint.performance_manifest.terminal_hold.min_seconds).toBe(2);
-    expect(compactManifest.scene_blueprint.performance_manifest.terminal_hold.state).toContain("blink");
+    expect(compactManifest.scene_blueprint.performance_manifest.terminal_hold.settle).toContain("one blink allowed");
+    expect(compactManifest.scene_blueprint.performance_manifest.terminal_hold.boundary_lock_seconds).toBe(0.75);
+    expect(compactManifest.scene_blueprint.performance_manifest.terminal_hold.boundary_lock_window).toEqual([29.25, 30]);
+    expect(compactManifest.scene_blueprint.performance_manifest.terminal_hold.boundary_state).toContain("no new blink");
     expect(compactManifest.scene_blueprint.performance_manifest.terminal_hold.freeze_frames).toBe(8);
     expect(compactManifest.triple_lock_protocol.temporal).toContain("no early beat/reset");
     expect(compiled.videoPrompt.match(/We spent three weeks/g)).toHaveLength(1);
     expect(compiled.compactPromptReport.frameworkPreserved).toBe(true);
     expect(compiled.compactPromptReport.omittedExclusions).toEqual([]);
     expect(compiled.compactPromptReport.truncatedSections).toEqual([]);
+  });
+
+  it("keeps the expanded A-roll voice and kinetics controls optional for v1 packets", () => {
+    const legacy = structuredClone(JSON.parse(
+      fs.readFileSync(new URL("../examples/a-roll.json", import.meta.url), "utf8"),
+    ));
+    delete legacy.shots[0].performance.gestureBounds;
+    delete legacy.shots[0].performance.headMotion;
+    delete legacy.shots[0].performance.bodyMotion;
+    delete legacy.shots[0].performance.gestureCues;
+    for (const key of [
+      "accent", "basePitchHz", "personaTone", "cadenceStyle", "articulation",
+      "intonationNotes", "timbre", "micStyle", "roomTone", "emphasisCues",
+    ]) delete legacy.shots[0].audioTrack[key];
+
+    const parsed = UniversalPacketSchema.parse(legacy);
+    expect(parsed.shots[0]?.performance.gestureBounds).toBeUndefined();
+    expect(parsed.shots[0]?.audioTrack.basePitchHz).toBeUndefined();
+    expect(() => compilePacket(parsed)).not.toThrow();
+  });
+
+  it("rejects impossible A-roll pitch and movement bounds", () => {
+    const invalid = structuredClone(JSON.parse(
+      fs.readFileSync(new URL("../examples/a-roll.json", import.meta.url), "utf8"),
+    ));
+    invalid.shots[0].audioTrack.basePitchHz = 900;
+    invalid.shots[0].performance.gestureBounds.ratePer8SecondsMax = -1;
+    expect(() => UniversalPacketSchema.parse(invalid)).toThrow();
+  });
+
+  it("rejects gesture cues outside the shot or inside the A-roll terminal boundary", () => {
+    const packet = UniversalPacketSchema.parse(JSON.parse(
+      fs.readFileSync(new URL("../examples/a-roll.json", import.meta.url), "utf8"),
+    ));
+    const outsideShot = structuredClone(packet.shots[0]!);
+    outsideShot.performance.gestureCues = [{ timeSeconds: 30, type: "late gesture" }];
+    expect(() => UniversalPacketSchema.parse({
+      ...packet,
+      shots: [outsideShot],
+    })).toThrow(/gesture cue must occur before the shot ends/);
+
+    const insideBoundary = structuredClone(packet.shots[0]!);
+    insideBoundary.performance.gestureCues = [{ timeSeconds: 29.5, type: "late gesture" }];
+    expect(() => compileShot(insideBoundary)).toThrow(/terminal boundary lock/);
   });
 
   it("hard-routes legacy A-roll packets and emits their exact dialogue once", () => {
@@ -380,6 +450,7 @@ describe("compiler", () => {
       { startSeconds: 4, endSeconds: 8, action: "The speaker answers No. and returns to neutral." },
     ];
     packet.shots[0].durationSeconds = 8;
+    packet.shots[0].performance.gestureCues = [];
     packet.metadata.targetDurationSeconds = 8;
 
     const compiled = compilePacket(packet).shots[0]!;
@@ -398,6 +469,7 @@ describe("compiler", () => {
     ));
     const shot = structuredClone(packet.shots[0]!);
     shot.durationSeconds = 8;
+    shot.performance.gestureCues = [];
     shot.dialogue = "Most AI videos fail before the model generates a frame because the idea never became a production plan.";
     shot.audioTrack.spokenText = shot.dialogue;
     shot.audioTrack.paceWpm = 138;
@@ -426,6 +498,7 @@ describe("compiler", () => {
     ));
     const shot = structuredClone(packet.shots[0]!);
     shot.durationSeconds = 8;
+    shot.performance.gestureCues = [];
     shot.dialogue = "One production contract keeps face, voice, timing, and handoff coherent.";
     shot.audioTrack.spokenText = shot.dialogue;
     shot.audioTrack.paceWpm = 140;
@@ -460,6 +533,7 @@ describe("compiler", () => {
     ));
     const shot = structuredClone(packet.shots[0]!);
     shot.durationSeconds = 8;
+    shot.performance.gestureCues = [];
     shot.dialogue = "Most videos fail before generation because the idea never became a production plan.";
     shot.audioTrack.spokenText = shot.dialogue;
     shot.audioTrack.paceWpm = 138;
@@ -486,6 +560,7 @@ describe("compiler", () => {
     const shot = structuredClone(packet.shots[0]!);
     shot.frameworkId = "continuous-take";
     shot.durationSeconds = 8;
+    shot.performance.gestureCues = [];
     shot.dialogue = "Most videos fail before generation because the idea never became a production plan.";
     shot.audioTrack.spokenText = shot.dialogue;
     shot.audioTrack.paceWpm = 138;
@@ -506,6 +581,7 @@ describe("compiler", () => {
     ));
     const shot = structuredClone(packet.shots[0]!);
     shot.durationSeconds = 8;
+    shot.performance.gestureCues = [];
     shot.dialogue = "Hold the production line.";
     shot.audioTrack.spokenText = shot.dialogue;
     shot.audioTrack.paceWpm = 150;

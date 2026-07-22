@@ -435,6 +435,103 @@
               "type": "integer",
               "minimum": 0,
               "maximum": 240
+            },
+            "gestureBounds": {
+              "type": "object",
+              "properties": {
+                "handsEnabled": {
+                  "type": "boolean"
+                },
+                "amplitudeDegreesMax": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 30
+                },
+                "ratePer8SecondsMax": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 12
+                },
+                "style": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "additionalProperties": false
+            },
+            "headMotion": {
+              "type": "object",
+              "properties": {
+                "yawDegreesMax": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 45
+                },
+                "pitchDegreesMax": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 45
+                },
+                "nodsMax": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 12
+                }
+              },
+              "additionalProperties": false
+            },
+            "bodyMotion": {
+              "type": "object",
+              "properties": {
+                "postureShift": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "breathingPattern": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "breathsPerMinute": {
+                  "type": "number",
+                  "minimum": 4,
+                  "maximum": 40
+                }
+              },
+              "additionalProperties": false
+            },
+            "gestureCues": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "timeSeconds": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 300
+                  },
+                  "hand": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "type": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "scale": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "purpose": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "timeSeconds",
+                  "type"
+                ],
+                "additionalProperties": false
+              }
             }
           },
           "additionalProperties": false
@@ -495,6 +592,68 @@
             "deliveryStyle": {
               "type": "string",
               "minLength": 1
+            },
+            "accent": {
+              "type": "string",
+              "minLength": 1
+            },
+            "basePitchHz": {
+              "type": "number",
+              "minimum": 40,
+              "maximum": 600
+            },
+            "personaTone": {
+              "type": "string",
+              "minLength": 1
+            },
+            "cadenceStyle": {
+              "type": "string",
+              "minLength": 1
+            },
+            "articulation": {
+              "type": "string",
+              "minLength": 1
+            },
+            "intonationNotes": {
+              "type": "string",
+              "minLength": 1
+            },
+            "timbre": {
+              "type": "string",
+              "minLength": 1
+            },
+            "micStyle": {
+              "type": "string",
+              "minLength": 1
+            },
+            "roomTone": {
+              "type": "string",
+              "minLength": 1
+            },
+            "emphasisCues": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "word": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "pitchBoostPercent": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 25
+                  },
+                  "stress": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "word"
+                ],
+                "additionalProperties": false
+              }
             },
             "phonemeToleranceMs": {
               "type": "number",

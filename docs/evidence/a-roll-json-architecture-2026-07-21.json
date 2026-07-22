@@ -99,5 +99,66 @@
       }
     }
   },
+  "voiceAndKineticsSignals": {
+    "scope": "Private prompt-corpus structure only; values are authored controls, not measured provider guarantees",
+    "voiceProfile": {
+      "voiceProfileIdOccurrences": 29,
+      "paceWpmValuesObserved": [130, 135, 140],
+      "intonationNotesOccurrences": 23,
+      "basePitchHz": {
+        "occurrences": 2,
+        "observedValue": 110
+      },
+      "mixTargets": {
+        "integratedLufs": -14,
+        "truePeakDbfsMax": -1,
+        "stereoWidth": "neutral_centered"
+      },
+      "additionalObservedControls": [
+        "natural accent description",
+        "deliberate rhythmic cadence",
+        "precise enunciation",
+        "five-to-eight-percent emphasis pitch lift",
+        "close-mic podcast microphone",
+        "treated room tone"
+      ],
+      "hashPinnedExemplars": [
+        {
+          "role": "vocal-lock",
+          "promptLfNormalizedSha256": "c41a0fb4b50563511e7ecc242e1ac8e1f66a7991e4c8212bbffdb6f7e905fbd3"
+        },
+        {
+          "role": "mix-and-accent-lock",
+          "promptLfNormalizedSha256": "ff82c02b3b9fe896f33f2722463da1b181bace9bf035e745c67e7cc8979fb2f8"
+        },
+        {
+          "role": "pitch-mic-room-lock",
+          "promptLfNormalizedSha256": "fe3c5b2a19b900051315ca4e8512a0fd3f18f70547f03a9be79eb4ed7aa8be5f"
+        }
+      ]
+    },
+    "naturalKinetics": {
+      "boundedGestureRecords": 6,
+      "observedGestureAmplitudeDegreesMax": [7, 8],
+      "observedGesturesPer8SecondsMax": [2, 3],
+      "observedHeadYawDegreesMax": [4, 6],
+      "observedHeadPitchDegreesMax": [3, 4],
+      "observedNodsMax": [1, 2],
+      "breathingPattern": {
+        "observedBreathsPerMinute": 12,
+        "interpretation": "Calm controlled breathing and phrase-motivated posture changes counter frozen-avatar motion."
+      },
+      "hashPinnedExemplars": [
+        {
+          "role": "bounded-gesture-and-head-motion",
+          "promptLfNormalizedSha256": "2e3648ab3ed85e2d09a4e8aefd6d9c18928855af2eea1a0da82d3714612d32c7"
+        },
+        {
+          "role": "breathing-dynamics",
+          "promptLfNormalizedSha256": "23122ee5a33c014ab7d35ba26a5293a8cc100bdf17aac1687f058a13bc74057b"
+        }
+      ]
+    }
+  },
   "claimBoundary": "This audit establishes a recurring prompt architecture in the private corpus. It does not prove a provider capability, a product limit, a success rate, or render quality. Returned media requires a separate observed-output audit."
 }

@@ -2,6 +2,26 @@
 
 All notable public changes are recorded here. The project follows semantic versioning while the API matures; versions below `1.0.0` may contain documented breaking changes.
 
+## 0.8.5 - 2026-07-21
+
+### Added
+
+- Extended the optional A-roll voice signature with accent, base pitch, persona tone, cadence, articulation, intonation, timbre, mic, room, and word-level emphasis controls.
+- Extended the optional performance manifest with bounded hand gestures, head yaw/pitch/nods, body posture/breathing, and timed gesture cues.
+- Added a two-phase terminal protocol: a natural closed-mouth settle followed by a 0.75-second closed-lip, open-eye boundary lock with the final eight frames held stable.
+
+### Fixed
+
+- Preserved the existing integrated-LUFS, true-peak, and stereo-width mix lock in compact A-roll JSON. Earlier compact dispatches silently omitted it.
+- Replaced an unnatural post-speech freeze with a quiet exhale and tiny shoulder release before the strict final boundary lock.
+- Raised the toolkit-owned compact JSON envelope to 6,500 characters so the voice, kinetics, mix, terminal, and exclusion contracts survive together. This is not a provider product limit.
+
+### Evidence
+
+- The v0.8.4 returned render reproduced the approved 11-word sentence exactly once from 0.62-6.16 seconds and kept identity, set, wardrobe, camera, and microphone broadly stable.
+- The actual final frame still had parted lips and lowered eyelids. Integrated loudness measured about -19.84 LUFS with a -0.36 dBFS true peak, while the authored packet intended -14 LUFS and -1 dBFS. The asset remains rejected for continuation.
+- Voice and kinetics defaults are corpus-grounded prompt practices with hash-pinned provenance; they are not claims that a provider will obey numeric controls exactly.
+
 ## 0.8.4 - 2026-07-21
 
 ### Fixed

@@ -347,17 +347,68 @@ const compileAvatarARollJson = (
     ?? A_ROLL_CONTRACT_DEFAULTS.freezePadFramesAtEnd;
   const lipSyncConfidenceMin = shot.audioTrack.lipSyncConfidenceMin
     ?? A_ROLL_CONTRACT_DEFAULTS.lipSyncConfidenceMin;
+  const boundaryLockStartSeconds = Math.max(
+    spokenWindow?.endSeconds ?? 0,
+    shot.durationSeconds - A_ROLL_CONTRACT_DEFAULTS.terminalBoundaryLockSeconds,
+  );
+  const invalidBoundaryGesture = performance.gestureCues?.find(
+    (cue) => cue.timeSeconds >= boundaryLockStartSeconds,
+  );
+  if (invalidBoundaryGesture) {
+    throw new Error(
+      "A-roll gesture cue at " + invalidBoundaryGesture.timeSeconds
+      + "s conflicts with the terminal boundary lock beginning at " + boundaryLockStartSeconds + "s.",
+    );
+  }
+  const vocalSignature = {
+    voice_profile_id: shot.audioTrack.voiceProfileId ?? "REFERENCE_AUDIO_IF_SUPPLIED",
+    language: shot.audioTrack.language ?? "English",
+    accent: shot.audioTrack.accent,
+    base_pitch_hz: shot.audioTrack.basePitchHz,
+    persona_tone: shot.audioTrack.personaTone,
+    timbre: shot.audioTrack.timbre,
+    pace_wpm: shot.audioTrack.paceWpm ?? "NATURAL_FOR_SCRIPT_WINDOW",
+    cadence: shot.audioTrack.cadenceStyle,
+    articulation: shot.audioTrack.articulation,
+    intonation_notes: shot.audioTrack.intonationNotes,
+    delivery: shot.audioTrack.deliveryStyle ?? performance.deliveryStyle ?? "restrained, direct, conversational",
+    mic_style: shot.audioTrack.micStyle,
+    room_tone: shot.audioTrack.roomTone,
+    immutable_across_sequence: true,
+  };
+  const movementContract = {
+    gesture_bounds: performance.gestureBounds ?? {
+      handsEnabled: true,
+      amplitudeDegreesMax: 7,
+      ratePer8SecondsMax: 2,
+      style: "subtle, asymmetric, and phrase-motivated; return to the resting position",
+    },
+    head_motion: performance.headMotion ?? {
+      yawDegreesMax: performance.headMovementMaxDegrees ?? 4,
+      pitchDegreesMax: Math.min(performance.headMovementMaxDegrees ?? 3, 3),
+      nodsMax: 1,
+    },
+    body_motion: performance.bodyMotion ?? {
+      postureShift: "one small grounded weight shift or forward micro-lean tied to meaning",
+      breathingPattern: "calm, visible diaphragmatic breathing; no frozen torso or breath pumping",
+      breathsPerMinute: 12,
+    },
+    gesture_cues: performance.gestureCues ?? [],
+  };
   const terminalSettleProtocol = {
     speech_end_deadline_seconds: spokenWindow?.endSeconds ?? null,
     settle_window_seconds: spokenWindow
       ? [spokenWindow.endSeconds, shot.durationSeconds]
       : null,
     minimum_settle_seconds: A_ROLL_CONTRACT_DEFAULTS.minimumTerminalSettleSeconds,
+    natural_settle_state: "after the final phoneme, keep lips closed while completing a quiet exhale and tiny shoulder release; one natural blink may finish before the boundary lock begins",
+    boundary_lock_window_seconds: [boundaryLockStartSeconds, shot.durationSeconds],
+    boundary_lock_seconds: A_ROLL_CONTRACT_DEFAULTS.terminalBoundaryLockSeconds,
+    boundary_state: "lips gently sealed, jaw neutral, eyes naturally open, stable eye line, head and hands at rest",
     freeze_pad_frames_at_end: freezePadFramesAtEnd,
-    state: "after the final phoneme, seal the lips once; keep them gently sealed with a relaxed jaw and naturally open eyes through the final frame",
-    forbidden_after_final_phoneme: [
+    forbidden_during_boundary_lock: [
       "mouth reopening or silent mouthing",
-      "jaw reset, added breath articulation, or a new expression",
+      "jaw reset, added breath articulation, or expression change",
       "starting or completing a blink, eye roll, gesture, head bob, or pose change",
     ],
   };
@@ -378,10 +429,8 @@ const compileAvatarARollJson = (
             identity_lock: shot.continuityLocks,
           },
           vocal_lock: {
-            profile: shot.audioTrack.voiceProfileId ?? "REFERENCE_AUDIO_IF_SUPPLIED",
-            language: shot.audioTrack.language ?? "English",
-            pace_wpm: shot.audioTrack.paceWpm ?? "NATURAL_FOR_WINDOW",
-            delivery: shot.audioTrack.deliveryStyle ?? performance.deliveryStyle ?? "restrained direct conversation",
+            profile: vocalSignature.voice_profile_id,
+            ...vocalSignature,
           },
         },
         scene_blueprint: {
@@ -395,10 +444,14 @@ const compileAvatarARollJson = (
               head_degrees: performance.headMovementMaxDegrees ?? 2,
               expression_source: performance.emotionalExpressionSource ?? "eyes/brows; restrained mouth",
             },
+            natural_kinetics: movementContract,
             terminal_hold: {
               window: spokenWindow ? [spokenWindow.endSeconds, shot.durationSeconds] : null,
               min_seconds: A_ROLL_CONTRACT_DEFAULTS.minimumTerminalSettleSeconds,
-              state: "seal lips; jaw neutral; eyes open; no reopen/blink/eye/head/gesture/expression/breath reset",
+              settle: "lips closed; quiet exhale and tiny shoulder release; one blink allowed before boundary lock",
+              boundary_lock_window: [boundaryLockStartSeconds, shot.durationSeconds],
+              boundary_lock_seconds: A_ROLL_CONTRACT_DEFAULTS.terminalBoundaryLockSeconds,
+              boundary_state: "lips sealed; jaw neutral; eyes open; head and hands at rest; no new blink, mouth, head, hand, or expression cycle",
               freeze_frames: freezePadFramesAtEnd,
             },
             timeline: activeTimelineBeats.map((beat) => ({
@@ -434,6 +487,9 @@ const compileAvatarARollJson = (
               : [0, shot.durationSeconds],
             phoneme_acceptance_ms: shot.audioTrack.phonemeToleranceMs ?? 20,
             lip_sync_confidence_min: lipSyncConfidenceMin,
+            vocal_profile_ref: "character_asset_bible.vocal_lock",
+            emphasis_cues: shot.audioTrack.emphasisCues ?? [],
+            mix: shot.audioTrack.mix ?? { stereoWidth: "neutral_centered" },
             sound: shot.audioTrack.soundDesignDirectives,
             music: shot.audioTrack.musicDirective ?? "no score",
           },
@@ -487,11 +543,7 @@ const compileAvatarARollJson = (
           },
         },
         vocal_signature_lock: {
-          voice_profile_id: shot.audioTrack.voiceProfileId ?? "REFERENCE_AUDIO_IF_SUPPLIED",
-          language: shot.audioTrack.language ?? "English",
-          pace_wpm: shot.audioTrack.paceWpm ?? "NATURAL_FOR_SCRIPT_WINDOW",
-          delivery: shot.audioTrack.deliveryStyle ?? performance.deliveryStyle ?? "restrained, direct, conversational",
-          immutable_across_sequence: true,
+          ...vocalSignature,
         },
       },
       layer_iv_scene_blueprint: {
@@ -510,6 +562,7 @@ const compileAvatarARollJson = (
                 head_movement_max_degrees: performance.headMovementMaxDegrees ?? 2,
                 emotional_expression_source: performance.emotionalExpressionSource ?? "eyes and brows with restrained mouth movement",
               },
+              natural_kinetics: movementContract,
               terminal_hold: {
                 ...terminalSettleProtocol,
               },
@@ -557,6 +610,8 @@ const compileAvatarARollJson = (
                 acceptance_target_ms: shot.audioTrack.phonemeToleranceMs ?? 20,
                 confidence_min: lipSyncConfidenceMin,
               },
+              vocal_signature: vocalSignature,
+              emphasis_cues: shot.audioTrack.emphasisCues ?? [],
               mix: shot.audioTrack.mix ?? { stereoWidth: "neutral_centered" },
             },
             sound_design: shot.audioTrack.soundDesignDirectives,
@@ -574,8 +629,9 @@ const compileAvatarARollJson = (
               : "complete naturally inside the declared shot window",
           },
           identity_lock: "preserve the supplied face, wardrobe, anatomy, eye line, and voice signature",
-          temporal_lock: "single continuous take; " + temporalBoundaryRule() + " Final "
-            + freezePadFramesAtEnd + " frames hold continuously sealed lips, relaxed jaw, naturally open eyes, stable eye line, and no new action. Once the final phoneme ends, never reopen or silently move the mouth.",
+          temporal_lock: "single continuous take; " + temporalBoundaryRule() + " After speech, allow a quiet closed-mouth exhale and at most one blink before "
+            + boundaryLockStartSeconds + "s. From " + boundaryLockStartSeconds + "s through " + shot.durationSeconds + "s lock sealed lips, relaxed jaw, naturally open eyes, stable eye line, and resting head/hands. Final "
+            + freezePadFramesAtEnd + " frames remain unchanged. Once the final phoneme ends, never reopen or silently move the mouth.",
         },
         physics_rules: shot.physics,
         negative_exclusions: exclusions,

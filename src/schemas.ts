@@ -104,6 +104,29 @@ export const PerformanceSchema = z.object({
   jawMovementMaxDeviationMm: z.number().min(0).max(25).optional(),
   emotionalExpressionSource: z.string().min(1).optional(),
   freezePadFramesAtEnd: z.number().int().min(0).max(240).optional(),
+  gestureBounds: z.object({
+    handsEnabled: z.boolean().optional(),
+    amplitudeDegreesMax: z.number().min(0).max(30).optional(),
+    ratePer8SecondsMax: z.number().int().min(0).max(12).optional(),
+    style: z.string().min(1).optional(),
+  }).optional(),
+  headMotion: z.object({
+    yawDegreesMax: z.number().min(0).max(45).optional(),
+    pitchDegreesMax: z.number().min(0).max(45).optional(),
+    nodsMax: z.number().int().min(0).max(12).optional(),
+  }).optional(),
+  bodyMotion: z.object({
+    postureShift: z.string().min(1).optional(),
+    breathingPattern: z.string().min(1).optional(),
+    breathsPerMinute: z.number().min(4).max(40).optional(),
+  }).optional(),
+  gestureCues: z.array(z.object({
+    timeSeconds: z.number().min(0).max(300),
+    hand: z.string().min(1).optional(),
+    type: z.string().min(1),
+    scale: z.string().min(1).optional(),
+    purpose: z.string().min(1).optional(),
+  })).optional(),
 }).default({});
 
 export const AudioTrackSchema = z.object({
@@ -122,6 +145,20 @@ export const AudioTrackSchema = z.object({
   language: z.string().min(1).optional(),
   paceWpm: z.number().min(60).max(240).optional(),
   deliveryStyle: z.string().min(1).optional(),
+  accent: z.string().min(1).optional(),
+  basePitchHz: z.number().min(40).max(600).optional(),
+  personaTone: z.string().min(1).optional(),
+  cadenceStyle: z.string().min(1).optional(),
+  articulation: z.string().min(1).optional(),
+  intonationNotes: z.string().min(1).optional(),
+  timbre: z.string().min(1).optional(),
+  micStyle: z.string().min(1).optional(),
+  roomTone: z.string().min(1).optional(),
+  emphasisCues: z.array(z.object({
+    word: z.string().min(1),
+    pitchBoostPercent: z.number().min(0).max(25).optional(),
+    stress: z.string().min(1).optional(),
+  })).optional(),
   phonemeToleranceMs: z.number().min(0).max(250).optional(),
   lipSyncConfidenceMin: z.number().min(0).max(1).optional(),
   mix: z.object({
@@ -188,6 +225,16 @@ export const ShotSchema = z.object({
   onScreenText: z.string().min(1).optional(),
   exclusions: z.array(z.string().min(1)).default([]),
   frameworkId: z.string().min(1),
+}).superRefine((shot, ctx) => {
+  shot.performance.gestureCues?.forEach((cue, index) => {
+    if (cue.timeSeconds >= shot.durationSeconds) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["performance", "gestureCues", index, "timeSeconds"],
+        message: "gesture cue must occur before the shot ends",
+      });
+    }
+  });
 });
 
 export const ContinuationContractSchema = z.object({

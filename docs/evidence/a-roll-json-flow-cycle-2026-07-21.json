@@ -88,13 +88,49 @@
     "decision": "REJECT",
     "continuationAllowed": false
   },
+  "repairAttemptV084ReturnedAsset": {
+    "frameworkVersion": "0.8.4",
+    "frameworkCommit": "0608ef34686f83b5513ff66ae9240df882bfe43c",
+    "submittedPromptSha256": "65ed023b500c6a9b5e777fc0ea003a08fe1cc07e7c78b5e500de813e2b5cafd3",
+    "submittedPromptCharacters": 3930,
+    "returnedAssetSha256": "5fa14de304e15286b3341210b53ccc135734a7066507d65dab00acda6efcab1d",
+    "transcript": "Most videos fail because the idea never became a production plan.",
+    "transcriptExactOnce": true,
+    "measuredSpeechSeconds": [0.62, 6.16],
+    "declaredSpeechWindowSeconds": [0, 5.8],
+    "measuredTailSilenceSeconds": [6.301583, 7.704292],
+    "integratedLufs": -19.84,
+    "truePeakDbfs": -0.36,
+    "authoredMixTarget": {
+      "integratedLufs": -14,
+      "truePeakDbfsMax": -1
+    },
+    "compilerFinding": "The compact JSON dispatch omitted the authored mix object, so this attempt did not actually send the numeric loudness contract.",
+    "identityAndSet": "Broadly stable across sampled frames",
+    "terminalObservation": "The final decoded frame has parted lips and lowered eyelids after an otherwise stable closed-mouth interval.",
+    "fineLipSync": "UNKNOWN without a validated audiovisual sync scorer",
+    "decision": "REJECT",
+    "continuationAllowed": false
+  },
+  "repairCandidateV085": {
+    "frameworkVersion": "0.8.5",
+    "changes": [
+      "Carry the authored integrated-LUFS, true-peak, and stereo-width mix lock in compact JSON",
+      "Lock accent, base pitch, tone, timbre, cadence, articulation, intonation, mic, and room profile across the sequence",
+      "Bound hand gestures, head yaw and pitch, nod count, posture shifts, and breathing",
+      "Allow a natural closed-mouth exhale and early blink before a 0.75-second strict terminal boundary lock"
+    ],
+    "evidenceStatus": "TESTED LOCALLY; PROVIDER RESULT UNKNOWN"
+  },
   "repairs": [
     "Block word-count, pace, and speech-window contradictions before dispatch",
     "Carry a numeric terminal frame pad and reject windows that consume it",
     "Carry a lip-sync confidence acceptance target alongside phoneme timing",
     "Measure delayed speech onset in returned audio; prompt intent alone is not proof",
     "Apply a 1.2x timing guard because declared provider pace is not exact runtime evidence",
-    "Reserve a 2.0-second post-phoneme settle window and forbid mouth reopening, blinking, or new facial action after speech"
+    "Reserve a 2.0-second post-phoneme settle window and forbid mouth reopening after speech",
+    "Separate the natural settle from a final 0.75-second open-eye boundary lock instead of freezing the face for two seconds",
+    "Never drop authored mix, vocal-signature, or micro-performance controls from the compact dispatch contract"
   ],
   "claimBoundary": "One authenticated provider render is returned-media evidence for this exact packet only. It does not establish a permanent provider capability, universal framework quality, or fine lip-sync accuracy."
 }

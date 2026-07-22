@@ -38,7 +38,9 @@ describe("expert creator fixtures", () => {
       expect(compiled.shots.every((shot) => shot.promptFidelity === "FRAMEWORK_NATIVE")).toBe(true);
       expect(compiled.shots.every((shot) => shot.frameworkArchitecture.length >= 5)).toBe(true);
       expect(compiled.shots.every((shot) => shot.negativePrompt.length > 30)).toBe(true);
-      expect(compiled.shots.every((shot) => shot.compactVideoPrompt.length <= 4000)).toBe(true);
+      expect(compiled.shots.every((shot) => (
+        shot.compactVideoPrompt.length <= shot.compactPromptReport.toolkitBudget
+      ))).toBe(true);
       expect(compiled.shots.every((shot) => shot.compactPromptReport.frameworkPreserved)).toBe(true);
       for (const shot of compiled.shots) {
         expect(shot.videoPrompt, `${persona.name} missing camera specificity`).toMatch(/CAMERA|Camera|camera/);

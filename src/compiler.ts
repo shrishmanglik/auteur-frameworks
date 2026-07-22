@@ -32,7 +32,8 @@ export interface CompiledShot {
   qcIssues: PreflightIssue[];
 }
 
-export const TOOLKIT_COMPACT_PROMPT_BUDGET = 4000;
+// Toolkit-owned transport envelope, not a provider product limit.
+export const TOOLKIT_COMPACT_PROMPT_BUDGET = 6500;
 
 export interface CompactPromptOptions {
   maxCharacters?: number;

@@ -154,7 +154,32 @@
         "headMovementMaxDegrees": 3,
         "jawMovementMaxDeviationMm": 5,
         "emotionalExpressionSource": "eyes and brows, with one restrained lean at the rule",
-        "freezePadFramesAtEnd": 8
+        "freezePadFramesAtEnd": 8,
+        "gestureBounds": {
+          "handsEnabled": true,
+          "amplitudeDegreesMax": 7,
+          "ratePer8SecondsMax": 2,
+          "style": "subtle, asymmetric, and tied to a spoken phrase"
+        },
+        "headMotion": {
+          "yawDegreesMax": 4,
+          "pitchDegreesMax": 3,
+          "nodsMax": 1
+        },
+        "bodyMotion": {
+          "postureShift": "one small grounded forward lean at the closing rule",
+          "breathingPattern": "calm controlled diaphragmatic breathing",
+          "breathsPerMinute": 12
+        },
+        "gestureCues": [
+          {
+            "timeSeconds": 18,
+            "hand": "right",
+            "type": "small open-hand emphasis",
+            "scale": "under 10cm",
+            "purpose": "mark the closing rule once"
+          }
+        ]
       },
       "audioTrack": {
         "spokenText": "We spent three weeks automating a refund handoff and made every refund slower. The embarrassing part was not the model. Sales thought support approved the refund; support thought sales did. We had automated an argument. Our rule now is simple: if two humans cannot run the same version of a process, software should not run it yet.",
@@ -172,6 +197,22 @@
         "language": "English",
         "paceWpm": 150,
         "deliveryStyle": "plainspoken close-mic founder delivery",
+        "accent": "slight South Asian English, natural and unexaggerated",
+        "basePitchHz": 110,
+        "personaTone": "authoritative, warm, and conversational",
+        "cadenceStyle": "deliberate and rhythmic without presenter polish",
+        "articulation": "precise and enunciated without over-articulation",
+        "intonationNotes": "natural phrase-level variation; lower and settle on the final rule",
+        "timbre": "consistent warm low-mid founder voice",
+        "micStyle": "close-mic large-diaphragm podcast microphone",
+        "roomTone": "acoustically treated studio, RT60 about 0.25 seconds",
+        "emphasisCues": [
+          {
+            "word": "rule",
+            "pitchBoostPercent": 5,
+            "stress": "restrained semantic emphasis"
+          }
+        ],
         "phonemeToleranceMs": 20,
         "lipSyncConfidenceMin": 0.99,
         "mix": {
