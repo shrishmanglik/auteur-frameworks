@@ -2,13 +2,25 @@
 
 All notable public changes are recorded here. The project follows semantic versioning while the API matures; versions below `1.0.0` may contain documented breaking changes.
 
+## 0.8.3 - 2026-07-21
+
+### Fixed
+
+- Compressed the compact A-roll terminal protocol without removing its speech deadline, 1.5-second settle boundary, eight-frame freeze, or no-reopening facial lock.
+- Restored the toolkit-owned 4,000-character compact envelope. The canonical full JSON contract remains unchanged and substantially deeper.
+
+### Evidence
+
+- Flow accepted the reference and exact 4,535-character v0.8.2 JSON submission but returned a visible generic failure card and no media asset. The cause remains `UNKNOWN`; prompt length is not relabeled as a provider limit.
+- The next retry is deliberately bounded below the prior toolkit envelope so dispatch behavior can be separated from the terminal-performance repair.
+
 ## 0.8.2 - 2026-07-21
 
 ### Fixed
 
 - Added a 1.5-second minimum post-phoneme settle window to the A-roll JSON contract and pre-flight gate; the eight-frame freeze remains nested inside that larger performance boundary.
 - Added an explicit terminal protocol that seals the lips once after the final phoneme and forbids mouth reopening, silent mouthing, jaw reset, blinking, or a new expression through the final frame.
-- Raised the toolkit-owned compact prompt budget from 4,000 to 5,000 characters so the terminal protocol and all exclusions can survive compact JSON compilation. This is not a provider limit.
+- Temporarily raised the toolkit-owned compact prompt budget from 4,000 to 5,000 characters so the terminal protocol and all exclusions could survive compact JSON compilation. Version 0.8.3 restores the 4,000-character envelope through semantic compression.
 
 ### Evidence
 

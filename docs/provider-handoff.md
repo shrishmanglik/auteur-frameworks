@@ -22,7 +22,7 @@ The core package is provider-neutral. This guide describes a safe manual handoff
 
 The `videoPrompt` already contains exclusions. Do not append the same negative list twice.
 
-`compactVideoPrompt` uses a toolkit-owned 5,000-character ceiling; this is not a provider limit. Inspect `compactPromptReport` before dispatch. `frameworkPreserved` must be true, and high-stakes generation requires empty `omittedExclusions` and `truncatedSections`. Otherwise use the full prompt, reduce the shot safely, or pass omitted safeguards through a supported separate negative field.
+`compactVideoPrompt` uses a toolkit-owned 4,000-character ceiling; this is not a provider limit. Inspect `compactPromptReport` before dispatch. `frameworkPreserved` must be true, and high-stakes generation requires empty `omittedExclusions` and `truncatedSections`. Otherwise use the full prompt, reduce the shot safely, or pass omitted safeguards through a supported separate negative field.
 
 ## Manual Flow-style smoke
 

@@ -341,10 +341,9 @@ describe("compiler", () => {
     );
     expect(manifest.layer_vi_ai_model_constraints.triple_lock_protocol.script_lock.rule).toContain("verbatim once");
     expect(compactManifest.manifest_version).toBe(manifest.manifest_version);
-    expect(compactManifest.global_creative_directive.freeze_pad_frames_at_end).toBe(8);
     expect(compactManifest.scene_blueprint.audio_vocal_lock.lip_sync_confidence_min).toBe(0.99);
-    expect(compactManifest.scene_blueprint.performance_manifest.terminal_settle_protocol
-      .minimum_settle_seconds).toBe(1.5);
+    expect(compactManifest.triple_lock_protocol.temporal).toContain("after speech hold 1.5s");
+    expect(compactManifest.triple_lock_protocol.temporal).toContain("final 8 frames frozen");
     expect(compiled.videoPrompt.match(/We spent three weeks/g)).toHaveLength(1);
     expect(compiled.compactPromptReport.frameworkPreserved).toBe(true);
     expect(compiled.compactPromptReport.omittedExclusions).toEqual([]);

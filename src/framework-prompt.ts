@@ -359,11 +359,9 @@ const compileAvatarARollJson = (
         manifest_version: "AUTEUR A-Roll JSON 1.0",
         global_creative_directive: {
           format: "A-Roll",
-          fidelity: "photoreal speech, skin, optics",
           duration_seconds: shot.durationSeconds,
           aspect_ratio: context.aspectRatio ?? "UNKNOWN",
           frame_rate_fps: frameRateFps,
-          freeze_pad_frames_at_end: freezePadFramesAtEnd,
         },
         character_asset_bible: {
           speaker: {
@@ -390,7 +388,6 @@ const compileAvatarARollJson = (
               head_degrees: performance.headMovementMaxDegrees ?? 2,
               expression_source: performance.emotionalExpressionSource ?? "eyes/brows; restrained mouth",
             },
-            terminal_settle_protocol: terminalSettleProtocol,
             timeline: shot.beats.map((beat) => ({
               seconds: [beat.startSeconds, beat.endSeconds],
               action: withoutDuplicateDialogue(beat.action, spokenText),
@@ -430,10 +427,9 @@ const compileAvatarARollJson = (
           },
         },
         triple_lock_protocol: {
-          script: "exact once; no rewrite/repeat/subtitle/early speech",
-          identity: "lock face, wardrobe, anatomy, eye line, voice",
-          temporal: "one take; no early beat; after the final phoneme lips remain sealed continuously through the "
-            + freezePadFramesAtEnd + "-frame end",
+          script: "verbatim once; no rewrite/repeat/subtitle",
+          identity: "lock face/body/wardrobe/eye line/voice",
+          temporal: "one take; no early speech/beat; after speech hold 1.5s lips sealed, eyes open; final 8 frames frozen",
         },
         constraints: {
           physics: shot.physics,
@@ -444,7 +440,6 @@ const compileAvatarARollJson = (
           "sync target",
           "identity/camera/set stable",
           "natural motion",
-          "no post-speech mouth reopening; " + freezePadFramesAtEnd + "-frame closed-lip handoff",
         ],
       },
     };

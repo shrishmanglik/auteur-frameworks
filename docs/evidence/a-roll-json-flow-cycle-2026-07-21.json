@@ -59,6 +59,16 @@
     "decision": "REJECT",
     "continuationAllowed": false
   },
+  "repairAttemptV082Dispatch": {
+    "frameworkVersion": "0.8.2",
+    "frameworkCommit": "49f6043ed67344ede1034a2c5cc85c45962627c5",
+    "submittedPromptSha256": "bbdf0b55cbcbbeabb23d7b48f574c3e5d01748747ac7dac62e14ef9435558c31",
+    "submittedPromptCharacters": 4535,
+    "visibleResult": "Generic Flow failure card; no returned media",
+    "cause": "UNKNOWN",
+    "decision": "COMPRESS_AND_RETRY",
+    "continuationAllowed": false
+  },
   "repairs": [
     "Block word-count, pace, and speech-window contradictions before dispatch",
     "Carry a numeric terminal frame pad and reject windows that consume it",

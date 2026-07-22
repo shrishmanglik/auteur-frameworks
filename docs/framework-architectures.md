@@ -35,7 +35,7 @@ This fail-closed behavior prevents a planned shot from being mislabeled as evide
 
 ## Full and compact surfaces
 
-`videoPrompt` is the canonical framework-native prompt. `compactVideoPrompt` attempts to retain the same framework architecture while flattening whitespace and enforcing the toolkit-owned character budget, then reports any degradation. The 5,000-character budget is not a provider limit.
+`videoPrompt` is the canonical framework-native prompt. `compactVideoPrompt` attempts to retain the same framework architecture while flattening whitespace and enforcing the toolkit-owned character budget, then reports any degradation. The 4,000-character budget is not a provider limit.
 
 Always inspect `compactPromptReport`:
 
