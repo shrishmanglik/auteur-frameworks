@@ -42,11 +42,29 @@
     "decision": "REJECT",
     "continuationAllowed": false
   },
+  "repairAttemptV081": {
+    "frameworkVersion": "0.8.1",
+    "frameworkCommit": "ed705d7950844e6b37daa1fd800ac95be13e9809",
+    "submittedPromptSha256": "104c1991476e502d0b386adb0191aa37502445963e9d0687161cad76da1faa97",
+    "submittedPromptCharacters": 3913,
+    "returnedAssetSha256": "70a415f476f190aba28bb82e2f08e3ca333321c94657c1e27a0c751b1599c6a0",
+    "transcript": "Revised approved sentence recovered exactly once",
+    "speechStartSeconds": 0,
+    "speechEndSeconds": 6.44,
+    "measuredQuietIntervalSeconds": [6.498, 7.578],
+    "terminalObservation": "Mouth reopened with unstable eyelids at 7.70 seconds and the final decoded frame",
+    "independentTotal": 19,
+    "comparisonV080Total": 21,
+    "relativeChangePercent": -9.5,
+    "decision": "REJECT",
+    "continuationAllowed": false
+  },
   "repairs": [
     "Block word-count, pace, and speech-window contradictions before dispatch",
     "Carry a numeric terminal frame pad and reject windows that consume it",
     "Carry a lip-sync confidence acceptance target alongside phoneme timing",
-    "Measure delayed speech onset in returned audio; prompt intent alone is not proof"
+    "Measure delayed speech onset in returned audio; prompt intent alone is not proof",
+    "Reserve a 1.5-second post-phoneme settle window and forbid mouth reopening or new facial action after speech"
   ],
   "claimBoundary": "One authenticated provider render is returned-media evidence for this exact packet only. It does not establish a permanent provider capability, universal framework quality, or fine lip-sync accuracy."
 }

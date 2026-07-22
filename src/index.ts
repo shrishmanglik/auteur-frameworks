@@ -1,4 +1,5 @@
 export * from "./schemas.js";
+export * from "./a-roll.js";
 export * from "./frameworks.js";
 export * from "./framework-prompt.js";
 export * from "./compiler.js";

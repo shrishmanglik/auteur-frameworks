@@ -32,7 +32,7 @@ export interface CompiledShot {
   qcIssues: PreflightIssue[];
 }
 
-export const TOOLKIT_COMPACT_PROMPT_BUDGET = 4000;
+export const TOOLKIT_COMPACT_PROMPT_BUDGET = 5000;
 
 export interface CompactPromptOptions {
   maxCharacters?: number;

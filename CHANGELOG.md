@@ -2,6 +2,20 @@
 
 All notable public changes are recorded here. The project follows semantic versioning while the API matures; versions below `1.0.0` may contain documented breaking changes.
 
+## 0.8.2 - 2026-07-21
+
+### Fixed
+
+- Added a 1.5-second minimum post-phoneme settle window to the A-roll JSON contract and pre-flight gate; the eight-frame freeze remains nested inside that larger performance boundary.
+- Added an explicit terminal protocol that seals the lips once after the final phoneme and forbids mouth reopening, silent mouthing, jaw reset, blinking, or a new expression through the final frame.
+- Raised the toolkit-owned compact prompt budget from 4,000 to 5,000 characters so the terminal protocol and all exclusions can survive compact JSON compilation. This is not a provider limit.
+
+### Evidence
+
+- The v0.8.1 clean-reference retry reproduced its approved sentence exactly once and remained broadly stable, but speech ended at 6.44 seconds and the face resumed mouth motion after a measured quiet interval. The decoded frames at 7.70 seconds and 7.958 seconds remained mouth-open with unstable eyelids.
+- Independent review corrected against the actual approved script and scored v0.8.1 at 19/30 versus 21/30 for v0.8.0, a 9.5% regression. The asset was rejected and not extended.
+- The 1.5-second settle window is a render-derived repair hypothesis from this failed asset, not a provider capability or a validated success claim.
+
 ## 0.8.1 - 2026-07-21
 
 ### Fixed

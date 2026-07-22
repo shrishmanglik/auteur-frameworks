@@ -35,7 +35,7 @@ This fail-closed behavior prevents a planned shot from being mislabeled as evide
 
 ## Full and compact surfaces
 
-`videoPrompt` is the canonical framework-native prompt. `compactVideoPrompt` attempts to retain the same framework architecture while flattening whitespace and enforcing the toolkit-owned character budget, then reports any degradation. The 4,000-character budget is not a provider limit.
+`videoPrompt` is the canonical framework-native prompt. `compactVideoPrompt` attempts to retain the same framework architecture while flattening whitespace and enforcing the toolkit-owned character budget, then reports any degradation. The 5,000-character budget is not a provider limit.
 
 Always inspect `compactPromptReport`:
 
@@ -51,4 +51,4 @@ The development contract chooses a primary framework from the creative request. 
 
 `a-roll` is a hard route to `avatar-a-roll-json`. Its audio and identity controls are part of that one JSON contract; `audio-contract` remains a separate primary route for audio-first non-A-roll work. `continuous-take` remains available for unbroken physical action and character-scene problems, but it is not the A-roll fallback.
 
-The A-roll compiler treats timing as arithmetic, not adjective prose. When exact speech has a declared pace and window, pre-flight verifies that `wordCount / paceWpm * 60` fits. It also reserves the declared terminal pad (eight frames by default), carries a lip-sync confidence acceptance target, and warns that a delayed provider onset remains unverified until returned audio is measured. These are rejection gates and corpus-derived contract fields, not guarantees that a provider will obey them.
+The A-roll compiler treats timing as arithmetic, not adjective prose. When exact speech has a declared pace and window, pre-flight verifies that `wordCount / paceWpm * 60` fits. It reserves at least 1.5 seconds after the final phoneme for the face to settle, nests the corpus-derived eight-frame freeze inside that window, carries a lip-sync confidence acceptance target, and warns that a delayed provider onset remains unverified until returned audio is measured. The 1.5-second settle is a render-derived repair hypothesis; the frame pad and lip-sync target are corpus contract practices. None guarantees provider compliance.

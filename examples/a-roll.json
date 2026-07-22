@@ -127,8 +127,13 @@
         },
         {
           "startSeconds": 18,
-          "endSeconds": 30,
+          "endSeconds": 28.5,
           "action": "camera begins its slow push as he states the rule: do not automate a process until two humans can run the same version of it"
+        },
+        {
+          "startSeconds": 28.5,
+          "endSeconds": 30,
+          "action": "after the final phoneme he seals his lips once and holds the same relaxed open-eyed pose through the final frame"
         }
       ],
       "continuityLocks": [
@@ -155,7 +160,7 @@
         "spokenText": "We spent three weeks automating a refund handoff and made every refund slower. The embarrassing part was not the model. Sales thought support approved the refund; support thought sales did. We had automated an argument. Our rule now is simple: if two humans cannot run the same version of a process, software should not run it yet.",
         "spokenWindow": {
           "startSeconds": 0.5,
-          "endSeconds": 29.5
+          "endSeconds": 28.5
         },
         "soundDesignDirectives": [
           "clean close dialogue",

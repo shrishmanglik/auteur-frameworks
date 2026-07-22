@@ -1,4 +1,5 @@
 import type { Shot, UniversalPacket } from "./schemas.js";
+import { A_ROLL_CONTRACT_DEFAULTS } from "./a-roll.js";
 import { getFramework } from "./frameworks.js";
 import { assessShotConstraintBudget, assessShotRoute } from "./route-advisor.js";
 
@@ -188,16 +189,22 @@ export function preflightShot(shot: Shot, audioRequired = false): PreflightIssue
   }
 
   if (shot.frameworkId === "avatar-a-roll-json" && spokenWindow) {
-    const frameRate = shot.camera.capture.frameRateFps ?? 24;
-    const freezePadFrames = shot.performance.freezePadFramesAtEnd ?? 8;
-    const latestSpeechEnd = shot.durationSeconds - freezePadFrames / frameRate;
+    const frameRate = shot.camera.capture.frameRateFps ?? A_ROLL_CONTRACT_DEFAULTS.frameRateFps;
+    const freezePadFrames = shot.performance.freezePadFramesAtEnd
+      ?? A_ROLL_CONTRACT_DEFAULTS.freezePadFramesAtEnd;
+    const requiredTerminalHoldSeconds = Math.max(
+      freezePadFrames / frameRate,
+      A_ROLL_CONTRACT_DEFAULTS.minimumTerminalSettleSeconds,
+    );
+    const availableTerminalHoldSeconds = shot.durationSeconds - spokenWindow.endSeconds;
+    const latestSpeechEnd = shot.durationSeconds - requiredTerminalHoldSeconds;
     if (spokenWindow.endSeconds > latestSpeechEnd + 0.001) {
       issues.push({
         code: "AROLL_TERMINAL_HOLD_CONFLICT",
         severity: "error",
         shotId: shot.id,
-        message: `Speech ends at ${spokenWindow.endSeconds}s, leaving fewer than ${freezePadFrames} terminal hold frames at ${frameRate}fps.`,
-        action: `End speech by ${latestSpeechEnd.toFixed(2)}s, reduce freezePadFramesAtEnd, or increase the shot duration.`,
+        message: `Speech ends at ${spokenWindow.endSeconds}s, leaving ${availableTerminalHoldSeconds.toFixed(2)}s; A-roll requires at least ${requiredTerminalHoldSeconds.toFixed(2)}s of post-phoneme settle time including ${freezePadFrames} frozen terminal frames at ${frameRate}fps.`,
+        action: `End speech by ${latestSpeechEnd.toFixed(2)}s, shorten the approved line, increase its declared pace, or increase the shot duration.`,
       });
     }
     if (spokenWindow.startSeconds > 0) {

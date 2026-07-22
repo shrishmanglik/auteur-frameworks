@@ -333,10 +333,18 @@ describe("compiler", () => {
     expect(manifest.layer_i_global_creative_directive.render_specifications.freeze_pad_frames_at_end).toBe(8);
     expect(manifest.layer_iv_scene_blueprint.keyframe_directives["1_subjects_kinetics_and_phenomenology"]
       .performance_manifest.terminal_hold.freeze_pad_frames_at_end).toBe(8);
+    expect(manifest.layer_iv_scene_blueprint.keyframe_directives["1_subjects_kinetics_and_phenomenology"]
+      .performance_manifest.terminal_hold.minimum_settle_seconds).toBe(1.5);
+    expect(manifest.layer_iv_scene_blueprint.keyframe_directives["1_subjects_kinetics_and_phenomenology"]
+      .performance_manifest.terminal_hold.forbidden_after_final_phoneme).toContain(
+      "mouth reopening or silent mouthing",
+    );
     expect(manifest.layer_vi_ai_model_constraints.triple_lock_protocol.script_lock.rule).toContain("verbatim once");
     expect(compactManifest.manifest_version).toBe(manifest.manifest_version);
     expect(compactManifest.global_creative_directive.freeze_pad_frames_at_end).toBe(8);
     expect(compactManifest.scene_blueprint.audio_vocal_lock.lip_sync_confidence_min).toBe(0.99);
+    expect(compactManifest.scene_blueprint.performance_manifest.terminal_settle_protocol
+      .minimum_settle_seconds).toBe(1.5);
     expect(compiled.videoPrompt.match(/We spent three weeks/g)).toHaveLength(1);
     expect(compiled.compactPromptReport.frameworkPreserved).toBe(true);
     expect(compiled.compactPromptReport.omittedExclusions).toEqual([]);
@@ -409,6 +417,40 @@ describe("compiler", () => {
     expect(issues.map((issue) => issue.code)).toContain("SPOKEN_WINDOW_PACE_CONFLICT");
     expect(issues.map((issue) => issue.code)).toContain("AROLL_TERMINAL_HOLD_CONFLICT");
     expect(issues.map((issue) => issue.code)).toContain("AROLL_DELAYED_SPEECH_RUNTIME_CHECK");
+  });
+
+  it("reserves a real A-roll post-phoneme settle window", () => {
+    const packet = UniversalPacketSchema.parse(JSON.parse(
+      fs.readFileSync(new URL("../examples/a-roll.json", import.meta.url), "utf8"),
+    ));
+    const shot = structuredClone(packet.shots[0]!);
+    shot.durationSeconds = 8;
+    shot.dialogue = "One production contract keeps the face, voice, timing, and final handoff coherent.";
+    shot.audioTrack.spokenText = shot.dialogue;
+    shot.audioTrack.paceWpm = 140;
+    shot.audioTrack.spokenWindow = { startSeconds: 0, endSeconds: 6.5 };
+    shot.performance.freezePadFramesAtEnd = 8;
+    shot.beats = [
+      { startSeconds: 0, endSeconds: 6.5, action: "say the approved line exactly once" },
+      { startSeconds: 6.5, endSeconds: 8, action: "hold the closed-lip terminal state" },
+    ];
+
+    const safeIssues = preflightPacket({
+      ...packet,
+      metadata: { ...packet.metadata, targetDurationSeconds: 8 },
+      scenes: [{ ...packet.scenes[0]!, shotIds: [shot.id] }],
+      shots: [shot],
+    }).issues;
+    expect(safeIssues.map((issue) => issue.code)).not.toContain("AROLL_TERMINAL_HOLD_CONFLICT");
+
+    shot.audioTrack.spokenWindow.endSeconds = 7;
+    const unsafeIssues = preflightPacket({
+      ...packet,
+      metadata: { ...packet.metadata, targetDurationSeconds: 8 },
+      scenes: [{ ...packet.scenes[0]!, shotIds: [shot.id] }],
+      shots: [shot],
+    }).issues;
+    expect(unsafeIssues.map((issue) => issue.code)).toContain("AROLL_TERMINAL_HOLD_CONFLICT");
   });
 
   it("compiles brand control as a positive blank-surface state", () => {
