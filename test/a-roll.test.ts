@@ -11,6 +11,7 @@ describe("A-roll post-flight planning", () => {
       lipSyncStatus: "unknown",
       terminalBoundaryStatus: "failed",
       speechEndSeconds: 5.72,
+      stableBoundaryStartSeconds: 7,
       lastStableBoundaryFrameSeconds: 7.417,
       measuredIntegratedLufs: -22.59,
       measuredTruePeakDbfs: -2.84,
@@ -34,6 +35,7 @@ describe("A-roll post-flight planning", () => {
       lipSyncStatus: "verified",
       terminalBoundaryStatus: "failed",
       speechEndSeconds: 5.72,
+      stableBoundaryStartSeconds: 7.2,
       lastStableBoundaryFrameSeconds: 7.4,
       measuredIntegratedLufs: -22.59,
       measuredTruePeakDbfs: -2.84,
@@ -64,8 +66,53 @@ describe("A-roll post-flight planning", () => {
       lipSyncStatus: "verified",
       terminalBoundaryStatus: "failed",
       speechEndSeconds: 5.72,
+      stableBoundaryStartSeconds: 5.2,
       lastStableBoundaryFrameSeconds: 5.5,
     }).decision).toBe("REGENERATE");
+  });
+
+  it("does not mistake one transient closed-mouth frame for a stable continuation boundary", () => {
+    const plan = planARollPostflight({
+      clipDurationSeconds: 8,
+      frameRateFps: 24,
+      dialogueStatus: "verified",
+      identityStatus: "verified",
+      lipSyncStatus: "verified",
+      terminalBoundaryStatus: "failed",
+      speechEndSeconds: 5.72,
+      stableBoundaryStartSeconds: 7.4,
+      lastStableBoundaryFrameSeconds: 7.4,
+      measuredIntegratedLufs: -14,
+      measuredTruePeakDbfs: -1.2,
+    });
+    expect(plan).toEqual(expect.objectContaining({
+      decision: "MANUAL_REVIEW",
+      continuationAllowed: false,
+      trimEndSeconds: null,
+    }));
+    expect(plan.reasons.join(" ")).toContain("3 consecutive frames");
+  });
+
+  it("accepts exactly three consecutive decoded stable frames", () => {
+    const stableBoundaryStartSeconds = 7;
+    const plan = planARollPostflight({
+      clipDurationSeconds: 8,
+      frameRateFps: 24,
+      dialogueStatus: "verified",
+      identityStatus: "verified",
+      lipSyncStatus: "verified",
+      terminalBoundaryStatus: "failed",
+      speechEndSeconds: 5.72,
+      stableBoundaryStartSeconds,
+      lastStableBoundaryFrameSeconds: stableBoundaryStartSeconds + (2 / 24),
+      measuredIntegratedLufs: -14,
+      measuredTruePeakDbfs: -1.2,
+    });
+    expect(plan).toEqual(expect.objectContaining({
+      decision: "SALVAGE_AND_REVIEW",
+      continuationAllowed: false,
+    }));
+    expect(plan.trimEndSeconds).toBeCloseTo(stableBoundaryStartSeconds + (3 / 24), 12);
   });
 
   it("routes a terminal failure with missing speech-end evidence to manual review", () => {
@@ -81,7 +128,7 @@ describe("A-roll post-flight planning", () => {
     });
     expect(plan.decision).toBe("MANUAL_REVIEW");
     expect(plan.requiredReaudit).toEqual(expect.arrayContaining([
-      "speech end and post-speech stable frame",
+      "speech end and consecutive post-speech stable-frame span",
       "fine audiovisual lip sync",
     ]));
   });
@@ -94,6 +141,7 @@ describe("A-roll post-flight planning", () => {
       identityStatus: "verified",
       lipSyncStatus: "verified",
       terminalBoundaryStatus: "failed",
+      stableBoundaryStartSeconds: 7.85,
       speechEndSeconds: 5.72,
       lastStableBoundaryFrameSeconds: 7.99,
       measuredIntegratedLufs: -14,

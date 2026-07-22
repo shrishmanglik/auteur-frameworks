@@ -2,6 +2,19 @@
 
 All notable public changes are recorded here. The project follows semantic versioning while the API matures; versions below `1.0.0` may contain documented breaking changes.
 
+## 0.8.7 - 2026-07-22
+
+### Changed
+
+- A-roll terminal salvage now requires a consecutive post-speech stable span of at least three decoded frames. A single closed-mouth frame routes to manual review instead of producing a trim instruction.
+- `ARollPostflightObservationSchema` adds `stableBoundaryStartSeconds`; terminal-failure salvage evidence must now describe both ends of the stable span.
+
+### Evidence
+
+- A bounded aggregate re-audit covered six unique eight-second Shrish A-roll returns. All six preserved the reference composition broadly, but all six reopened the mouth in the final decoded quarter-second.
+- The final two returns reproduced the current approved sentence exactly once. The sixth added the intended bounded hand gesture, yet fine audiovisual lip sync remained `UNKNOWN`, so neither the raw render nor its trim/master derivative authorizes continuation.
+- Observed integrated loudness ranged from -15.46 to -19.84 LUFS across the six returns; numeric prompt mix targets remain instructions, not provider guarantees.
+
 ## 0.8.6 - 2026-07-21
 
 ### Added

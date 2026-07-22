@@ -6,6 +6,7 @@ export const A_ROLL_CONTRACT_DEFAULTS = {
   lipSyncConfidenceMin: 0.99,
   minimumTerminalSettleSeconds: 2,
   terminalBoundaryLockSeconds: 0.75,
+  minimumStableBoundaryFrames: 3,
   speechTimingSlackMultiplier: 1.2,
 } as const;
 
@@ -17,6 +18,7 @@ export const ARollPostflightObservationSchema = z.object({
   lipSyncStatus: z.enum(["verified", "failed", "unknown"]),
   terminalBoundaryStatus: z.enum(["passed", "failed", "unknown"]),
   speechEndSeconds: z.number().min(0).optional(),
+  stableBoundaryStartSeconds: z.number().min(0).optional(),
   lastStableBoundaryFrameSeconds: z.number().min(0).optional(),
   measuredIntegratedLufs: z.number().min(-70).max(0).optional(),
   measuredTruePeakDbfs: z.number().min(-20).max(0).optional(),
@@ -25,6 +27,7 @@ export const ARollPostflightObservationSchema = z.object({
 }).superRefine((observation, ctx) => {
   for (const [field, value] of [
     ["speechEndSeconds", observation.speechEndSeconds],
+    ["stableBoundaryStartSeconds", observation.stableBoundaryStartSeconds],
     ["lastStableBoundaryFrameSeconds", observation.lastStableBoundaryFrameSeconds],
   ] as const) {
     if (value !== undefined && value > observation.clipDurationSeconds) {
@@ -34,6 +37,17 @@ export const ARollPostflightObservationSchema = z.object({
         message: `${field} must occur within the clip duration`,
       });
     }
+  }
+  if (
+    observation.stableBoundaryStartSeconds !== undefined
+    && observation.lastStableBoundaryFrameSeconds !== undefined
+    && observation.stableBoundaryStartSeconds > observation.lastStableBoundaryFrameSeconds
+  ) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["stableBoundaryStartSeconds"],
+      message: "stableBoundaryStartSeconds must not follow lastStableBoundaryFrameSeconds",
+    });
   }
 });
 
@@ -91,7 +105,12 @@ export function planARollPostflight(input: unknown): ARollPostflightPlan {
   let trimEndSeconds: number | null = null;
   if (observation.terminalBoundaryStatus === "failed") {
     const stableFrame = observation.lastStableBoundaryFrameSeconds;
-    if (stableFrame === undefined || observation.speechEndSeconds === undefined) {
+    const stableStart = observation.stableBoundaryStartSeconds;
+    if (
+      stableFrame === undefined
+      || stableStart === undefined
+      || observation.speechEndSeconds === undefined
+    ) {
       const lipSyncUnknown = observation.lipSyncStatus === "unknown";
       return {
         decision: "MANUAL_REVIEW",
@@ -101,16 +120,16 @@ export function planARollPostflight(input: unknown): ARollPostflightPlan {
         targetIntegratedLufs: observation.targetIntegratedLufs,
         targetTruePeakDbfsMax: observation.targetTruePeakDbfsMax,
         reasons: [
-          "terminal salvage evidence is incomplete",
+          "terminal salvage evidence is incomplete; a consecutive stable-frame span is required",
           ...(lipSyncUnknown ? ["fine audiovisual lip-sync evidence is unknown"] : []),
         ],
         requiredReaudit: [
-          "speech end and post-speech stable frame",
+          "speech end and consecutive post-speech stable-frame span",
           ...(lipSyncUnknown ? ["fine audiovisual lip sync"] : []),
         ],
       };
     }
-    if (stableFrame < observation.speechEndSeconds) {
+    if (stableStart < observation.speechEndSeconds) {
       return {
         decision: "REGENERATE",
         continuationAllowed: false,
@@ -118,8 +137,25 @@ export function planARollPostflight(input: unknown): ARollPostflightPlan {
         normalizeAudio: false,
         targetIntegratedLufs: observation.targetIntegratedLufs,
         targetTruePeakDbfsMax: observation.targetTruePeakDbfsMax,
-        reasons: ["terminal boundary failed with no proven post-speech stable frame"],
+        reasons: ["terminal boundary failed with no proven post-speech stable-frame span"],
         requiredReaudit: ["terminal boundary"],
+      };
+    }
+    const minimumStableFrameIntervals = A_ROLL_CONTRACT_DEFAULTS.minimumStableBoundaryFrames - 1;
+    const observedStableFrameIntervals = (stableFrame - stableStart) * observation.frameRateFps;
+    const frameComparisonTolerance = 1e-6;
+    if (observedStableFrameIntervals + frameComparisonTolerance < minimumStableFrameIntervals) {
+      return {
+        decision: "MANUAL_REVIEW",
+        continuationAllowed: false,
+        trimEndSeconds: null,
+        normalizeAudio: false,
+        targetIntegratedLufs: observation.targetIntegratedLufs,
+        targetTruePeakDbfsMax: observation.targetTruePeakDbfsMax,
+        reasons: [
+          `stable boundary must span at least ${A_ROLL_CONTRACT_DEFAULTS.minimumStableBoundaryFrames} consecutive frames`,
+        ],
+        requiredReaudit: ["consecutive post-speech stable-frame span"],
       };
     }
     const trimCandidate = stableFrame + (1 / observation.frameRateFps);
