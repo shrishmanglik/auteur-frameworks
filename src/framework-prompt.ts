@@ -332,6 +332,14 @@ const compileAvatarARollJson = (
   const context = withoutDuplicateDialogueInTree(inputContext, spokenText);
   const exclusions = inputExclusions.map((value) => withoutDuplicateDialogue(value, spokenText));
   const spokenWindow = shot.audioTrack.spokenWindow;
+  const activeTimelineBeats = shot.beats
+    .filter((beat) => !spokenWindow || beat.startSeconds < spokenWindow.endSeconds)
+    .map((beat) => ({
+      ...beat,
+      endSeconds: spokenWindow
+        ? Math.min(beat.endSeconds, spokenWindow.endSeconds)
+        : beat.endSeconds,
+    }));
   const performerRef = shot.characterIds[0] ?? "PRIMARY_SPEAKER";
   const performance = shot.performance;
   const frameRateFps = shot.camera.capture.frameRateFps ?? A_ROLL_CONTRACT_DEFAULTS.frameRateFps;
@@ -345,12 +353,12 @@ const compileAvatarARollJson = (
       ? [spokenWindow.endSeconds, shot.durationSeconds]
       : null,
     minimum_settle_seconds: A_ROLL_CONTRACT_DEFAULTS.minimumTerminalSettleSeconds,
-    final_freeze_frames: freezePadFramesAtEnd,
+    freeze_pad_frames_at_end: freezePadFramesAtEnd,
     state: "after the final phoneme, seal the lips once; keep them gently sealed with a relaxed jaw and naturally open eyes through the final frame",
     forbidden_after_final_phoneme: [
       "mouth reopening or silent mouthing",
       "jaw reset, added breath articulation, or a new expression",
-      "blink, eye roll, gesture, head bob, or pose change during the final freeze",
+      "starting or completing a blink, eye roll, gesture, head bob, or pose change",
     ],
   };
   if (context.compactSurface) {
@@ -374,7 +382,6 @@ const compileAvatarARollJson = (
             language: shot.audioTrack.language ?? "English",
             pace_wpm: shot.audioTrack.paceWpm ?? "NATURAL_FOR_WINDOW",
             delivery: shot.audioTrack.deliveryStyle ?? performance.deliveryStyle ?? "restrained direct conversation",
-            immutable: true,
           },
         },
         scene_blueprint: {
@@ -388,7 +395,13 @@ const compileAvatarARollJson = (
               head_degrees: performance.headMovementMaxDegrees ?? 2,
               expression_source: performance.emotionalExpressionSource ?? "eyes/brows; restrained mouth",
             },
-            timeline: shot.beats.map((beat) => ({
+            terminal_hold: {
+              window: spokenWindow ? [spokenWindow.endSeconds, shot.durationSeconds] : null,
+              min_seconds: A_ROLL_CONTRACT_DEFAULTS.minimumTerminalSettleSeconds,
+              state: "seal lips; jaw neutral; eyes open; no reopen/blink/eye/head/gesture/expression/breath reset",
+              freeze_frames: freezePadFramesAtEnd,
+            },
+            timeline: activeTimelineBeats.map((beat) => ({
               seconds: [beat.startSeconds, beat.endSeconds],
               action: withoutDuplicateDialogue(beat.action, spokenText),
             })),
@@ -416,7 +429,6 @@ const compileAvatarARollJson = (
           },
           audio_vocal_lock: {
             verbatim_script: spokenText ?? null,
-            exact_once: Boolean(spokenText),
             spoken_window_seconds: spokenWindow
               ? [spokenWindow.startSeconds, spokenWindow.endSeconds]
               : [0, shot.durationSeconds],
@@ -427,19 +439,18 @@ const compileAvatarARollJson = (
           },
         },
         triple_lock_protocol: {
-          script: "verbatim once; no rewrite/repeat/subtitle",
-          identity: "lock face/body/wardrobe/eye line/voice",
-          temporal: "one take; no early speech/beat; after speech hold 1.5s lips sealed, eyes open; final 8 frames frozen",
+          script: "exact once; no rewrite/repeat/subtitle",
+          identity: "lock identity/wardrobe/gaze/voice",
+          temporal: "obey windows; no early beat/reset",
         },
         constraints: {
           physics: shot.physics,
           negative_exclusions: exclusions,
         },
         acceptance_tests: [
-          "script exact once",
-          "sync target",
+          "exact script/sync",
           "identity/camera/set stable",
-          "natural motion",
+          "natural motion/terminal",
         ],
       },
     };
@@ -502,7 +513,7 @@ const compileAvatarARollJson = (
               terminal_hold: {
                 ...terminalSettleProtocol,
               },
-              timeline: shot.beats.map((beat) => ({
+              timeline: activeTimelineBeats.map((beat) => ({
                 time_range_seconds: [beat.startSeconds, beat.endSeconds],
                 action: withoutDuplicateDialogue(beat.action, spokenText),
               })),

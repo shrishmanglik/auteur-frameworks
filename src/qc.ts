@@ -175,14 +175,21 @@ export function preflightShot(shot: Shot, audioRequired = false): PreflightIssue
   const spokenWindow = shot.audioTrack.spokenWindow;
   if (spokenText && spokenWindow && shot.audioTrack.paceWpm) {
     const wordCount = spokenText.trim().split(/\s+/).filter(Boolean).length;
-    const requiredSeconds = wordCount / shot.audioTrack.paceWpm * 60;
+    const nominalSeconds = wordCount / shot.audioTrack.paceWpm * 60;
+    const timingMultiplier = shot.frameworkId === "avatar-a-roll-json"
+      ? A_ROLL_CONTRACT_DEFAULTS.speechTimingSlackMultiplier
+      : 1;
+    const requiredSeconds = nominalSeconds * timingMultiplier;
     const availableSeconds = spokenWindow.endSeconds - spokenWindow.startSeconds;
     if (requiredSeconds > availableSeconds + 0.01) {
+      const timingDescription = timingMultiplier > 1
+        ? `${nominalSeconds.toFixed(2)}s nominal and ${requiredSeconds.toFixed(2)}s with the ${timingMultiplier.toFixed(1)}x A-roll provider timing guard`
+        : `${requiredSeconds.toFixed(2)}s`;
       issues.push({
         code: "SPOKEN_WINDOW_PACE_CONFLICT",
         severity: "error",
         shotId: shot.id,
-        message: `${wordCount} words at ${shot.audioTrack.paceWpm} WPM require about ${requiredSeconds.toFixed(2)}s, but the spoken window allows ${availableSeconds.toFixed(2)}s.`,
+        message: `${wordCount} words at ${shot.audioTrack.paceWpm} WPM require ${timingDescription}, but the spoken window allows ${availableSeconds.toFixed(2)}s.`,
         action: "Shorten the approved line, increase the declared pace, or expand the spoken window before generation.",
       });
     }

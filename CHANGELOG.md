@@ -2,6 +2,20 @@
 
 All notable public changes are recorded here. The project follows semantic versioning while the API matures; versions below `1.0.0` may contain documented breaking changes.
 
+## 0.8.4 - 2026-07-21
+
+### Fixed
+
+- Added a 1.2x provider timing guard to A-roll speech feasibility instead of assuming declared WPM will be honored exactly.
+- Increased the minimum post-phoneme terminal reserve from 1.5 to 2.0 seconds.
+- Promoted the closed-mouth, open-eye, no-blink terminal state into the compact JSON dispatch contract instead of relying on a compressed prose reminder.
+
+### Evidence
+
+- A v0.8.3 Flow render reproduced the approved 13-word line exactly once, but delivered it from 0.27-6.83 seconds: about 119 effective WPM despite a declared 138 WPM.
+- The render preserved identity, set, camera, wardrobe, and microphone, then reopened the mouth and entered a blink at the actual final frame. It remains rejected for continuation.
+- The 1.2x timing guard and two-second reserve are repair hypotheses grounded in this returned asset, not provider capability claims.
+
 ## 0.8.3 - 2026-07-21
 
 ### Fixed

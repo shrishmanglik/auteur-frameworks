@@ -323,7 +323,7 @@ describe("compiler", () => {
 
     expect(compiled.frameworkId).toBe("avatar-a-roll-json");
     expect(manifest.manifest_version).toContain("A-Roll JSON");
-    expect(manifest.layer_iii_character_and_asset_bible.vocal_signature_lock.pace_wpm).toBe(135);
+    expect(manifest.layer_iii_character_and_asset_bible.vocal_signature_lock.pace_wpm).toBe(150);
     expect(manifest.layer_iv_scene_blueprint.keyframe_directives["1_subjects_kinetics_and_phenomenology"]
       .performance_manifest.facial_constraints.head_movement_max_degrees).toBe(3);
     expect(manifest.layer_iv_scene_blueprint.keyframe_directives["4_audio_and_sensory_sync"]
@@ -334,7 +334,7 @@ describe("compiler", () => {
     expect(manifest.layer_iv_scene_blueprint.keyframe_directives["1_subjects_kinetics_and_phenomenology"]
       .performance_manifest.terminal_hold.freeze_pad_frames_at_end).toBe(8);
     expect(manifest.layer_iv_scene_blueprint.keyframe_directives["1_subjects_kinetics_and_phenomenology"]
-      .performance_manifest.terminal_hold.minimum_settle_seconds).toBe(1.5);
+      .performance_manifest.terminal_hold.minimum_settle_seconds).toBe(2);
     expect(manifest.layer_iv_scene_blueprint.keyframe_directives["1_subjects_kinetics_and_phenomenology"]
       .performance_manifest.terminal_hold.forbidden_after_final_phoneme).toContain(
       "mouth reopening or silent mouthing",
@@ -342,8 +342,10 @@ describe("compiler", () => {
     expect(manifest.layer_vi_ai_model_constraints.triple_lock_protocol.script_lock.rule).toContain("verbatim once");
     expect(compactManifest.manifest_version).toBe(manifest.manifest_version);
     expect(compactManifest.scene_blueprint.audio_vocal_lock.lip_sync_confidence_min).toBe(0.99);
-    expect(compactManifest.triple_lock_protocol.temporal).toContain("after speech hold 1.5s");
-    expect(compactManifest.triple_lock_protocol.temporal).toContain("final 8 frames frozen");
+    expect(compactManifest.scene_blueprint.performance_manifest.terminal_hold.min_seconds).toBe(2);
+    expect(compactManifest.scene_blueprint.performance_manifest.terminal_hold.state).toContain("blink");
+    expect(compactManifest.scene_blueprint.performance_manifest.terminal_hold.freeze_frames).toBe(8);
+    expect(compactManifest.triple_lock_protocol.temporal).toContain("no early beat/reset");
     expect(compiled.videoPrompt.match(/We spent three weeks/g)).toHaveLength(1);
     expect(compiled.compactPromptReport.frameworkPreserved).toBe(true);
     expect(compiled.compactPromptReport.omittedExclusions).toEqual([]);
@@ -424,14 +426,14 @@ describe("compiler", () => {
     ));
     const shot = structuredClone(packet.shots[0]!);
     shot.durationSeconds = 8;
-    shot.dialogue = "One production contract keeps the face, voice, timing, and final handoff coherent.";
+    shot.dialogue = "One production contract keeps face, voice, timing, and handoff coherent.";
     shot.audioTrack.spokenText = shot.dialogue;
     shot.audioTrack.paceWpm = 140;
-    shot.audioTrack.spokenWindow = { startSeconds: 0, endSeconds: 6.5 };
+    shot.audioTrack.spokenWindow = { startSeconds: 0, endSeconds: 6 };
     shot.performance.freezePadFramesAtEnd = 8;
     shot.beats = [
-      { startSeconds: 0, endSeconds: 6.5, action: "say the approved line exactly once" },
-      { startSeconds: 6.5, endSeconds: 8, action: "hold the closed-lip terminal state" },
+      { startSeconds: 0, endSeconds: 6, action: "say the approved line exactly once" },
+      { startSeconds: 6, endSeconds: 8, action: "hold the closed-lip terminal state" },
     ];
 
     const safeIssues = preflightPacket({
@@ -442,7 +444,7 @@ describe("compiler", () => {
     }).issues;
     expect(safeIssues.map((issue) => issue.code)).not.toContain("AROLL_TERMINAL_HOLD_CONFLICT");
 
-    shot.audioTrack.spokenWindow.endSeconds = 7;
+    shot.audioTrack.spokenWindow.endSeconds = 6.1;
     const unsafeIssues = preflightPacket({
       ...packet,
       metadata: { ...packet.metadata, targetDurationSeconds: 8 },
@@ -450,6 +452,75 @@ describe("compiler", () => {
       shots: [shot],
     }).issues;
     expect(unsafeIssues.map((issue) => issue.code)).toContain("AROLL_TERMINAL_HOLD_CONFLICT");
+  });
+
+  it("applies provider timing slack before accepting an A-roll speech window", () => {
+    const packet = UniversalPacketSchema.parse(JSON.parse(
+      fs.readFileSync(new URL("../examples/a-roll.json", import.meta.url), "utf8"),
+    ));
+    const shot = structuredClone(packet.shots[0]!);
+    shot.durationSeconds = 8;
+    shot.dialogue = "Most videos fail before generation because the idea never became a production plan.";
+    shot.audioTrack.spokenText = shot.dialogue;
+    shot.audioTrack.paceWpm = 138;
+    shot.audioTrack.spokenWindow = { startSeconds: 0, endSeconds: 6.1 };
+    shot.beats = [
+      { startSeconds: 0, endSeconds: 6.1, action: "say the approved line exactly once" },
+      { startSeconds: 6.1, endSeconds: 8, action: "hold the closed-lip terminal state" },
+    ];
+
+    const issues = preflightPacket({
+      ...packet,
+      metadata: { ...packet.metadata, targetDurationSeconds: 8 },
+      scenes: [{ ...packet.scenes[0]!, shotIds: [shot.id] }],
+      shots: [shot],
+    }).issues;
+    expect(issues.map((issue) => issue.code)).toContain("SPOKEN_WINDOW_PACE_CONFLICT");
+    expect(issues.map((issue) => issue.code)).toContain("AROLL_TERMINAL_HOLD_CONFLICT");
+  });
+
+  it("does not apply the A-roll timing guard to other frameworks", () => {
+    const packet = UniversalPacketSchema.parse(JSON.parse(
+      fs.readFileSync(new URL("../examples/a-roll.json", import.meta.url), "utf8"),
+    ));
+    const shot = structuredClone(packet.shots[0]!);
+    shot.frameworkId = "continuous-take";
+    shot.durationSeconds = 8;
+    shot.dialogue = "Most videos fail before generation because the idea never became a production plan.";
+    shot.audioTrack.spokenText = shot.dialogue;
+    shot.audioTrack.paceWpm = 138;
+    shot.audioTrack.spokenWindow = { startSeconds: 0, endSeconds: 6.1 };
+
+    const issues = preflightPacket({
+      ...packet,
+      metadata: { ...packet.metadata, targetDurationSeconds: 8, format: "short-film" },
+      scenes: [{ ...packet.scenes[0]!, shotIds: [shot.id] }],
+      shots: [shot],
+    }).issues;
+    expect(issues.map((issue) => issue.code)).not.toContain("SPOKEN_WINDOW_PACE_CONFLICT");
+  });
+
+  it("clips A-roll timeline beats at the terminal-hold boundary", () => {
+    const packet = UniversalPacketSchema.parse(JSON.parse(
+      fs.readFileSync(new URL("../examples/a-roll.json", import.meta.url), "utf8"),
+    ));
+    const shot = structuredClone(packet.shots[0]!);
+    shot.durationSeconds = 8;
+    shot.dialogue = "Hold the production line.";
+    shot.audioTrack.spokenText = shot.dialogue;
+    shot.audioTrack.paceWpm = 150;
+    shot.audioTrack.spokenWindow = { startSeconds: 0, endSeconds: 6 };
+    shot.beats = [{ startSeconds: 0, endSeconds: 8, action: "speak, gesture, then settle" }];
+
+    const compiled = compileShot(shot);
+    const compact = JSON.parse(compiled.compactVideoPrompt).project_manifest;
+    const full = JSON.parse(compiled.videoPrompt).project_manifest;
+    const compactTimeline = compact.scene_blueprint.performance_manifest.timeline;
+    const fullTimeline = full.layer_iv_scene_blueprint.keyframe_directives["1_subjects_kinetics_and_phenomenology"]
+      .performance_manifest.timeline;
+    expect(compactTimeline).toEqual([{ seconds: [0, 6], action: "speak, gesture, then settle" }]);
+    expect(fullTimeline).toEqual([{ time_range_seconds: [0, 6], action: "speak, gesture, then settle" }]);
+    expect(compact.scene_blueprint.performance_manifest.terminal_hold.window).toEqual([6, 8]);
   });
 
   it("compiles brand control as a positive blank-surface state", () => {

@@ -69,12 +69,32 @@
     "decision": "COMPRESS_AND_RETRY",
     "continuationAllowed": false
   },
+  "repairAttemptV083ReturnedAsset": {
+    "frameworkVersion": "0.8.3",
+    "frameworkCommit": "8134a7d85d964cdd7b9d35ebc29e7d5e482c6db9",
+    "submittedPromptSha256": "1ff2db7e9165608b010849ff2c1bf4b72d706018ed438d540ed036efa461080b",
+    "submittedPromptCharacters": 3878,
+    "returnedAssetSha256": "99346b9b44fbbde13274ead614e96317843f114938c94e3101bb0363381d3369",
+    "transcript": "Most videos fail before generation because the idea never became a production plan.",
+    "transcriptExactOnce": true,
+    "measuredSpeechSeconds": [0.27, 6.83],
+    "declaredSpeechWindowSeconds": [0, 6.1],
+    "declaredPaceWpm": 138,
+    "observedEffectivePaceWpm": 118.9,
+    "measuredQuietIntervalSeconds": [7.017896, 7.803792],
+    "identityAndSet": "Stable across the sampled take",
+    "terminalObservation": "A usable closed-mouth frame exists near 7.45 seconds, but the actual final frame reopens the mouth and enters a blink.",
+    "fineLipSync": "UNKNOWN without a validated audiovisual sync scorer",
+    "decision": "REJECT",
+    "continuationAllowed": false
+  },
   "repairs": [
     "Block word-count, pace, and speech-window contradictions before dispatch",
     "Carry a numeric terminal frame pad and reject windows that consume it",
     "Carry a lip-sync confidence acceptance target alongside phoneme timing",
     "Measure delayed speech onset in returned audio; prompt intent alone is not proof",
-    "Reserve a 1.5-second post-phoneme settle window and forbid mouth reopening or new facial action after speech"
+    "Apply a 1.2x timing guard because declared provider pace is not exact runtime evidence",
+    "Reserve a 2.0-second post-phoneme settle window and forbid mouth reopening, blinking, or new facial action after speech"
   ],
   "claimBoundary": "One authenticated provider render is returned-media evidence for this exact packet only. It does not establish a permanent provider capability, universal framework quality, or fine lip-sync accuracy."
 }
