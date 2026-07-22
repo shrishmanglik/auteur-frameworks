@@ -1,6 +1,6 @@
 import { getFramework } from "./frameworks.js";
 import { depthOfFieldCharacter, opticsToProse } from "./optics.js";
-import { ShotSchema, type Shot } from "./schemas.js";
+import { assertARollShotPerformance, ShotSchema, type Shot } from "./schemas.js";
 import { A_ROLL_CONTRACT_DEFAULTS } from "./a-roll.js";
 
 export interface FrameworkPromptContext {
@@ -365,6 +365,15 @@ const compileAvatarARollJson = (
     language: shot.audioTrack.language ?? "English",
     accent: shot.audioTrack.accent,
     base_pitch_hz: shot.audioTrack.basePitchHz,
+    pitch_range_hz: shot.audioTrack.pitchRangeHz
+      ? {
+        min: Math.min(shot.audioTrack.pitchRangeHz.min, shot.audioTrack.pitchRangeHz.max),
+        max: Math.max(shot.audioTrack.pitchRangeHz.min, shot.audioTrack.pitchRangeHz.max),
+      }
+      : undefined,
+    speech_rate_tolerance_percent: shot.audioTrack.speechRateTolerancePercent,
+    vocal_dynamics_db: shot.audioTrack.vocalDynamicsDb,
+    breath_pattern: shot.audioTrack.breathPattern,
     persona_tone: shot.audioTrack.personaTone,
     timbre: shot.audioTrack.timbre,
     pace_wpm: shot.audioTrack.paceWpm ?? "NATURAL_FOR_SCRIPT_WINDOW",
@@ -384,6 +393,23 @@ const compileAvatarARollJson = (
       : microExpressionCues.length > 0
         ? "facial-only"
         : "restrained-stillness");
+  const facialBiomechanics = {
+    lower_face_proportion_lock: "preserve the reference mandible length, chin projection, philtrum length, mouth width, and lower-face height in every phoneme; speech must never shorten, retract, compress, or widen the face",
+    jaw_behavior: performance.facialBiomechanics?.jawBehavior
+      ?? "relaxed temporomandibular hinge with phoneme-driven opening and tiny lateral asymmetry; no held clench, chin tuck, rigid bite, or forward thrust",
+    lip_behavior: performance.facialBiomechanics?.lipBehavior
+      ?? "complete bilabial, labiodental, dental, rounded-vowel, and spread-vowel shapes with soft transitions and natural asymmetry; no pursed default pose or rubber-lip interpolation",
+    cheek_behavior: performance.facialBiomechanics?.cheekBehavior
+      ?? "cheeks and nasolabial folds respond subtly to articulation and breath while facial volume remains constant",
+    teeth_behavior: performance.facialBiomechanics?.teethBehavior
+      ?? "teeth appear only when the phoneme requires them; preserve count, spacing, color, occlusion, and gum line without flicker or regeneration",
+    blink_behavior: performance.facialBiomechanics?.blinkBehavior
+      ?? "one to three complete irregular blinks across eight seconds, motivated by thought transitions; no rhythmic blinking, eyelid flutter, half-blink hold, or blink synchronized to every phrase",
+    skin_behavior: performance.facialBiomechanics?.skinBehavior
+      ?? "pores, forehead lines, crow's-feet, and nasolabial folds deform and release with the underlying muscles; retain natural texture without smoothing, crawling, or wrinkle stamping",
+    hair_behavior: performance.facialBiomechanics?.hairBehavior
+      ?? "hairline, sideburns, beard boundary, moustache, and individual hairs remain anatomically anchored with only sub-pixel natural motion; no crawling, filling, thinning, or edge shimmer",
+  };
   const movementContract = {
     performance_mode: performanceMode,
     gesture_bounds: {
@@ -429,7 +455,7 @@ const compileAvatarARollJson = (
   if (context.compactSurface) {
     const compactContract = {
       project_manifest: {
-        manifest_version: "AUTEUR A-Roll JSON 2.0",
+        manifest_version: "AUTEUR A-Roll JSON 2.1",
         evidence_class: "COMBINED",
         global_creative_directive: {
           format: "A-Roll",
@@ -453,10 +479,11 @@ const compileAvatarARollJson = (
             posture: performance.basePosture ?? "reference posture; grounded breathing",
             eye_line: performance.eyeLine ?? "near lens; no scanning",
             facial_constraints: {
-              jaw_mm: performance.jawMovementMaxDeviationMm ?? 4,
-              lip_style: performance.lipArticulationStyle ?? "economical natural movement",
+              jaw_guardrail_mm: performance.jawMovementMaxDeviationMm ?? "phoneme-driven; no fixed low cap",
+              lip_style: performance.lipArticulationStyle ?? "phoneme-complete relaxed articulation",
               head_degrees: performance.headMovementMaxDegrees ?? 2,
-              expression_source: performance.emotionalExpressionSource ?? "eyes/brows; restrained mouth",
+              expression_source: performance.emotionalExpressionSource ?? "whole-face muscular response led by eyes and brows without suppressing speech anatomy",
+              biomechanics: facialBiomechanics,
             },
             natural_kinetics: movementContract,
             terminal_hold: {
@@ -528,7 +555,7 @@ const compileAvatarARollJson = (
   }
   const contract = {
     project_manifest: {
-      manifest_version: "AUTEUR A-Roll JSON 2.0",
+      manifest_version: "AUTEUR A-Roll JSON 2.1",
       project_title: contextValue(context.productionTitle, shot.title),
       evidence_class: "COMBINED",
       layer_0_intent_and_provenance: {
@@ -571,10 +598,11 @@ const compileAvatarARollJson = (
               base_posture: performance.basePosture ?? "preserve the supplied reference posture with grounded breathing",
               eye_line: performance.eyeLine ?? "stable near-lens attention without teleprompter scanning",
               facial_constraints: {
-                jaw_movement_max_deviation_mm: performance.jawMovementMaxDeviationMm ?? 4,
-                lip_articulation_style: performance.lipArticulationStyle ?? "economical natural movement",
+                jaw_movement_guardrail_mm: performance.jawMovementMaxDeviationMm ?? "phoneme-driven; no fixed low cap",
+                lip_articulation_style: performance.lipArticulationStyle ?? "phoneme-complete relaxed articulation",
                 head_movement_max_degrees: performance.headMovementMaxDegrees ?? 2,
-                emotional_expression_source: performance.emotionalExpressionSource ?? "eyes and brows with restrained mouth movement",
+                emotional_expression_source: performance.emotionalExpressionSource ?? "whole-face muscular response led by eyes and brows without suppressing speech anatomy",
+                facial_biomechanics: facialBiomechanics,
               },
               natural_kinetics: movementContract,
               terminal_hold: {
@@ -799,6 +827,7 @@ export function compileFrameworkVideoPrompt(
   context: FrameworkPromptContext = {},
 ): FrameworkPromptResult {
   const shot = ShotSchema.parse(input);
+  if (shot.frameworkId === "avatar-a-roll-json") assertARollShotPerformance(shot);
   const framework = getFramework(shot.frameworkId);
   const exclusions = allExclusions(shot, context);
 

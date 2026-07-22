@@ -2,6 +2,25 @@
 
 All notable public changes are recorded here. The project follows semantic versioning while the API matures; versions below `1.0.0` may contain documented breaking changes.
 
+## 0.9.1 - 2026-07-22
+
+### Added
+
+- Added deterministic `planARollSpeechWindow` planning so dialogue length, intended WPM, shot duration, and terminal settle are reconciled before compilation.
+- Added optional pitch-range, speech-rate tolerance, vocal-dynamics, breath-pattern, and facial-biomechanics fields to the universal packet.
+- Added A-Roll JSON 2.1 lower-face proportion, phoneme-driven jaw/lip/cheek, stable teeth/gums, irregular blink, skin-fold, hairline, and beard-edge guards.
+
+### Changed
+
+- Reduced the A-roll provider timing allowance from 1.20x to 1.08x after a returned 11-word clip played at about 113 WPM despite 145 WPM intent.
+- Removed the compiler's default 4 mm jaw cap. A-roll now defaults to relaxed, phoneme-complete articulation and explicitly rejects clenching or lower-face compression.
+- Increased the toolkit-owned compact JSON budget from 6,500 to 10,000 characters so custom biomechanical and acoustic locks remain identical in compact and full surfaces without deleting existing safeguards.
+
+### Evidence
+
+- The bounded return was eight seconds at 24 fps with speech observed from 0.21-6.05 seconds, approximate median pitch 128 Hz, -16.22 LUFS, and -2.42 dBTP. Fine lip sync and biometric voice identity remain `UNKNOWN` without validated scorers.
+- The sanitized audit is `docs/evidence/a-roll-jaw-speech-audit-2026-07-22.json`; raw prompt text, private media, and provider identifiers are excluded.
+
 ## 0.9.0 - 2026-07-22
 
 ### Added

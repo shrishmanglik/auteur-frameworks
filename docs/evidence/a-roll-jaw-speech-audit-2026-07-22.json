@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "1.0.0",
+  "auditId": "a-roll-jaw-speech-2026-07-22",
+  "evidenceClass": "AUTHENTICATED_PROVIDER_RENDER_PLUS_LOCAL_MEASUREMENT_PLUS_MAINTAINER_REVIEW",
+  "scope": {
+    "assets": 1,
+    "durationSeconds": 8,
+    "frameRateFps": 24,
+    "dimensions": "1280x720",
+    "audio": "AAC 48kHz stereo",
+    "rawPromptPublished": false,
+    "privateMediaPublished": false,
+    "providerIdentifiersPublished": false
+  },
+  "measurements": {
+    "approvedWordCount": 11,
+    "transcriptExactOnce": true,
+    "observedSpeechStartSeconds": 0.21,
+    "observedSpeechEndSeconds": 6.05,
+    "effectivePaceWpmApprox": 113,
+    "declaredPaceWpm": 145,
+    "declaredSpokenWindowSeconds": [0, 5.5],
+    "integratedLufs": -16.22,
+    "truePeakDbtp": -2.42,
+    "medianPitchHzApprox": 128,
+    "pitchP10HzApprox": 103.9,
+    "pitchP90HzApprox": 197.1
+  },
+  "visualReview": {
+    "broadIdentitySetAndCameraStability": "OBSERVED_IN_SAMPLED_FRAMES",
+    "maintainerReportedDefects": [
+      "speech is too slow",
+      "jaw appears clenched during articulation",
+      "lower-face proportions appear shortened during speech"
+    ],
+    "fineLipSync": "UNKNOWN",
+    "teethTemporalStability": "UNKNOWN",
+    "exactBlinkCount": "UNKNOWN",
+    "biometricVoiceIdentity": "UNKNOWN"
+  },
+  "causalCompilerFindings": [
+    "an 11-word line was forced into a minimum 5.5-second speech window",
+    "the authored facial contract capped jaw deviation at 4mm",
+    "economical articulation and minimal mouth movement could suppress phoneme-complete lower-face motion"
+  ],
+  "adoptedRepairs": [
+    "deterministic speech-window planning from word count, pace, shot duration, and terminal settle",
+    "timing allowance reduced from 1.20x to 1.08x",
+    "default 4mm jaw cap removed",
+    "lower-face geometry and phoneme-driven jaw, lip, cheek, teeth, blink, skin, hairline, and beard behavior added",
+    "pitch range, rate tolerance, vocal dynamics, and breath pattern added to the acoustic intent contract"
+  ],
+  "claimBoundary": "Prompt fields are authored intent. Provider adherence, fine lip sync, facial biomechanics, and voice identity require returned-media evidence."
+}

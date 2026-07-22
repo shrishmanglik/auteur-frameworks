@@ -7,8 +7,71 @@ export const A_ROLL_CONTRACT_DEFAULTS = {
   minimumTerminalSettleSeconds: 0.75,
   terminalBoundaryLockSeconds: 0.25,
   minimumStableBoundaryFrames: 3,
-  speechTimingSlackMultiplier: 1.2,
+  speechTimingSlackMultiplier: 1.08,
 } as const;
+
+export interface ARollSpeechWindowInput {
+  spokenText: string;
+  paceWpm: number;
+  speechRateTolerancePercent?: number;
+  shotDurationSeconds: number;
+  startSeconds?: number;
+}
+
+export interface ARollSpeechWindowPlan {
+  wordCount: number;
+  nominalDurationSeconds: number;
+  plannedDurationSeconds: number;
+  speechRateTolerancePercent: number;
+  startSeconds: number;
+  endSeconds: number;
+  terminalSettleSeconds: number;
+}
+
+export function planARollSpeechWindow(input: ARollSpeechWindowInput): ARollSpeechWindowPlan {
+  const spokenText = input.spokenText.trim();
+  if (!spokenText) throw new Error("A-roll speech planning requires non-empty spokenText.");
+  if (!Number.isFinite(input.paceWpm) || input.paceWpm < 60 || input.paceWpm > 240) {
+    throw new Error("A-roll paceWpm must be between 60 and 240.");
+  }
+  if (!Number.isFinite(input.shotDurationSeconds) || input.shotDurationSeconds <= 0) {
+    throw new Error("A-roll shotDurationSeconds must be positive.");
+  }
+
+  const startSeconds = input.startSeconds ?? 0;
+  if (!Number.isFinite(startSeconds) || startSeconds < 0 || startSeconds >= input.shotDurationSeconds) {
+    throw new Error("A-roll startSeconds must fall inside the shot duration.");
+  }
+  const speechRateTolerancePercent = input.speechRateTolerancePercent
+    ?? (A_ROLL_CONTRACT_DEFAULTS.speechTimingSlackMultiplier - 1) * 100;
+  if (!Number.isFinite(speechRateTolerancePercent)
+    || speechRateTolerancePercent < 1
+    || speechRateTolerancePercent > 25) {
+    throw new Error("A-roll speechRateTolerancePercent must be between 1 and 25.");
+  }
+  const wordCount = spokenText.split(/\s+/).filter(Boolean).length;
+  const nominalDurationSeconds = wordCount / input.paceWpm * 60;
+  const plannedDurationSeconds = Math.ceil(
+    nominalDurationSeconds * (1 + speechRateTolerancePercent / 100) * 100,
+  ) / 100;
+  const endSeconds = startSeconds + plannedDurationSeconds;
+  const terminalSettleSeconds = input.shotDurationSeconds - endSeconds;
+  if (terminalSettleSeconds + 0.001 < A_ROLL_CONTRACT_DEFAULTS.minimumTerminalSettleSeconds) {
+    throw new Error(
+      `A-roll line needs ${plannedDurationSeconds.toFixed(2)}s at ${input.paceWpm} WPM but leaves only ${terminalSettleSeconds.toFixed(2)}s for terminal settle.`,
+    );
+  }
+
+  return {
+    wordCount,
+    nominalDurationSeconds,
+    plannedDurationSeconds,
+    speechRateTolerancePercent,
+    startSeconds,
+    endSeconds,
+    terminalSettleSeconds,
+  };
+}
 
 export const ARollPostflightObservationSchema = z.object({
   clipDurationSeconds: z.number().positive(),

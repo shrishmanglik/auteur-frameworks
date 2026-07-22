@@ -127,11 +127,11 @@
         },
         {
           "startSeconds": 18,
-          "endSeconds": 28,
+          "endSeconds": 25.2,
           "action": "camera begins its slow push as he states the rule: do not automate a process until two humans can run the same version of it"
         },
         {
-          "startSeconds": 28,
+          "startSeconds": 25.2,
           "endSeconds": 30,
           "action": "after the final phoneme he seals his lips once and holds the same relaxed open-eyed pose through the final frame"
         }
@@ -151,10 +151,18 @@
         "basePosture": "seated and grounded, facing slightly off lens until the closing rule",
         "eyeLine": "stable near-lens attention with no teleprompter scanning",
         "deliveryStyle": "candid, specific, and dryly self-aware",
-        "lipArticulationStyle": "economical natural movement",
+        "lipArticulationStyle": "phoneme-complete relaxed articulation with natural asymmetry",
         "headMovementMaxDegrees": 3,
-        "jawMovementMaxDeviationMm": 5,
-        "emotionalExpressionSource": "eyes and brows, with one restrained lean at the rule",
+        "emotionalExpressionSource": "whole-face muscular response led by eyes and brows without suppressing speech anatomy",
+        "facialBiomechanics": {
+          "jawBehavior": "relaxed phoneme-driven hinge; preserve mandible length and chin projection",
+          "lipBehavior": "complete consonant and vowel shapes with soft asymmetric transitions",
+          "cheekBehavior": "subtle muscle-coupled motion with constant facial volume",
+          "teethBehavior": "stable teeth and gum geometry visible only when phonemes require it",
+          "blinkBehavior": "one to three irregular complete blinks across eight seconds",
+          "skinBehavior": "pores and expression folds deform and release with underlying muscles",
+          "hairBehavior": "hairline and beard boundary remain anatomically anchored"
+        },
         "freezePadFramesAtEnd": 3,
         "gestureBounds": {
           "handsEnabled": true,
@@ -188,7 +196,7 @@
         "spokenText": "We spent three weeks automating a refund handoff and made every refund slower. The embarrassing part was not the model. Sales thought support approved the refund; support thought sales did. We had automated an argument. Our rule now is simple: if two humans cannot run the same version of a process, software should not run it yet.",
         "spokenWindow": {
           "startSeconds": 0.5,
-          "endSeconds": 28
+          "endSeconds": 25.2
         },
         "soundDesignDirectives": [
           "clean close dialogue",
@@ -202,6 +210,13 @@
         "deliveryStyle": "plainspoken close-mic founder delivery",
         "accent": "slight South Asian English, natural and unexaggerated",
         "basePitchHz": 110,
+        "pitchRangeHz": {
+          "min": 90,
+          "max": 165
+        },
+        "speechRateTolerancePercent": 8,
+        "vocalDynamicsDb": 8,
+        "breathPattern": "quiet diaphragmatic breath at phrase boundaries without audible gasps",
         "personaTone": "authoritative, warm, and conversational",
         "cadenceStyle": "deliberate and rhythmic without presenter polish",
         "articulation": "precise and enunciated without over-articulation",

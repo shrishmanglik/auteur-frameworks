@@ -1,5 +1,38 @@
 import { describe, expect, it } from "vitest";
-import { planARollPostflight } from "../src/index.js";
+import { planARollPostflight, planARollSpeechWindow } from "../src/index.js";
+
+describe("A-roll speech-window planning", () => {
+  it("fits a sixteen-word line at a natural founder pace without the old slow minimum", () => {
+    const plan = planARollSpeechWindow({
+      spokenText: "Most AI videos fail before generation because the idea never became a production plan worth filming.",
+      paceWpm: 155,
+      speechRateTolerancePercent: 8,
+      shotDurationSeconds: 8,
+    });
+    expect(plan.wordCount).toBe(16);
+    expect(plan.nominalDurationSeconds).toBeCloseTo(6.1935, 3);
+    expect(plan.plannedDurationSeconds).toBe(6.69);
+    expect(plan.speechRateTolerancePercent).toBe(8);
+    expect(plan.terminalSettleSeconds).toBeCloseTo(1.31, 3);
+  });
+
+  it("rejects dialogue that cannot preserve the terminal settle", () => {
+    expect(() => planARollSpeechWindow({
+      spokenText: "one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty",
+      paceWpm: 120,
+      shotDurationSeconds: 8,
+    })).toThrow(/leaves only/);
+  });
+
+  it("rejects a speech start outside the shot", () => {
+    expect(() => planARollSpeechWindow({
+      spokenText: "A bounded line.",
+      paceWpm: 150,
+      shotDurationSeconds: 8,
+      startSeconds: 8,
+    })).toThrow(/inside the shot duration/);
+  });
+});
 
 describe("A-roll post-flight planning", () => {
   it("keeps the returned v0.8.5-like take in manual review while fine lip sync is unknown", () => {

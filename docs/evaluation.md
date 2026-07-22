@@ -137,6 +137,12 @@ The strongest relative visual sample used a locked 50mm/T2.2 podcast composition
 
 Version 0.9.0 encodes those findings as A-Roll JSON 2.0: one explicit performance mode per shot, zero or one exact hand cue per eight seconds, separate micro-expression cues, cue-free stillness, and a sequence guard against repeating the previous gesture. The default terminal contract is a 0.75-second natural settle plus three stable frames; post-flight evidence, not prompt intent, still decides whether an asset can continue. The sanitized audit is [`a-roll-historical-output-audit-2026-07-22.json`](evidence/a-roll-historical-output-audit-2026-07-22.json).
 
+### A-roll speech and lower-face correction
+
+A later eight-second return exposed a compiler-caused performance defect. The authored 145 WPM profile was paired with a minimum 5.5-second window for an 11-word line; local transcription observed speech from 0.21-6.05 seconds, about 113 effective WPM. The same prompt constrained jaw deviation to 4 mm and described articulation as economical with minimal mouth movement. Maintainer review reported a clenched jaw and a visibly shortened lower face during speech.
+
+Version 0.9.1 removes that low jaw cap, reduces the speech timing allowance to 1.08x, and adds deterministic speech-window planning. A-Roll JSON 2.1 explicitly preserves mandible, chin, philtrum, mouth-width, and lower-face proportions while requiring phoneme-driven jaw, lip, cheek, teeth, blink, skin-fold, hairline, and beard behavior. These are stronger authored constraints, not proof of provider adherence. The sanitized audit is [`a-roll-jaw-speech-audit-2026-07-22.json`](evidence/a-roll-jaw-speech-audit-2026-07-22.json).
+
 ### Framework-native rejection loop
 
 Maintainers then submitted three full `continuous-take` prompts for the same rain-cab contract. All three returned continuous eight-second H.264/AAC media with exact speech, plausible wet materials, and stable identity; all three were rejected. The first scored 92/100 but invented vehicle lettering and spoke 0.83 seconds early. The timing/surface repair scored 81/100, retained lettering, added visible subtitles, closed a locked-open door, and still spoke 0.70 seconds early. The no-anticipation/affirmative-surface repair scored 76/100: the door was already open in frame one, speech began 1.32 seconds early, subtitles remained, and a large roof mark appeared.

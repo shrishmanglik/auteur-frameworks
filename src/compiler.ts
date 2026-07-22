@@ -33,7 +33,7 @@ export interface CompiledShot {
 }
 
 // Toolkit-owned transport envelope, not a provider product limit.
-export const TOOLKIT_COMPACT_PROMPT_BUDGET = 6500;
+export const TOOLKIT_COMPACT_PROMPT_BUDGET = 10000;
 
 export interface CompactPromptOptions {
   maxCharacters?: number;

@@ -18,7 +18,11 @@ Run one segment at a time. Never queue the next segment before the current retur
 ## Dispatch gate
 
 1. Run toolkit validation and pre-flight. Require `compactPromptReport.frameworkPreserved === true`, no omitted exclusions, and no truncated sections.
-2. Inspect the A-Roll JSON 2.0 performance contract before dispatch:
+2. Inspect the A-Roll JSON 2.1 performance contract before dispatch:
+   - run `planARollSpeechWindow`; never stretch a short line to an arbitrary minimum duration;
+   - require the planned window to match declared pace within the packet's tolerance while preserving terminal settle;
+   - preserve lower-face proportions and phoneme-driven jaw/lip/cheek motion; never impose a low fixed jaw cap;
+   - lock teeth/gums, irregular blinks, muscle-coupled skin folds, hairline, moustache, beard edge, and individual hairs;
    - select exactly one performance mode for the shot;
    - use restrained stillness when no physical action serves the sentence;
    - allow at most one exact hand gesture in eight seconds;
@@ -45,10 +49,12 @@ Download the original asset and record its hash. Measure or inspect:
 
 - media duration, frame rate, dimensions, and audio streams;
 - word-for-word transcript and speech window;
+- effective WPM versus the declared pace and tolerance;
 - identity, wardrobe, set, crop, focus, light, and microphone continuity;
 - restrained phrase-motivated hand, head, shoulder, breath, blink, and eye motion;
 - whether the declared performance mode manifested without invented or repeated presenter motion;
 - lip/jaw/throat synchronization when a validated scorer or qualified human review exists;
+- lower-face height, mandible/chin projection, phoneme mouth shapes, teeth/gum stability, blink cadence, expression folds, hairline, and beard-edge continuity at frame-level density;
 - integrated loudness, true peak, and approximate pitch as observations, not biometric identity proof;
 - the final second at frame-level density.
 

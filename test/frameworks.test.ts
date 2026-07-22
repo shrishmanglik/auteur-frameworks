@@ -11,6 +11,7 @@ import {
   compilePacket,
   compileCompactVideoPrompt,
   compileCompactVideoPromptWithReport,
+  compileFrameworkVideoPrompt,
   compileShot,
   depthOfFieldCharacter,
   preflightPacket,
@@ -360,6 +361,8 @@ describe("compiler", () => {
     expect(compactManifest.character_asset_bible.vocal_lock.voice_profile_id)
       .toBe("approved-founder-voice-reference");
     expect(compactManifest.character_asset_bible.vocal_lock.base_pitch_hz).toBe(110);
+    expect(compactManifest.character_asset_bible.vocal_lock.pitch_range_hz).toEqual({ min: 90, max: 165 });
+    expect(compactManifest.character_asset_bible.vocal_lock.speech_rate_tolerance_percent).toBe(8);
     expect(compactManifest.character_asset_bible.vocal_lock.cadence).toContain("deliberate");
     expect(compactManifest.character_asset_bible.vocal_lock.articulation).toContain("precise");
     expect(compactManifest.character_asset_bible.vocal_lock.immutable_across_sequence).toBe(true);
@@ -369,6 +372,13 @@ describe("compiler", () => {
       .toBe("single-gesture");
     expect(compactManifest.scene_blueprint.performance_manifest.natural_kinetics.gesture_policy)
       .toContain("exactly once");
+    expect(compactManifest.scene_blueprint.performance_manifest.facial_constraints.biomechanics
+      .lower_face_proportion_lock).toContain("must never shorten");
+    expect(compactManifest.scene_blueprint.performance_manifest.facial_constraints.biomechanics
+      .teeth_behavior).toContain("stable teeth and gum geometry");
+    expect(compactManifest.scene_blueprint.performance_manifest.facial_constraints.biomechanics.jaw_behavior)
+      .toBe(manifest.layer_iv_scene_blueprint.keyframe_directives["1_subjects_kinetics_and_phenomenology"]
+        .performance_manifest.facial_constraints.facial_biomechanics.jaw_behavior);
     expect(compactManifest.scene_blueprint.performance_manifest.terminal_hold.min_seconds).toBe(0.75);
     expect(compactManifest.scene_blueprint.performance_manifest.terminal_hold.settle).toContain("one blink allowed");
     expect(compactManifest.scene_blueprint.performance_manifest.terminal_hold.boundary_lock_seconds).toBe(0.25);
@@ -425,6 +435,27 @@ describe("compiler", () => {
     packet.shots[0].performance.gestureCues = [];
     expect(() => compilePacket(packet)).toThrow(/must declare exactly one hand gesture/);
     expect(() => compileShot(packet.shots[0])).toThrow(/must declare exactly one hand gesture/);
+  });
+
+  it("requires deterministic speech-window planning on every spoken A-roll compile path", () => {
+    const packet = structuredClone(JSON.parse(
+      fs.readFileSync(new URL("../examples/a-roll.json", import.meta.url), "utf8"),
+    ));
+    delete packet.shots[0].audioTrack.spokenWindow;
+    expect(() => compilePacket(packet)).toThrow(/planARollSpeechWindow/);
+    expect(() => compileShot(packet.shots[0])).toThrow(/planARollSpeechWindow/);
+    expect(() => compileFrameworkVideoPrompt(packet.shots[0])).toThrow(/planARollSpeechWindow/);
+    expect(() => compileCompactVideoPromptWithReport(packet.shots[0])).toThrow(/planARollSpeechWindow/);
+  });
+
+  it("normalizes reversed pitch bounds consistently after schema validation", () => {
+    const packet = structuredClone(JSON.parse(
+      fs.readFileSync(new URL("../examples/a-roll.json", import.meta.url), "utf8"),
+    ));
+    packet.shots[0].audioTrack.pitchRangeHz = { min: 180, max: 90 };
+    const parsed = UniversalPacketSchema.parse(packet);
+    const manifest = JSON.parse(compilePacket(parsed).shots[0]!.compactVideoPrompt).project_manifest;
+    expect(manifest.character_asset_bible.vocal_lock.pitch_range_hz).toEqual({ min: 90, max: 180 });
   });
 
   it("rejects hand cues that cluster inside any rolling eight-second window", () => {
@@ -620,9 +651,9 @@ describe("compiler", () => {
     shot.dialogue = "Most videos fail before generation because the idea never became a production plan.";
     shot.audioTrack.spokenText = shot.dialogue;
     shot.audioTrack.paceWpm = 120;
-    shot.audioTrack.spokenWindow = { startSeconds: 0, endSeconds: 7.3 };
+    shot.audioTrack.spokenWindow = { startSeconds: 1, endSeconds: 7.3 };
     shot.beats = [
-      { startSeconds: 0, endSeconds: 7.3, action: "say the approved line exactly once" },
+      { startSeconds: 1, endSeconds: 7.3, action: "say the approved line exactly once" },
       { startSeconds: 7.3, endSeconds: 8, action: "settle naturally into the closed-lip terminal state" },
     ];
 
@@ -634,6 +665,28 @@ describe("compiler", () => {
     }).issues;
     expect(issues.map((issue) => issue.code)).toContain("SPOKEN_WINDOW_PACE_CONFLICT");
     expect(issues.map((issue) => issue.code)).toContain("AROLL_TERMINAL_HOLD_CONFLICT");
+  });
+
+  it("rejects an A-roll window whose implied speech rate is slower than its voice lock", () => {
+    const packet = UniversalPacketSchema.parse(JSON.parse(
+      fs.readFileSync(new URL("../examples/a-roll.json", import.meta.url), "utf8"),
+    ));
+    const shot = structuredClone(packet.shots[0]!);
+    shot.durationSeconds = 8;
+    shot.performance.mode = "restrained-stillness";
+    shot.performance.gestureCues = [];
+    shot.dialogue = "Most videos fail because the idea never became a production plan.";
+    shot.audioTrack.spokenText = shot.dialogue;
+    shot.audioTrack.paceWpm = 145;
+    shot.audioTrack.speechRateTolerancePercent = 8;
+    shot.audioTrack.spokenWindow = { startSeconds: 0, endSeconds: 5.5 };
+    const issues = preflightPacket({
+      ...packet,
+      metadata: { ...packet.metadata, targetDurationSeconds: 8 },
+      scenes: [{ ...packet.scenes[0]!, shotIds: [shot.id] }],
+      shots: [shot],
+    }).issues;
+    expect(issues.map((issue) => issue.code)).toContain("AROLL_SPEECH_RATE_DRIFT");
   });
 
   it("does not apply the A-roll timing guard to other frameworks", () => {

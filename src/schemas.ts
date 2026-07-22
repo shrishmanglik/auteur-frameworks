@@ -129,6 +129,15 @@ export const PerformanceSchema = z.object({
   headMovementMaxDegrees: z.number().min(0).max(45).optional(),
   jawMovementMaxDeviationMm: z.number().min(0).max(25).optional(),
   emotionalExpressionSource: z.string().min(1).optional(),
+  facialBiomechanics: z.object({
+    jawBehavior: z.string().min(1).optional(),
+    lipBehavior: z.string().min(1).optional(),
+    cheekBehavior: z.string().min(1).optional(),
+    teethBehavior: z.string().min(1).optional(),
+    blinkBehavior: z.string().min(1).optional(),
+    skinBehavior: z.string().min(1).optional(),
+    hairBehavior: z.string().min(1).optional(),
+  }).optional(),
   freezePadFramesAtEnd: z.number().int().min(0).max(240).optional(),
   gestureBounds: z.object({
     handsEnabled: z.boolean().optional(),
@@ -168,6 +177,13 @@ export const AudioTrackSchema = z.object({
   deliveryStyle: z.string().min(1).optional(),
   accent: z.string().min(1).optional(),
   basePitchHz: z.number().min(40).max(600).optional(),
+  pitchRangeHz: z.object({
+    min: z.number().min(40).max(600),
+    max: z.number().min(40).max(600),
+  }).optional(),
+  speechRateTolerancePercent: z.number().min(1).max(25).optional(),
+  vocalDynamicsDb: z.number().min(1).max(30).optional(),
+  breathPattern: z.string().min(1).optional(),
   personaTone: z.string().min(1).optional(),
   cadenceStyle: z.string().min(1).optional(),
   articulation: z.string().min(1).optional(),
@@ -402,6 +418,11 @@ export function assertARollShotPerformance(
   shot: Shot,
   previousGestureTypes: ReadonlySet<string> = new Set<string>(),
 ): Set<string> {
+    if ((shot.dialogue ?? shot.audioTrack.spokenText) && !shot.audioTrack.spokenWindow) {
+      throw new Error(
+        `A-roll shot ${shot.id} has dialogue without a spoken window; use planARollSpeechWindow before compilation.`,
+      );
+    }
     const cues = shot.performance.gestureCues ?? [];
     const orderedCues = [...cues].sort((left, right) => left.timeSeconds - right.timeSeconds);
     orderedCues.forEach((cue, cueIndex) => {

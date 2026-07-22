@@ -136,7 +136,7 @@ const extension = compileContinuationPrompt(yourRenderObservedContinuation);
 - **Storyboard projection** with ordered panels, action, camera, duration, continuity, audio, and distinct opening/terminal frame-generation instructions. Explicit `frameStates.opening` data owns the opening asset; without it, the compiler labels and warns on a minimal fallback instead of copying a composite scene into frame zero. The legacy `framePrompt` aliases the opening state.
 - **Pre-flight QC** for temporal coverage, production duration, scene ownership, continuity, audio, typography risk, and realism anchors.
 - **Repair engine** for identity drift, anatomy, topology, object loss, broken physics, lip sync, branding, material drift, and other recurring defects.
-- **Measured refinement loop** with a typed render-observation schema, weighted scoring, a relative-improvement gate, fail-closed audio and lip-sync verification, and an A-roll post-flight planner that distinguishes regeneration from deterministic trim/master salvage.
+- **Measured refinement loop** with a typed render-observation schema, weighted scoring, a relative-improvement gate, fail-closed audio and lip-sync verification, deterministic A-roll speech-window planning, facial-biomechanics locks, and a post-flight planner that distinguishes regeneration from deterministic trim/master salvage.
 - **Render-observed continuation compiler** with a match-frame instruction, first-motion deadline, physical spatial bridge, single-camera-path guard, time-boxed dialogue cue, and final-frame handoff. Provider output must still be audited; the instruction is not a frame-match guarantee.
 - **Four executable creator fixtures** covering a product film, short film, vertical reel, and A-roll monologue.
 - **CLI and typed API** designed for local tools, agents, desktop apps, servers, and CI.
@@ -172,7 +172,7 @@ The framework ID is executable structure, not a display tag. See [Framework-Nati
 | Narrative director | [`examples/short-film.json`](examples/short-film.json) | causal beats, scene ownership, continuity, choice, audio |
 | Commercial director | [`examples/product-film.json`](examples/product-film.json) | material truth, product geometry, optics, settling physics |
 | Vertical creator | [`examples/vertical-reel.json`](examples/vertical-reel.json) | first-second hook, 9:16 route, timing, loop, text risk |
-| A-roll operator | [`examples/a-roll.json`](examples/a-roll.json) | JSON v2 performance mode, zero-or-one exact gesture, feasible speech timing, voice intent, terminal handoff, eye line, room sound |
+| A-roll operator | [`examples/a-roll.json`](examples/a-roll.json) | JSON v2.1 performance mode, zero-or-one exact gesture, planned natural speech pace, acoustic voice intent, phoneme-driven facial biomechanics, terminal handoff, eye line, room sound |
 | Tool integrator | [`examples/requests/`](examples/requests/) | raw brief to schema-bound LLM contract |
 
 Run the full matrix:

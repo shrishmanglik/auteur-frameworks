@@ -176,11 +176,16 @@ export function preflightShot(shot: Shot, audioRequired = false): PreflightIssue
   if (spokenText && spokenWindow && shot.audioTrack.paceWpm) {
     const wordCount = spokenText.trim().split(/\s+/).filter(Boolean).length;
     const nominalSeconds = wordCount / shot.audioTrack.paceWpm * 60;
+    const speechRateTolerancePercent = shot.audioTrack.speechRateTolerancePercent
+      ?? (A_ROLL_CONTRACT_DEFAULTS.speechTimingSlackMultiplier - 1) * 100;
     const timingMultiplier = shot.frameworkId === "avatar-a-roll-json"
-      ? A_ROLL_CONTRACT_DEFAULTS.speechTimingSlackMultiplier
+      ? 1 + speechRateTolerancePercent / 100
       : 1;
     const requiredSeconds = nominalSeconds * timingMultiplier;
     const availableSeconds = spokenWindow.endSeconds - spokenWindow.startSeconds;
+    const impliedPaceWpm = wordCount / availableSeconds * 60;
+    const minimumPaceWpm = shot.audioTrack.paceWpm * (1 - speechRateTolerancePercent / 100);
+    const maximumPaceWpm = shot.audioTrack.paceWpm * (1 + speechRateTolerancePercent / 100);
     if (requiredSeconds > availableSeconds + 0.01) {
       const timingDescription = timingMultiplier > 1
         ? `${nominalSeconds.toFixed(2)}s nominal and ${requiredSeconds.toFixed(2)}s with the ${timingMultiplier.toFixed(1)}x A-roll provider timing guard`
@@ -191,6 +196,16 @@ export function preflightShot(shot: Shot, audioRequired = false): PreflightIssue
         shotId: shot.id,
         message: `${wordCount} words at ${shot.audioTrack.paceWpm} WPM require ${timingDescription}, but the spoken window allows ${availableSeconds.toFixed(2)}s.`,
         action: "Shorten the approved line, increase the declared pace, or expand the spoken window before generation.",
+      });
+    }
+    if (shot.frameworkId === "avatar-a-roll-json"
+      && (impliedPaceWpm < minimumPaceWpm - 0.01 || impliedPaceWpm > maximumPaceWpm + 0.01)) {
+      issues.push({
+        code: "AROLL_SPEECH_RATE_DRIFT",
+        severity: "error",
+        shotId: shot.id,
+        message: `${wordCount} words across ${availableSeconds.toFixed(2)}s imply ${impliedPaceWpm.toFixed(1)} WPM, outside ${shot.audioTrack.paceWpm} WPM +/- ${speechRateTolerancePercent}%.`,
+        action: "Use planARollSpeechWindow or revise the dialogue, declared pace, and spoken window together.",
       });
     }
   }
