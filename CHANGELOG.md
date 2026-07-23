@@ -9,6 +9,7 @@ All notable public changes are recorded here. The project follows semantic versi
 - Added deterministic `planARollSpeechWindow` planning so dialogue length, intended WPM, shot duration, and terminal settle are reconciled before compilation.
 - Added optional pitch-range, speech-rate tolerance, vocal-dynamics, breath-pattern, and facial-biomechanics fields to the universal packet.
 - Added A-Roll JSON 2.1 lower-face proportion, phoneme-driven jaw/lip/cheek, stable teeth/gums, irregular blink, skin-fold, hairline, and beard-edge guards.
+- Added versioned `EvidenceReceipt` contracts that bind prompt and media fingerprints to deterministic failure states, post-flight decisions, decision reasons, observed changes, review mode, and limitations.
 
 ### Changed
 

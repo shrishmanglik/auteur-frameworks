@@ -62,6 +62,23 @@ A creator packet must:
 
 Warnings may pass pre-flight when they describe an explicit production choice, such as generated-text risk. Errors block handoff.
 
+## Evidence receipts
+
+`buildEvidenceReceipt(input)` turns one `RenderObservation` into a versioned, typed `EvidenceReceipt`. The receipt is the public audit contract for what was observed, what changed, why the post-flight decision was made, and which uncertainty remains.
+
+Every receipt records:
+
+- SHA-256 fingerprints for the submitted prompt and returned media, without embedding either private artifact;
+- the provider and model labels observed at runtime;
+- whether review was human, vision-assisted, or both;
+- the deterministic weighted score, audio gate, and normalized failure state;
+- an explicit decision: accept, repair, regenerate, manual review, or salvage and re-audit;
+- reasons for that decision;
+- field-level before/after changes with assessment, rationale, and supporting evidence;
+- at least one explicit limitation that keeps unsupported capability claims out of the record.
+
+An `accept` receipt fails closed unless the render clears the deterministic score and audio gates. Every receipt also fails validation when its claim-limitation list is empty or when a field-level change records neither a before nor an after value. Receipt fingerprints establish artifact identity, not authorship, ownership, provider capability, or universal quality.
+
 ## Provider smoke
 
 Provider smoke tests are separate from deterministic package tests. They must record the account boundary, provider/model label, visible cost, duration/aspect settings, submitted-shot summary and cryptographic fingerprint, exact-prompt fingerprint, result, and limitations of the evidence. A prompt fingerprint preserves auditability without publishing proprietary or session-specific prompt text. One provider result cannot prove universal model performance.

@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { compareRenderCycles, scoreRender } from "../src/index.js";
+import {
+  buildEvidenceReceipt,
+  compareRenderCycles,
+  EvidenceReceiptSchema,
+  scoreRender,
+} from "../src/index.js";
 
 const observation = {
   cycleId: "cycle-1",
@@ -160,5 +165,176 @@ describe("render evaluation", () => {
     });
     expect(comparison.relativeImprovementPercent).toBe(50);
     expect(comparison.meetsTenPercentThreshold).toBe(false);
+  });
+
+  it("builds a typed evidence receipt that explains what changed and why", () => {
+    const receipt = buildEvidenceReceipt({
+      observation,
+      reviewMode: "human-and-vision-assisted",
+      promptFingerprint: { algorithm: "sha256", value: "A".repeat(64) },
+      mediaFingerprint: { algorithm: "sha256", value: "b".repeat(64) },
+      decision: "repair",
+      reasons: ["The render completed the action but did not clear the acceptance threshold."],
+      changes: [{
+        field: "temporalCompletion",
+        before: "The action stopped before contact.",
+        after: "The primary action completes.",
+        assessment: "improved",
+        reason: "The repair added a visible source-to-destination bridge.",
+        evidence: "Frame review confirms contact before the final beat.",
+      }],
+      limitations: ["Synthetic fixture; no provider capability is claimed."],
+    });
+
+    expect(receipt).toMatchObject({
+      receiptVersion: "1.0.0",
+      shotId: "shot-1",
+      failureState: "repair-required",
+      decision: "repair",
+      evaluation: { score: 60, grade: "needs-repair" },
+      changes: [{
+        field: "temporalCompletion",
+        assessment: "improved",
+      }],
+    });
+    expect(receipt.promptFingerprint.value).toBe("a".repeat(64));
+    expect(EvidenceReceiptSchema.parse(receipt)).toEqual(receipt);
+  });
+
+  it("rejects an acceptance receipt when deterministic gates have not cleared", () => {
+    expect(() => buildEvidenceReceipt({
+      observation,
+      reviewMode: "human",
+      promptFingerprint: { algorithm: "sha256", value: "a".repeat(64) },
+      mediaFingerprint: { algorithm: "sha256", value: "b".repeat(64) },
+      decision: "accept",
+      reasons: ["A reviewer requested acceptance."],
+      limitations: ["Synthetic fixture; no provider capability is claimed."],
+    })).toThrow("deterministic score and audio gates");
+  });
+
+  it("rejects evidence receipts without valid content fingerprints", () => {
+    expect(() => buildEvidenceReceipt({
+      observation,
+      reviewMode: "vision-assisted",
+      promptFingerprint: { algorithm: "sha256", value: "not-a-sha256" },
+      mediaFingerprint: { algorithm: "sha256", value: "b".repeat(64) },
+      decision: "manual-review",
+      reasons: ["The prompt fingerprint is malformed."],
+      limitations: ["Synthetic fixture; no provider capability is claimed."],
+    })).toThrow("SHA-256 fingerprint");
+  });
+
+  const receiptInput = (
+    renderObservation: typeof observation,
+    decision: "accept" | "repair" | "regenerate" | "manual-review" | "salvage-and-reaudit",
+  ) => ({
+    observation: renderObservation,
+    reviewMode: "human" as const,
+    promptFingerprint: { algorithm: "sha256" as const, value: "a".repeat(64) },
+    mediaFingerprint: { algorithm: "sha256" as const, value: "b".repeat(64) },
+    decision,
+    reasons: [`The post-flight decision is ${decision}.`],
+    limitations: ["Synthetic fixture; no provider capability is claimed."],
+  });
+
+  const highScoreObservation = () => {
+    const result = structuredClone(observation);
+    for (const key of Object.keys(result.scores) as Array<keyof typeof result.scores>) {
+      result.scores[key] = 5;
+    }
+    return result;
+  };
+
+  it.each([
+    ["accept", "none"],
+    ["repair", "repair-required"],
+    ["regenerate", "regeneration-required"],
+    ["manual-review", "manual-review-required"],
+    ["salvage-and-reaudit", "salvage-pending-reaudit"],
+  ] as const)("maps the %s decision to the %s state", (decision, expectedState) => {
+    const candidate = decision === "repair" ? structuredClone(observation) : highScoreObservation();
+    expect(buildEvidenceReceipt(receiptInput(candidate, decision)).failureState).toBe(expectedState);
+  });
+
+  it.each([
+    [
+      "critical-defect",
+      () => {
+        const result = highScoreObservation();
+        result.defects = [{ severity: "critical" as const, description: "The hero object disappears." }];
+        return result;
+      },
+    ],
+    [
+      "audio-evidence-missing",
+      () => {
+        const result = highScoreObservation();
+        result.audioVerification = undefined;
+        return result;
+      },
+    ],
+    [
+      "below-acceptance-threshold",
+      () => {
+        const result = structuredClone(observation);
+        for (const key of Object.keys(result.scores) as Array<keyof typeof result.scores>) {
+          result.scores[key] = key === "audio" ? 3 : 2;
+        }
+        return result;
+      },
+    ],
+  ] as const)("makes the %s failure state reachable", (expectedState, makeObservation) => {
+    expect(buildEvidenceReceipt(receiptInput(makeObservation(), "repair")).failureState).toBe(expectedState);
+  });
+
+  it("requires every receipt to state at least one claim limitation", () => {
+    const withoutLimitations = receiptInput(highScoreObservation(), "accept");
+    Reflect.deleteProperty(withoutLimitations, "limitations");
+    expect(() => buildEvidenceReceipt(withoutLimitations)).toThrow();
+  });
+
+  it.each([
+    [],
+    ["short"],
+  ])("rejects invalid limitations through the public receipt schema", (limitations) => {
+    const validReceipt = buildEvidenceReceipt(receiptInput(highScoreObservation(), "accept"));
+    expect(() => EvidenceReceiptSchema.parse({
+      ...validReceipt,
+      limitations,
+    })).toThrow();
+  });
+
+  it("rejects change evidence when both before and after are absent", () => {
+    expect(() => buildEvidenceReceipt({
+      ...receiptInput(observation, "repair"),
+      changes: [{
+        field: "continuity",
+        before: null,
+        after: null,
+        assessment: "improved",
+        reason: "No values were recorded.",
+        evidence: "No comparison evidence exists.",
+      }],
+    })).toThrow("at least one before or after value");
+  });
+
+  it.each([
+    ["added", null, "A continuity lock was added."],
+    ["removed", "An invalid continuity lock.", null],
+    ["changed", "The action stops early.", "The action reaches contact."],
+  ] as const)("accepts a valid %s field-level change", (_kind, before, after) => {
+    const receipt = buildEvidenceReceipt({
+      ...receiptInput(observation, "repair"),
+      changes: [{
+        field: "continuity",
+        before,
+        after,
+        assessment: "improved",
+        reason: "The repair changed only the rejected condition.",
+        evidence: "Frame review records the bounded difference.",
+      }],
+    });
+    expect(receipt.changes).toHaveLength(1);
   });
 });

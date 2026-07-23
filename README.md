@@ -137,6 +137,7 @@ const extension = compileContinuationPrompt(yourRenderObservedContinuation);
 - **Pre-flight QC** for temporal coverage, production duration, scene ownership, continuity, audio, typography risk, and realism anchors.
 - **Repair engine** for identity drift, anatomy, topology, object loss, broken physics, lip sync, branding, material drift, and other recurring defects.
 - **Measured refinement loop** with a typed render-observation schema, weighted scoring, a relative-improvement gate, fail-closed audio and lip-sync verification, deterministic A-roll speech-window planning, facial-biomechanics locks, and a post-flight planner that distinguishes regeneration from deterministic trim/master salvage.
+- **Evidence receipts** that bind prompt and returned-media fingerprints to the observed score, normalized failure state, post-flight decision, decision reasons, field-level changes, review mode, and explicit limitations without publishing private prompts or media.
 - **Render-observed continuation compiler** with a match-frame instruction, first-motion deadline, physical spatial bridge, single-camera-path guard, time-boxed dialogue cue, and final-frame handoff. Provider output must still be audited; the instruction is not a frame-match guarantee.
 - **Four executable creator fixtures** covering a product film, short film, vertical reel, and A-roll monologue.
 - **CLI and typed API** designed for local tools, agents, desktop apps, servers, and CI.
@@ -302,7 +303,7 @@ Start with [CONTRIBUTING.md](CONTRIBUTING.md) or open a [framework proposal](htt
 
 ## Status
 
-Version `0.9.0` is an early public API. Provider adapters and commercial execution remain outside core. Breaking changes will be documented in [CHANGELOG.md](CHANGELOG.md) until the API reaches `1.0.0`.
+Version `0.9.1` is an early public API. Provider adapters and commercial execution remain outside core. Breaking changes will be documented in [CHANGELOG.md](CHANGELOG.md) until the API reaches `1.0.0`.
 
 ## License and citation
 
