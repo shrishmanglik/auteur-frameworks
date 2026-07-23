@@ -1,6 +1,12 @@
 import fs from "node:fs";
 import { describe, expect, it } from "vitest";
-import { buildStoryboard, compilePacket, parseUniversalPacket, preflightPacket } from "../src/index.js";
+import {
+  buildProductionKit,
+  buildStoryboard,
+  compilePacket,
+  parseUniversalPacket,
+  preflightPacket,
+} from "../src/index.js";
 
 const load = (name: string) => JSON.parse(
   fs.readFileSync(new URL(`../examples/${name}.json`, import.meta.url), "utf8"),
@@ -20,30 +26,27 @@ describe("expert creator fixtures", () => {
       const report = preflightPacket(packet);
       const storyboard = buildStoryboard(packet);
       const compiled = compilePacket(packet);
+      const kit = buildProductionKit(packet);
 
       expect(report.passed, JSON.stringify(report.issues, null, 2)).toBe(true);
       expect(storyboard).toHaveLength(packet.shots.length);
       expect(compiled.shots).toHaveLength(packet.shots.length);
-      expect(compiled.shots.every((shot) => shot.videoPrompt.includes("TEMPORAL PLAN"))).toBe(true);
+      expect(kit.shotList).toHaveLength(packet.shots.length);
+      expect(kit.storyboard).toHaveLength(packet.shots.length);
+      expect(kit.promptPackage).toEqual(compiled);
+      expect(kit.preflight).toEqual(report);
+      expect(compiled.shots.every((shot) => shot.promptFidelity === "FRAMEWORK_NATIVE")).toBe(true);
+      expect(compiled.shots.every((shot) => shot.frameworkArchitecture.length >= 5)).toBe(true);
       expect(compiled.shots.every((shot) => shot.negativePrompt.length > 30)).toBe(true);
-      expect(compiled.shots.every((shot) => shot.compactVideoPrompt.length <= shot.videoPrompt.length * 0.8)).toBe(true);
+      expect(compiled.shots.every((shot) => (
+        shot.compactVideoPrompt.length <= shot.compactPromptReport.toolkitBudget
+      ))).toBe(true);
+      expect(compiled.shots.every((shot) => shot.compactPromptReport.frameworkPreserved)).toBe(true);
       for (const shot of compiled.shots) {
-        for (const label of [
-          "Intent:",
-          "Scene:",
-          "Materials:",
-          "Style:",
-          "Camera:",
-          "Beats:",
-          "Light:",
-          "Physics:",
-          "Lock:",
-          "Reality:",
-          "Audio:",
-          "Avoid:",
-        ]) {
-          expect(shot.compactVideoPrompt, `${persona.name} missing ${label}`).toContain(label);
-        }
+        expect(shot.videoPrompt, `${persona.name} missing camera specificity`).toMatch(/CAMERA|Camera|camera/);
+        expect(shot.videoPrompt, `${persona.name} missing temporal specificity`).toMatch(/SEQUENCE|BEAT|Beat|timeline|time_range_seconds|0-/);
+        expect(shot.videoPrompt, `${persona.name} missing audio contract`).toMatch(/AUDIO|Audio|audio/);
+        expect(shot.videoPrompt, `${persona.name} missing exclusions`).toMatch(/DO NOT RENDER|NEGATIVES|EXCLUSIONS|no identity drift/);
       }
     });
   }
@@ -67,7 +70,9 @@ describe("expert creator fixtures", () => {
   it("gives the A-roll operator one non-duplicated spoken performance", () => {
     const packet = parseUniversalPacket(load("a-roll"));
     const compiled = compilePacket(packet).shots[0]!;
-    expect(packet.shots[0]?.frameworkId).toBe("continuous-take");
+    expect(packet.shots[0]?.frameworkId).toBe("avatar-a-roll-json");
+    expect(JSON.parse(compiled.videoPrompt).project_manifest.layer_vi_ai_model_constraints
+      .triple_lock_protocol.script_lock.rule).toContain("verbatim once");
     expect(compiled.audioPrompt?.match(/We spent three weeks/g)).toHaveLength(1);
     expect(compiled.videoPrompt.match(/We spent three weeks/g)).toHaveLength(1);
   });

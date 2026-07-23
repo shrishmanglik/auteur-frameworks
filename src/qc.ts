@@ -1,5 +1,7 @@
 import type { Shot, UniversalPacket } from "./schemas.js";
+import { A_ROLL_CONTRACT_DEFAULTS } from "./a-roll.js";
 import { getFramework } from "./frameworks.js";
+import { assessShotConstraintBudget, assessShotRoute } from "./route-advisor.js";
 
 export type IssueSeverity = "error" | "warning";
 
@@ -29,6 +31,59 @@ const textRisk = (shot: Shot): PreflightIssue[] => shot.onScreenText
 export function preflightShot(shot: Shot, audioRequired = false): PreflightIssue[] {
   const issues: PreflightIssue[] = [];
   getFramework(shot.frameworkId);
+  const constraintBudget = assessShotConstraintBudget(shot);
+  const route = assessShotRoute(shot);
+
+  if (constraintBudget.status === "overloaded") {
+    issues.push({
+      code: "SHOT_CONSTRAINT_OVERLOAD",
+      severity: "error",
+      shotId: shot.id,
+      message: `The shot carries ${constraintBudget.score} framework constraint points across ${constraintBudget.factors.length} fragile controls.`,
+      action: constraintBudget.recommendation,
+    });
+  }
+
+  const routeConsumesOpeningFrame = route.recommendedMode === "reference-first"
+    || route.recommendedMode === "first-last-frame";
+  if (routeConsumesOpeningFrame && shot.beats.length > 1 && !shot.frameStates.opening) {
+    issues.push({
+      code: "OPENING_FRAME_STATE_FALLBACK",
+      severity: "warning",
+      shotId: shot.id,
+      message: `The multi-stage ${route.recommendedMode} shot has no explicit opening-only frame state, so its generated opening prompt uses a minimal fallback.`,
+      action: "Provide frameStates.opening with only the subject, environment, visible inventory, lighting, materials, imperfections, and locks available at 0.0 seconds.",
+    });
+  }
+
+  if (route.recommendedMode === "first-last-frame" && !shot.frameStates.terminal) {
+    issues.push({
+      code: "TERMINAL_FRAME_STATE_FALLBACK",
+      severity: "warning",
+      shotId: shot.id,
+      message: "The first/last-frame shot has no explicit terminal-only frame state, so its generated terminal prompt uses composite shot fields.",
+      action: "Provide frameStates.terminal with only the subject, environment, visible inventory, lighting, materials, imperfections, and locks present after the final beat completes.",
+    });
+  }
+
+  if (route.risks.some((risk) => risk.code === "DELAYED_TERMINAL_REVEAL")) {
+    if (!shot.frameStates.opening || !shot.frameStates.terminal) {
+      issues.push({
+        code: "DELAYED_REVEAL_FRAME_STATES_REQUIRED",
+        severity: "error",
+        shotId: shot.id,
+        message: "The delayed reveal cannot be isolated without explicit opening and terminal frame states.",
+        action: "Provide frameStates.opening and frameStates.terminal with their exact visible inventories before compiling the split plan.",
+      });
+    }
+    issues.push({
+      code: "DELAYED_REVEAL_SINGLE_PASS_BLOCKED",
+      severity: "error",
+      shotId: shot.id,
+      message: "A terminal-only object named in one prompt may contaminate the opening even when a clean first frame is attached.",
+      action: "Build a delayed-reveal split plan, dispatch the lexically isolated pre-reveal pass, then compile a render-observed continuation from its accepted final frame.",
+    });
+  }
 
   if (shot.imperfectionAnchors.length < 2) {
     issues.push({
@@ -96,6 +151,107 @@ export function preflightShot(shot: Shot, audioRequired = false): PreflightIssue
     });
   }
 
+  if (shot.audioTrack.spokenWindow && !(shot.dialogue ?? shot.audioTrack.spokenText)) {
+    issues.push({
+      code: "SPOKEN_WINDOW_WITHOUT_TEXT",
+      severity: "error",
+      shotId: shot.id,
+      message: "A spoken timing window exists without an approved spoken performance.",
+      action: "Add spokenText/dialogue or remove the spoken timing window.",
+    });
+  }
+
+  if (shot.audioTrack.spokenWindow?.endSeconds && shot.audioTrack.spokenWindow.endSeconds > shot.durationSeconds) {
+    issues.push({
+      code: "SPOKEN_WINDOW_OUT_OF_RANGE",
+      severity: "error",
+      shotId: shot.id,
+      message: "The spoken timing window extends beyond the shot duration.",
+      action: "End audioTrack.spokenWindow at or before durationSeconds.",
+    });
+  }
+
+  const spokenText = shot.dialogue ?? shot.audioTrack.spokenText;
+  const spokenWindow = shot.audioTrack.spokenWindow;
+  if (spokenText && spokenWindow && shot.audioTrack.paceWpm) {
+    const wordCount = spokenText.trim().split(/\s+/).filter(Boolean).length;
+    const nominalSeconds = wordCount / shot.audioTrack.paceWpm * 60;
+    const speechRateTolerancePercent = shot.audioTrack.speechRateTolerancePercent
+      ?? (A_ROLL_CONTRACT_DEFAULTS.speechTimingSlackMultiplier - 1) * 100;
+    const timingMultiplier = shot.frameworkId === "avatar-a-roll-json"
+      ? 1 + speechRateTolerancePercent / 100
+      : 1;
+    const requiredSeconds = nominalSeconds * timingMultiplier;
+    const availableSeconds = spokenWindow.endSeconds - spokenWindow.startSeconds;
+    const impliedPaceWpm = wordCount / availableSeconds * 60;
+    const minimumPaceWpm = shot.audioTrack.paceWpm * (1 - speechRateTolerancePercent / 100);
+    const maximumPaceWpm = shot.audioTrack.paceWpm * (1 + speechRateTolerancePercent / 100);
+    if (requiredSeconds > availableSeconds + 0.01) {
+      const timingDescription = timingMultiplier > 1
+        ? `${nominalSeconds.toFixed(2)}s nominal and ${requiredSeconds.toFixed(2)}s with the ${timingMultiplier.toFixed(1)}x A-roll provider timing guard`
+        : `${requiredSeconds.toFixed(2)}s`;
+      issues.push({
+        code: "SPOKEN_WINDOW_PACE_CONFLICT",
+        severity: "error",
+        shotId: shot.id,
+        message: `${wordCount} words at ${shot.audioTrack.paceWpm} WPM require ${timingDescription}, but the spoken window allows ${availableSeconds.toFixed(2)}s.`,
+        action: "Shorten the approved line, increase the declared pace, or expand the spoken window before generation.",
+      });
+    }
+    if (shot.frameworkId === "avatar-a-roll-json"
+      && (impliedPaceWpm < minimumPaceWpm - 0.01 || impliedPaceWpm > maximumPaceWpm + 0.01)) {
+      issues.push({
+        code: "AROLL_SPEECH_RATE_DRIFT",
+        severity: "error",
+        shotId: shot.id,
+        message: `${wordCount} words across ${availableSeconds.toFixed(2)}s imply ${impliedPaceWpm.toFixed(1)} WPM, outside ${shot.audioTrack.paceWpm} WPM +/- ${speechRateTolerancePercent}%.`,
+        action: "Use planARollSpeechWindow or revise the dialogue, declared pace, and spoken window together.",
+      });
+    }
+  }
+
+  if (shot.frameworkId === "avatar-a-roll-json" && spokenWindow) {
+    const frameRate = shot.camera.capture.frameRateFps ?? A_ROLL_CONTRACT_DEFAULTS.frameRateFps;
+    const freezePadFrames = shot.performance.freezePadFramesAtEnd
+      ?? A_ROLL_CONTRACT_DEFAULTS.freezePadFramesAtEnd;
+    const requiredTerminalHoldSeconds = Math.max(
+      freezePadFrames / frameRate,
+      A_ROLL_CONTRACT_DEFAULTS.minimumTerminalSettleSeconds,
+    );
+    const availableTerminalHoldSeconds = shot.durationSeconds - spokenWindow.endSeconds;
+    const latestSpeechEnd = shot.durationSeconds - requiredTerminalHoldSeconds;
+    if (spokenWindow.endSeconds > latestSpeechEnd + 0.001) {
+      issues.push({
+        code: "AROLL_TERMINAL_HOLD_CONFLICT",
+        severity: "error",
+        shotId: shot.id,
+        message: `Speech ends at ${spokenWindow.endSeconds}s, leaving ${availableTerminalHoldSeconds.toFixed(2)}s; A-roll requires at least ${requiredTerminalHoldSeconds.toFixed(2)}s of post-phoneme settle time including ${freezePadFrames} frozen terminal frames at ${frameRate}fps.`,
+        action: `End speech by ${latestSpeechEnd.toFixed(2)}s, shorten the approved line, increase its declared pace, or increase the shot duration.`,
+      });
+    }
+    if (spokenWindow.startSeconds > 0) {
+      issues.push({
+        code: "AROLL_DELAYED_SPEECH_RUNTIME_CHECK",
+        severity: "warning",
+        shotId: shot.id,
+        message: "The A-roll contract requests a silent lead-in, but provider timing adherence remains runtime evidence.",
+        action: "Measure returned audio onset and reject or reroute the shot if articulation starts before the declared window.",
+      });
+    }
+  }
+
+  if ((shot.dialogue ?? shot.audioTrack.spokenText)
+    && shot.generationRisks.includes("EXACT_DIALOGUE_AUDIO")
+    && !shot.audioTrack.spokenWindow) {
+    issues.push({
+      code: "SPOKEN_WINDOW_UNKNOWN",
+      severity: "warning",
+      shotId: shot.id,
+      message: "Exact dialogue has no explicit performance window, so the provider may speak early or late.",
+      action: "Set audioTrack.spokenWindow to the intended beat boundaries.",
+    });
+  }
+
   if (shot.continuityLocks.length < 2) {
     issues.push({
       code: "CONTINUITY_UNDERSPECIFIED",
@@ -113,12 +269,16 @@ export function preflightPacket(packet: UniversalPacket): PreflightReport {
   const issues = packet.shots.flatMap((shot) => preflightShot(shot, packet.metadata.audioRequired));
   const sceneIds = new Set(packet.scenes.map((scene) => scene.id));
   const shotIds = new Set(packet.shots.map((shot) => shot.id));
+  const characterIds = new Set(packet.characters.map((character) => character.id));
   const totalDuration = packet.shots.reduce((sum, shot) => sum + shot.durationSeconds, 0);
   const duplicateShotIds = [...new Set(packet.shots
     .map((shot) => shot.id)
     .filter((id, index, ids) => ids.indexOf(id) !== index))];
   const duplicateSceneIds = [...new Set(packet.scenes
     .map((scene) => scene.id)
+    .filter((id, index, ids) => ids.indexOf(id) !== index))];
+  const duplicateCharacterIds = [...new Set(packet.characters
+    .map((character) => character.id)
     .filter((id, index, ids) => ids.indexOf(id) !== index))];
 
   for (const shotId of duplicateShotIds) {
@@ -140,6 +300,15 @@ export function preflightPacket(packet: UniversalPacket): PreflightReport {
     });
   }
 
+  for (const characterId of duplicateCharacterIds) {
+    issues.push({
+      code: "DUPLICATE_CHARACTER_ID",
+      severity: "error",
+      message: `Character ID ${characterId} is used more than once.`,
+      action: "Assign a unique ID to every character and update shot characterIds.",
+    });
+  }
+
   if (Math.abs(totalDuration - packet.metadata.targetDurationSeconds) > 0.001) {
     issues.push({
       code: "PRODUCTION_DURATION_MISMATCH",
@@ -150,6 +319,26 @@ export function preflightPacket(packet: UniversalPacket): PreflightReport {
   }
 
   for (const shot of packet.shots) {
+    if (packet.characters.length && shot.characterIds.length === 0) {
+      issues.push({
+        code: "CHARACTER_RELATIONSHIP_UNKNOWN",
+        severity: "warning",
+        shotId: shot.id,
+        message: "The production has characters but this shot does not declare characterIds.",
+        action: "Assign the cast members who appear, or keep the relationship explicitly UNKNOWN in the host application.",
+      });
+    }
+    for (const characterId of shot.characterIds) {
+      if (!characterIds.has(characterId)) {
+        issues.push({
+          code: "UNKNOWN_CHARACTER",
+          severity: "error",
+          shotId: shot.id,
+          message: `Shot ${shot.id} references missing character ${characterId}.`,
+          action: "Create the character or remove the characterId from the shot.",
+        });
+      }
+    }
     if (!sceneIds.has(shot.sceneId)) {
       issues.push({
         code: "UNKNOWN_SCENE",

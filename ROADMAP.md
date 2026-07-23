@@ -2,12 +2,13 @@
 
 The roadmap is ordered by creator and integrator value, not infrastructure novelty.
 
-## Current: 0.2
+## Current: 0.4
 
 - Universal Packet schema and JSON Schema
-- Nine production frameworks
+- Ten production frameworks
 - Raw-brief development contract
-- Prompt, storyboard, QC, and repair compilers
+- Complete production-kit, prompt, storyboard, QC, route, and repair compilers
+- Render-observed continuation and risk-aware reference routing
 - Multi-persona fixtures and evaluation suite
 - Git installation, CLI, TypeScript API, and agent integration guide
 - Publication-boundary and packed-consumer gates

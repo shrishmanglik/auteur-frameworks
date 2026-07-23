@@ -1,0 +1,122 @@
+{
+  "schemaVersion": "1.0.0",
+  "observedAt": "2026-07-22",
+  "scope": "Eight prompt-to-output A-roll pairs sampled from two 2025 avatar production lineages",
+  "evidenceClass": "PRIVATE_PROMPT_CORPUS_PLUS_AUTHENTICATED_PROVIDER_RENDER_PLUS_LOCAL_MEASUREMENT",
+  "privacyBoundary": "Sanitized family labels, normalized prompt hashes, aggregate observations, and measured output properties only; no raw prompts, private project IDs, media IDs, account data, or provider credentials",
+  "method": {
+    "pairing": "Authenticated Flow media detail matched to the canonical private prompt record",
+    "promptFingerprint": "SHA-256 over LF-normalized UTF-8 prompt text",
+    "mediaIntegrity": "Original MP4 download, SHA-256, and ffprobe",
+    "dialogue": "VAD-enabled faster-whisper base.en transcription",
+    "visual": "One-frame-per-second contact sheets reviewed for identity, framing, hands, facial cadence, and terminal state",
+    "pitch": "Band-limited autocorrelation estimate; approximate and not biometric identification",
+    "fineLipSync": "UNKNOWN; no validated fine audiovisual alignment scorer was available"
+  },
+  "aggregate": {
+    "promptOutputPairs": 8,
+    "strictJsonContracts": 7,
+    "exactDialoguePasses": 6,
+    "exactDialogueFailures": 1,
+    "exactDialogueUnscorable": 1,
+    "broadIdentityAndSetStabilityPasses": 8,
+    "declaredDelayedSpeechOnsetObeyed": 0,
+    "approximateMedianPitchHzRange": [126.0, 148.1],
+    "fineLipSyncStatus": "UNKNOWN"
+  },
+  "families": [
+    {
+      "family": "performance-timeline-v3",
+      "promptSha256": "752a722cb272b98f360de3683ca94a74c4944c5c718fbd95345155fe7644b3a4",
+      "promptCharacters": 1808,
+      "speechEndSeconds": 7.42,
+      "medianPitchHzApprox": 148.1,
+      "dialogueStatus": "verified",
+      "observation": "The exact word-timed precision gesture manifested, but the same gesture family became visibly repetitive when reused across a sequence."
+    },
+    {
+      "family": "performance-realism-v4.1",
+      "promptSha256": "4e2be748955414484fb73433d55ceb10c1f09360a22f1d6c0c52f67021bd1462",
+      "promptCharacters": 4440,
+      "speechEndSeconds": 7.0,
+      "medianPitchHzApprox": 140.4,
+      "dialogueStatus": "verified",
+      "observation": "Best relative visual result in the bounded sample: stable identity, grounded seated weight, asymmetric hand motion, and a readable expression arc."
+    },
+    {
+      "family": "viral-monologue-v9",
+      "promptSha256": "23d65e813f9c4a787c56006e7c406c29c5ddb08ec3206e8926f2ac2ef6782fc0",
+      "promptCharacters": 4647,
+      "speechEndSeconds": 7.14,
+      "medianPitchHzApprox": 145.5,
+      "dialogueStatus": "verified",
+      "observation": "Strong podcast framing and identity stability, but the performance reads more emphatic and presenter-like than the preferred realism lineage."
+    },
+    {
+      "family": "slow-push-teaser",
+      "promptSha256": "2a6381ac0aa75e9faa49951c0ff5eb447e6bf69285bff6782333f734ca340c28",
+      "promptCharacters": 801,
+      "speechEndSeconds": 6.12,
+      "medianPitchHzApprox": 136.8,
+      "dialogueStatus": "verified",
+      "observation": "A single psychological camera move and one restrained expression beat produced a coherent clip without a dense physiology manifest."
+    },
+    {
+      "family": "discovery-expression-arc",
+      "promptSha256": "1314b87d2be8a6b1bb7b35b9fe15c0f274f2bfffb6b805b7575c15dead485424",
+      "promptCharacters": 901,
+      "speechEndSeconds": 7.36,
+      "medianPitchHzApprox": 140.4,
+      "dialogueStatus": "verified",
+      "observation": "A neutral-to-wonder-to-confidence arc manifested more naturally than repeated mechanical gesture instructions."
+    },
+    {
+      "family": "locked-desk-monologue",
+      "promptSha256": "c896b9a2e22cc549230d9f508d5db36d0737eb1ad97c2c89c87400a603440b73",
+      "promptCharacters": 642,
+      "speechEndSeconds": 7.5,
+      "medianPitchHzApprox": 141.6,
+      "dialogueStatus": "verified",
+      "observation": "The compact locked-camera contract preserved the set and subject, but symmetrical hand motion remained a visible synthetic cue."
+    },
+    {
+      "family": "multi-camera-simulation",
+      "promptSha256": "086114be400513fde590d9aa6c2d5d2c4476ec5c565241e06005c539a6096d5e",
+      "promptCharacters": 2719,
+      "speechEndSeconds": 6.6,
+      "medianPitchHzApprox": 131.1,
+      "dialogueStatus": "failed",
+      "observation": "The output omitted part of the approved line; simulated coverage complexity is not a safe default for exact-dialogue A-roll."
+    },
+    {
+      "family": "malformed-duplicate-contract",
+      "promptSha256": "6a3a19349f3b5f0302a8cb942ce7a7a4890aa5d7e5495f30a6f5d3c90df72b3e",
+      "promptCharacters": 1751,
+      "speechEndSeconds": 7.18,
+      "medianPitchHzApprox": 126.0,
+      "dialogueStatus": "unscorable",
+      "observation": "The provider rendered a coherent clip despite duplicated conflicting JSON, but the input is rejected as non-deterministic evidence."
+    }
+  ],
+  "compilerDecision": {
+    "adopt": [
+      "one explicit performance mode per shot",
+      "zero or one exact phrase-motivated hand gesture per eight seconds",
+      "separate micro-expression cues from hand gestures",
+      "cue-free restrained stillness as the default",
+      "no consecutive reuse of the same gesture type",
+      "one camera strategy selected by narrative intent",
+      "one immutable sequence voice profile with returned audio measured after every shot",
+      "a natural settle plus three-frame handoff rather than a long theatrical freeze"
+    ],
+    "rejectAsDefaults": [
+      "ambiguous gesture alternatives",
+      "repeated precision-pinch choreography",
+      "simulated multi-camera coverage for exact-dialogue clips",
+      "dense numeric physiology instructions without a causal need",
+      "two-second frozen performance holds",
+      "treating a textual pitch or voice-profile field as proof of provider adherence"
+    ],
+    "claimBoundary": "This bounded audit supports compiler and QC decisions. It does not establish provider-wide success rates, product limits, native voice locking, or fine lip-sync capability."
+  }
+}

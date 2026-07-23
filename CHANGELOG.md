@@ -2,6 +2,282 @@
 
 All notable public changes are recorded here. The project follows semantic versioning while the API matures; versions below `1.0.0` may contain documented breaking changes.
 
+## 0.9.1 - 2026-07-22
+
+### Added
+
+- Added deterministic `planARollSpeechWindow` planning so dialogue length, intended WPM, shot duration, and terminal settle are reconciled before compilation.
+- Added optional pitch-range, speech-rate tolerance, vocal-dynamics, breath-pattern, and facial-biomechanics fields to the universal packet.
+- Added A-Roll JSON 2.1 lower-face proportion, phoneme-driven jaw/lip/cheek, stable teeth/gums, irregular blink, skin-fold, hairline, and beard-edge guards.
+- Added versioned `EvidenceReceipt` contracts that bind prompt and media fingerprints to deterministic failure states, post-flight decisions, decision reasons, observed changes, review mode, and limitations.
+
+### Changed
+
+- Reduced the A-roll provider timing allowance from 1.20x to 1.08x after a returned 11-word clip played at about 113 WPM despite 145 WPM intent.
+- Removed the compiler's default 4 mm jaw cap. A-roll now defaults to relaxed, phoneme-complete articulation and explicitly rejects clenching or lower-face compression.
+- Increased the toolkit-owned compact JSON budget from 6,500 to 10,000 characters so custom biomechanical and acoustic locks remain identical in compact and full surfaces without deleting existing safeguards.
+
+### Evidence
+
+- The bounded return was eight seconds at 24 fps with speech observed from 0.21-6.05 seconds, approximate median pitch 128 Hz, -16.22 LUFS, and -2.42 dBTP. Fine lip sync and biometric voice identity remain `UNKNOWN` without validated scorers.
+- The sanitized audit is `docs/evidence/a-roll-jaw-speech-audit-2026-07-22.json`; raw prompt text, private media, and provider identifiers are excluded.
+
+## 0.9.0 - 2026-07-22
+
+### Added
+
+- Added A-Roll JSON 2.0 performance modes: restrained stillness, facial-only, single gesture, posture shift, and object interaction.
+- Added separate timed micro-expression cues and optional gesture keywords/durations.
+- Added sequence validation that blocks ambiguous hand alternatives, more than one hand cue per eight seconds, and reuse of the same gesture type in consecutive A-roll shots.
+- Added a hash-pinned, sanitized audit of eight historical A-roll prompt-to-output pairs and an installable Flow validation skill.
+
+### Changed
+
+- Cue-free A-roll now disables hand choreography even when a legacy packet carries stale `handsEnabled: true` metadata.
+- Replaced the two-second theatrical terminal hold and eight-frame pad with a 0.75-second natural settle and three-frame handoff; deterministic post-flight evidence remains required before continuation.
+- Reclassified the A-roll framework as `COMBINED` evidence because v2 joins private prompt-corpus structure with returned-media observations.
+
+### Evidence
+
+- Six of eight historical samples reproduced exact dialogue; one omitted part of its line and one malformed duplicated contract was unscorable. Fine lip sync remained `UNKNOWN`.
+- Repeated precision gestures, symmetrical hand motion, simulated coverage, and long frozen holds were rejected as defaults. Grounded stillness, one asymmetric action, and a single readable expression arc were adopted.
+- Textual voice-profile, pitch, mix, and onset fields remain instructions, not proof of provider adherence.
+
+## 0.8.7 - 2026-07-22
+
+### Changed
+
+- A-roll terminal salvage now requires a consecutive post-speech stable span of at least three decoded frames. A single closed-mouth frame routes to manual review instead of producing a trim instruction.
+- `ARollPostflightObservationSchema` adds `stableBoundaryStartSeconds`; terminal-failure salvage evidence must now describe both ends of the stable span.
+
+### Evidence
+
+- A bounded aggregate re-audit covered six unique eight-second Shrish A-roll returns. All six preserved the reference composition broadly, but all six reopened the mouth in the final decoded quarter-second.
+- The final two returns reproduced the current approved sentence exactly once. The sixth added the intended bounded hand gesture, yet fine audiovisual lip sync remained `UNKNOWN`, so neither the raw render nor its trim/master derivative authorizes continuation.
+- Observed integrated loudness ranged from -15.46 to -19.84 LUFS across the six returns; numeric prompt mix targets remain instructions, not provider guarantees.
+
+## 0.8.6 - 2026-07-21
+
+### Added
+
+- Added `planARollPostflight`, a typed deterministic decision layer for accepting, regenerating, manually reviewing, or salvaging a returned A-roll clip. Acceptance requires explicit fine lip-sync evidence; transcript accuracy alone cannot authorize continuation.
+- A terminal failure can route to frame-accurate trim plus re-audit only when exact dialogue and identity passed and a post-speech stable frame was actually observed.
+- Mix measurements outside a one-LU tolerance or above the declared true-peak ceiling route to deterministic mastering and re-measurement rather than another paid prompt retry.
+
+### Evidence
+
+- The v0.8.5 Flow return reproduced the approved line exactly once from 0.00-5.72 seconds and held identity, set, camera, wardrobe, and microphone broadly stable. Approximate median pitch was 115 Hz against a 110 Hz authored target.
+- The provider output measured -22.59 LUFS and -2.84 dBFS despite the transmitted -14 LUFS / -1 dBFS contract, and mouth motion restarted around 7.5 seconds despite the terminal lock. Direct extension remains rejected.
+- A deterministic 7.466-second trim at the last observed stable frame plus audio mastering produced a closed-lip/open-eye boundary at -14.07 LUFS / -1.64 dBFS. This is a derived editorial salvage candidate pending fine lip-sync and subjective voice re-audit, not evidence that the provider obeyed the original mix or terminal instructions.
+
+## 0.8.5 - 2026-07-21
+
+### Added
+
+- Extended the optional A-roll voice signature with accent, base pitch, persona tone, cadence, articulation, intonation, timbre, mic, room, and word-level emphasis controls.
+- Extended the optional performance manifest with bounded hand gestures, head yaw/pitch/nods, body posture/breathing, and timed gesture cues.
+- Added a two-phase terminal protocol: a natural closed-mouth settle followed by a 0.75-second closed-lip, open-eye boundary lock with the final eight frames held stable.
+
+### Fixed
+
+- Preserved the existing integrated-LUFS, true-peak, and stereo-width mix lock in compact A-roll JSON. Earlier compact dispatches silently omitted it.
+- Replaced an unnatural post-speech freeze with a quiet exhale and tiny shoulder release before the strict final boundary lock.
+- Raised the toolkit-owned compact JSON envelope to 6,500 characters so the voice, kinetics, mix, terminal, and exclusion contracts survive together. This is not a provider product limit.
+
+### Evidence
+
+- The v0.8.4 returned render reproduced the approved 11-word sentence exactly once from 0.62-6.16 seconds and kept identity, set, wardrobe, camera, and microphone broadly stable.
+- The actual final frame still had parted lips and lowered eyelids. Integrated loudness measured about -19.84 LUFS with a -0.36 dBFS true peak, while the authored packet intended -14 LUFS and -1 dBFS. The asset remains rejected for continuation.
+- Voice and kinetics defaults are corpus-grounded prompt practices with hash-pinned provenance; they are not claims that a provider will obey numeric controls exactly.
+
+## 0.8.4 - 2026-07-21
+
+### Fixed
+
+- Added a 1.2x provider timing guard to A-roll speech feasibility instead of assuming declared WPM will be honored exactly.
+- Increased the minimum post-phoneme terminal reserve from 1.5 to 2.0 seconds.
+- Promoted the closed-mouth, open-eye, no-blink terminal state into the compact JSON dispatch contract instead of relying on a compressed prose reminder.
+
+### Evidence
+
+- A v0.8.3 Flow render reproduced the approved 13-word line exactly once, but delivered it from 0.27-6.83 seconds: about 119 effective WPM despite a declared 138 WPM.
+- The render preserved identity, set, camera, wardrobe, and microphone, then reopened the mouth and entered a blink at the actual final frame. It remains rejected for continuation.
+- The 1.2x timing guard and two-second reserve are repair hypotheses grounded in this returned asset, not provider capability claims.
+
+## 0.8.3 - 2026-07-21
+
+### Fixed
+
+- Compressed the compact A-roll terminal protocol without removing its speech deadline, 1.5-second settle boundary, eight-frame freeze, or no-reopening facial lock.
+- Restored the toolkit-owned 4,000-character compact envelope. The canonical full JSON contract remains unchanged and substantially deeper.
+
+### Evidence
+
+- Flow accepted the reference and exact 4,535-character v0.8.2 JSON submission but returned a visible generic failure card and no media asset. The cause remains `UNKNOWN`; prompt length is not relabeled as a provider limit.
+- The next retry is deliberately bounded below the prior toolkit envelope so dispatch behavior can be separated from the terminal-performance repair.
+
+## 0.8.2 - 2026-07-21
+
+### Fixed
+
+- Added a 1.5-second minimum post-phoneme settle window to the A-roll JSON contract and pre-flight gate; the eight-frame freeze remains nested inside that larger performance boundary.
+- Added an explicit terminal protocol that seals the lips once after the final phoneme and forbids mouth reopening, silent mouthing, jaw reset, blinking, or a new expression through the final frame.
+- Temporarily raised the toolkit-owned compact prompt budget from 4,000 to 5,000 characters so the terminal protocol and all exclusions could survive compact JSON compilation. Version 0.8.3 restores the 4,000-character envelope through semantic compression.
+
+### Evidence
+
+- The v0.8.1 clean-reference retry reproduced its approved sentence exactly once and remained broadly stable, but speech ended at 6.44 seconds and the face resumed mouth motion after a measured quiet interval. The decoded frames at 7.70 seconds and 7.958 seconds remained mouth-open with unstable eyelids.
+- Independent review corrected against the actual approved script and scored v0.8.1 at 19/30 versus 21/30 for v0.8.0, a 9.5% regression. The asset was rejected and not extended.
+- The 1.5-second settle window is a render-derived repair hypothesis from this failed asset, not a provider capability or a validated success claim.
+
+## 0.8.1 - 2026-07-21
+
+### Fixed
+
+- Added a blocking speech-window feasibility check: exact A-roll dialogue can no longer declare a word count, pace, and time window that contradict one another.
+- Added an explicit terminal frame pad to the A-roll performance contract; pre-flight rejects windows that leave too few end-hold frames.
+- Added a corpus-derived minimum lip-sync confidence acceptance target alongside the existing phoneme-tolerance target.
+- Added a runtime warning for delayed speech onsets so a provider ignoring a silent lead-in cannot pass on prompt intent alone.
+
+### Evidence
+
+- The first JSON-native A-roll Flow render preserved the exact sentence, identity, set, camera, wardrobe, and microphone, but began speech at 0.00s instead of 0.40s and ended on an open mouth after a silent tail. Independent scoring measured only 5.1% improvement over the superseded prose render, below the 10% project gate, so the asset was rejected and not extended.
+- The failed packet declared 18 words at 138 WPM inside a 7.0-second window even though that pace requires about 7.83 seconds. This contradiction had incorrectly passed pre-flight; v0.8.1 blocks it deterministically.
+- In the 452-record JSON-contract corpus, 367 prompts parse as strict JSON. Seventy records carry `freeze_pad_frames_at_end`; among nonzero values, eight frames is the most common. The A-roll lineage also carries explicit `lip_sync_conf_min` targets. These are corpus contract practices and acceptance targets, not provider capabilities.
+
+## 0.8.0 - 2026-07-21
+
+### Fixed
+
+- Corrected the A-roll route from the generic `continuous-take` prose compiler to a dedicated `avatar-a-roll-json` architecture.
+- Added optional performer controls for posture, eye line, delivery, lip movement, head movement, jaw movement, and expression source.
+- Added optional vocal controls for voice-reference ID, language, pace, delivery, phoneme-alignment acceptance target, and mix intent.
+- Added a compact JSON handoff that retains the project manifest, character/asset bible, performance manifest, optics, vocal lock, triple-lock protocol, constraints, and acceptance tests without dropping exclusions.
+
+### Evidence
+
+- A bounded re-audit of the private 910-record Flow prompt corpus found 131 A-roll, avatar, presenter, monologue, dialogue, or lip-sync records classified as JSON cinematic scene contracts with audio; 97 parsed as strict JSON. Recurrent lineages included Vocal Lock, Facial Constraint Protocol, Viral Monologue Execution, and Triple Lock. The aggregate, hash-pinned audit is published without raw prompts or private identifiers in `docs/evidence/a-roll-json-architecture-2026-07-21.json`.
+- The prior `a-roll -> continuous-take` route is treated as a synthesis defect. Its generated media may still inform failure analysis, but it is not evidence that the corrected A-roll architecture has been validated.
+
+## 0.7.2 - 2026-07-21
+
+### Fixed
+
+- Added `DELAYED_TERMINAL_REVEAL` routing. When an explicit terminal frame introduces visible inventory absent from the explicit opening frame, the original single-pass prompt is blocked and the route becomes a split pass.
+- Added `buildDelayedRevealSplitPlan`: it compiles a framework-native pre-reveal prompt from opening-only structured data, rejects terminal-term leakage, and requires the reveal extension to be compiled from the accepted pre-reveal render's observed final frame.
+- Added rejection gates for terminal inventory in pre-reveal prompts or pixels and for reset, reframe, teleport, dissolve, geometry morph, or omitted reveal in the continuation. Provider frame/edit support remains runtime evidence, not a claimed capability.
+
+### Evidence
+
+- The v0.7.1 opening asset correctly omitted the bell, but the reference-first Flow render still materialized it in frame zero because the terminal object remained named in the full video contract. The render scored 72.4/100 versus the 71.2 baseline, below the required 10% improvement. Three attempted terminal endpoints then substituted the interaction, changed camera/identity geometry, or duplicated/detached a tank. A v0.7.2 exact-first-frame retry used the verified clean opening asset yet changed camera and subject pose before frame zero and materialized the bell immediately. This patch therefore isolates the terminal object's vocabulary and assets into a later render-observed continuation instead of claiming a first-frame control solved the provider failure.
+
+## 0.7.1 - 2026-07-21
+
+### Fixed
+
+- Split frame compilation into `openingFramePrompt` and `terminalFramePrompt`; the existing `framePrompt` now aliases the opening state for backwards compatibility.
+- Added explicit opening-only and terminal-only `frameStates` data. Opening compilation never reuses composite environment, material, imperfection, or continuity fields; absent explicit data is labeled `minimal-fallback` and warned in pre-flight.
+- Added a route-asset requirement and acceptance check that rejects reference-first opening frames contaminated by a later beat.
+- Extended opening-state fallback warnings to first/last-frame routes and added a terminal-state fallback warning wherever that route consumes a final-state asset.
+
+### Evidence
+
+- A route-compliant `cinematic-prose-stack` Flow render preserved one diver, clean tanks, wreck geometry, buoyancy, bubbles, silt, lamp falloff, and nonverbal audio, but scored 71.2/100 and was rejected: the bell and lamp-to-bell relationship were already visible in frame zero, collapsing the requested 6-8 second discovery. The scene reference had encoded the terminal reveal. This patch separates opening and terminal frame evidence instead of adding more video-prompt wording.
+
+## 0.7.0 - 2026-07-21
+
+### Added
+
+- Added typed render-audio verification for exact speech, no-speech, and nonverbal contracts. Failed verification is a critical defect; missing evidence or an audio rubric score below 3/5 prevents production acceptance even when the weighted score is high.
+- Documented VAD-aware review for instrumental and environmental tracks so unconstrained transcription hallucinations are retained as diagnostics rather than accepted as speech.
+- Added an affirmative surface lock to every generated reference-frame prompt so route assets do not silently omit the clean-material state enforced by the video contract.
+
+### Evidence
+
+- The first route-compliant framework-native Flow run used a generated identity reference and a `continuous-take` prompt. It preserved performer identity, hand-to-instrument interaction, one uninterrupted action arc, and requested nonverbal sound, scoring 95/100. VAD-enabled transcription found no speech; a no-VAD decode hallucinated a sentence from the trumpet audio, which exposed the need for an explicit audio-evidence gate.
+- A subsequent `cinematic-prose-stack` reference generation produced a credible diver and shipwreck but invented markings on otherwise unspecified equipment surfaces. The reference was rejected before video dispatch; the finding moved clean-surface control into frame-prompt compilation rather than adding more video-only negative wording.
+
+## 0.6.0 - 2026-07-21
+
+### Added
+
+- Added a deterministic shot constraint budget to route advice, with scored factors for multi-stage action, delayed exact dialogue, strict surface control, identity locks, and high-risk choreography.
+- Added a blocking `SHOT_CONSTRAINT_OVERLOAD` pre-flight issue and `COMPOUND_CONSTRAINT_OVERLOAD` split-pass route when a short shot exceeds the provider-neutral safety budget.
+
+### Evidence
+
+- A third framework-native Flow render preserved one continuous take, identity, physical materials, and exact words, but opened the door before frame one, spoke 1.32 seconds early, rendered dialogue as subtitles, and invented a roof mark. It scored 76/100 and was rejected. The repeated failure proves that route overload, not missing negative prose, is the next control problem.
+
+## 0.5.2 - 2026-07-21
+
+### Fixed
+
+- Compiled a no-anticipation temporal boundary rule across all eight shot architectures so later actions, dialogue, and terminal states cannot begin before their declared beat.
+- Replaced forbidden-token enumeration inside the positive surface-control block with affirmative material, color, finish, and geometry continuity.
+- Kept dialogue instructions in the audio domain and described the image as a clean picture plate to reduce visual transcription leakage.
+
+### Evidence
+
+- The first timing/surface repair produced exact audio but still spoke 0.70 seconds early, closed a locked-open door, retained vehicle pseudo-lettering, and added visible dialogue subtitles. It scored 81/100 versus the prior 92/100 and was rejected; v0.5.2 addresses those generalized failures without claiming provider compliance.
+
+## 0.5.1 - 2026-07-21
+
+### Added
+
+- Optional `audioTrack.spokenWindow` boundaries, compiler timing language, and pre-flight checks for early or out-of-range dialogue.
+- Positive blank-surface production-design locks for shots carrying `BRAND_OR_TEXT_CONTROL`, supplementing negative text/logo exclusions.
+
+### Evidence
+
+- A framework-native authenticated Flow run completed as one continuous eight-second take with exact speech, but invented cab lettering and began speech 0.83 seconds early. The render was rejected; these two generalized repairs came from that observed media rather than provider assumptions.
+
+## 0.5.0 - 2026-07-21
+
+### Fixed
+
+- Replaced the label-only generic shot compiler with distinct corpus-derived architectures for cinematic prose, act/shot master specifications, JSON scene contracts, temporal evolution, timed social sequences, practical stunts, continuous takes, and audio-first work.
+- Made compact prompts preserve the selected framework structure and report `frameworkPreserved`; high-stakes handoff guidance now rejects truncated blocks or omitted safeguards.
+- Made repair and render-observed continuation fail closed through the generic shot compiler so they cannot be claimed without observed-defect or final-frame evidence.
+- Canonicalized exact dialogue so the framework prompt contains the approved line once even when the source action also names it.
+
+### Added
+
+- Machine-readable compiler-surface and architecture-style metadata for every framework.
+- Optional capture-stack fields for sensor format, recording format, rig, frame rate, shutter angle, and resolution intent; existing packets hydrate with an empty capture object.
+- Explicit development-request routes for practical choreography, machine-readable scene contracts, and audio-first production.
+- Explicit route and QC contracts for multi-subject dynamics, measurable spatial clearance, and frame-accurate action/audio synchronization; tightened mechanical-assembly inference so clothing and seated performers do not trigger a false route.
+- Cross-framework regression tests proving that one shot compiles into materially different prompt structures.
+- Public architecture guide and a correction limiting the pre-0.5 Flow matrix to routing and QC evidence.
+
+## 0.4.0 - 2026-07-21
+
+### Added
+
+- One-command complete production kit with story, scene plan, character and world bibles, style bible, storyboard, shot list, sound plan, continuity matrix, reference assets, prompt package, pre-flight, repairs, and export manifest.
+- Risk-aware route advisor for causal contact, precise assembly, exact fluid counts, brand/text control, identity/performance, transformations, and exact dialogue.
+- Render-observed performance-exaggeration repair guidance.
+- Sanitized maintainer-reported ten-run Flow session manifest spanning reel comedy, A-roll dialogue, product mechanics, automotive, food fluids, and VFX.
+
+### Changed
+
+- Compact prompts prioritize shot-specific safeguards before generic global exclusions.
+- High-risk route recommendations retain provider capability as `UNKNOWN` until the host verifies support.
+
+## 0.3.0 - 2026-07-21
+
+### Added
+
+- Render-Observed Continuation framework and deterministic continuation compiler.
+- First-motion deadline, source-to-destination spatial bridge, physics invariants, and final-frame handoff contracts.
+- Render-observed match-frame and single-camera-path guards for extension boundaries.
+- Repair guidance for match-frame drift and camera-path jumps.
+- Optional time-boxed dialogue cues with exact-line and foreground-mix guards.
+- Repair guidance for omitted requested dialogue.
+- Provider-safe repair guidance for fictional character names that collide with prominent-person controls.
+- CLI `continue` command plus a synthetic extension fixture.
+- Generated JSON Schema for render-observed continuation input.
+- Evidence-scoped Flow extension smoke with three same-shot refinement cycles above the 10% project threshold.
+
 ## 0.2.0 - 2026-07-21
 
 ### Added

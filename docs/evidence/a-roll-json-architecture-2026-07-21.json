@@ -1,0 +1,164 @@
+{
+  "schemaVersion": "1.0.0",
+  "auditDate": "2026-07-21",
+  "scope": "Private Google Flow prompt corpus; raw prompts, media, account data, and private identifiers excluded",
+  "source": {
+    "recordCount": 910,
+    "lfNormalizedSha256": "12cc9a0b8c162488fdd6c04b6242d97102db24355264009304b4daf32ce107e6"
+  },
+  "query": {
+    "requiredClassification": "JSON cinematic scene contract with audio",
+    "topicTerms": [
+      "a-roll",
+      "talking head",
+      "avatar",
+      "podcast",
+      "spokesperson",
+      "presenter",
+      "direct to camera",
+      "monologue",
+      "lip sync",
+      "dialogue"
+    ]
+  },
+  "result": {
+    "matchedRecords": 131,
+    "strictJsonRecords": 97,
+    "versionLineages": {
+      "unversioned": 57,
+      "9.0 - Viral Monologue Execution": 17,
+      "qds-1.0": 6,
+      "10.0 - Viral Jump Cut Synthesis": 4,
+      "8.1 - Script & Dynamic Synthesis": 4,
+      "8.2 - Motivated Cinematic Synthesis": 3,
+      "3.1 - Vocal Lock Update": 2,
+      "8.3 - Facial Constraint Protocol": 1,
+      "8.0 - Dynamic Monologue Synthesis": 1,
+      "6.1 - Dynamic Monologue Calibration": 1,
+      "5.0 - Pure Monologue Calibration": 1
+    }
+  },
+  "hashPinnedExemplars": [
+    {
+      "role": "triple-lock",
+      "promptLfNormalizedSha256": "ff82c02b3b9fe896f33f2722463da1b181bace9bf035e745c67e7cc8979fb2f8",
+      "characterCount": 2898
+    },
+    {
+      "role": "viral-monologue",
+      "promptLfNormalizedSha256": "d774b396f2611193b9470ee11ffe5b2d1dcc60ff1018eb1e13805a45b510c68f",
+      "characterCount": 4037
+    },
+    {
+      "role": "facial-constraint",
+      "promptLfNormalizedSha256": "51decb965e7bd7f27f22d19b95c3e801b24215f4ee95703a63e90a4c8f9fd1df",
+      "characterCount": 3189
+    },
+    {
+      "role": "vocal-lock",
+      "promptLfNormalizedSha256": "c41a0fb4b50563511e7ecc242e1ac8e1f66a7991e4c8212bbffdb6f7e905fbd3",
+      "characterCount": 4304
+    }
+  ],
+  "architectureDecision": {
+    "aRollRoute": "avatar-a-roll-json",
+    "requiredInvariants": [
+      "machine-readable project manifest",
+      "character and identity reference lock",
+      "bounded posture, eye-line, jaw, lip, head, and expression controls",
+      "cinematography, optics, and psychological framing",
+      "verbatim script, voice signature, timing, sound, and phoneme-alignment acceptance target",
+      "script, identity, and temporal triple lock",
+      "explicit rejection tests and a clean terminal handoff"
+    ]
+  },
+  "crossArchitectureSignals": {
+    "scope": "All 452 private records classified as JSON cinematic scene contracts with audio",
+    "strictJsonRecords": 367,
+    "terminalPad": {
+      "recordsWithFreezePadFramesAtEnd": 70,
+      "valueOccurrences": {
+        "0": 89,
+        "2": 5,
+        "3": 1,
+        "6": 9,
+        "8": 46
+      },
+      "interpretation": "Eight frames is the most common nonzero terminal pad. This is a cross-architecture prompt practice, not an A-roll success-rate or provider-capability claim.",
+      "hashPinnedExemplar": {
+        "promptLfNormalizedSha256": "3d0e300bd2fe927cf8686e59248e615b0802187945346cd9cd77104ffa71102d",
+        "characterCount": 5589
+      }
+    },
+    "lipSyncConfidence": {
+      "interpretation": "The A-roll lineage carries explicit lip-sync confidence acceptance targets in addition to phoneme timing.",
+      "hashPinnedExemplar": {
+        "promptLfNormalizedSha256": "fef28858ea8d4037387dfed0f8ac8c2874082e6944587abb46cd81ed680e1c59",
+        "characterCount": 787,
+        "lipSyncConfidenceMin": 0.99
+      }
+    }
+  },
+  "voiceAndKineticsSignals": {
+    "scope": "Private prompt-corpus structure only; values are authored controls, not measured provider guarantees",
+    "voiceProfile": {
+      "voiceProfileIdOccurrences": 29,
+      "paceWpmValuesObserved": [130, 135, 140],
+      "intonationNotesOccurrences": 23,
+      "basePitchHz": {
+        "occurrences": 2,
+        "observedValue": 110
+      },
+      "mixTargets": {
+        "integratedLufs": -14,
+        "truePeakDbfsMax": -1,
+        "stereoWidth": "neutral_centered"
+      },
+      "additionalObservedControls": [
+        "natural accent description",
+        "deliberate rhythmic cadence",
+        "precise enunciation",
+        "five-to-eight-percent emphasis pitch lift",
+        "close-mic podcast microphone",
+        "treated room tone"
+      ],
+      "hashPinnedExemplars": [
+        {
+          "role": "vocal-lock",
+          "promptLfNormalizedSha256": "c41a0fb4b50563511e7ecc242e1ac8e1f66a7991e4c8212bbffdb6f7e905fbd3"
+        },
+        {
+          "role": "mix-and-accent-lock",
+          "promptLfNormalizedSha256": "ff82c02b3b9fe896f33f2722463da1b181bace9bf035e745c67e7cc8979fb2f8"
+        },
+        {
+          "role": "pitch-mic-room-lock",
+          "promptLfNormalizedSha256": "fe3c5b2a19b900051315ca4e8512a0fd3f18f70547f03a9be79eb4ed7aa8be5f"
+        }
+      ]
+    },
+    "naturalKinetics": {
+      "boundedGestureRecords": 6,
+      "observedGestureAmplitudeDegreesMax": [7, 8],
+      "observedGesturesPer8SecondsMax": [2, 3],
+      "observedHeadYawDegreesMax": [4, 6],
+      "observedHeadPitchDegreesMax": [3, 4],
+      "observedNodsMax": [1, 2],
+      "breathingPattern": {
+        "observedBreathsPerMinute": 12,
+        "interpretation": "Calm controlled breathing and phrase-motivated posture changes counter frozen-avatar motion."
+      },
+      "hashPinnedExemplars": [
+        {
+          "role": "bounded-gesture-and-head-motion",
+          "promptLfNormalizedSha256": "2e3648ab3ed85e2d09a4e8aefd6d9c18928855af2eea1a0da82d3714612d32c7"
+        },
+        {
+          "role": "breathing-dynamics",
+          "promptLfNormalizedSha256": "23122ee5a33c014ab7d35ba26a5293a8cc100bdf17aac1687f058a13bc74057b"
+        }
+      ]
+    }
+  },
+  "claimBoundary": "This audit establishes a recurring prompt architecture in the private corpus. It does not prove a provider capability, a product limit, a success rate, or render quality. Returned media requires a separate observed-output audit."
+}

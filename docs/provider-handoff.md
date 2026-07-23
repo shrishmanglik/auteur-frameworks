@@ -5,20 +5,24 @@ The core package is provider-neutral. This guide describes a safe manual handoff
 ## Before submission
 
 1. Run `validate` and `preflight`.
-2. Choose one shot, not an entire sequence, unless the provider workflow explicitly supports sequences.
-3. Confirm duration and aspect ratio in the provider interface.
-4. Attach identity, object, or final-frame references only through supported controls.
-5. Preserve the packet version and shot ID in your own job ledger.
+2. Build `kit` and inspect each shot's route advice.
+3. Choose one shot, not an entire sequence, unless the provider workflow explicitly supports sequences.
+4. Confirm duration and aspect ratio in the provider interface.
+5. Attach required identity, object, opening-state, terminal-state, or final-frame references only through supported controls.
+6. Preserve the packet version and shot ID in your own job ledger.
 
 ## Prompt surfaces
 
-- **videoPrompt**: motion, temporal beats, optics, lighting, physics, continuity, audio intent, and exclusions.
-- **compactVideoPrompt**: the same production categories in a concise, single-line handoff for provider fields that handle long rich-text input poorly.
-- **framePrompt**: a reference-frame or image-generation description without temporal choreography.
+- **videoPrompt**: the canonical framework-native architecture, including its required ordering and production blocks.
+- **compactVideoPrompt**: a whitespace-flattened, budgeted attempt for provider fields that handle long rich-text input poorly; its report states whether the selected framework architecture survived intact.
+- **openingFramePrompt**: a 0.0-second reference contract compiled from `frameStates.opening`, keeping later actions, contacts, dialogue, illumination, discoveries, and completed states absent or occluded. Without explicit opening-only data, the compiler emits `frameStateSources.opening: "minimal-fallback"` plus a pre-flight warning. `framePrompt` is a backwards-compatible alias.
+- **terminalFramePrompt**: the completed final-beat still for an explicitly supported terminal or first/last-frame route. It carries an endpoint match lock for editing the accepted opening frame without changing camera, identity, scale, wardrobe, persistent inventory, lighting direction, or undeclared geometry. A missing `frameStates.terminal` on a first/last-frame route emits `TERMINAL_FRAME_STATE_FALLBACK`. Do not attach the terminal prompt as the opening reference.
 - **audioPrompt**: spoken performance, sound design, and music boundary when present.
 - **negativePrompt**: exclusions for systems or adapters that expose a separate negative field.
 
 The `videoPrompt` already contains exclusions. Do not append the same negative list twice.
+
+`compactVideoPrompt` uses a toolkit-owned 6,500-character ceiling; this is not a provider limit. Inspect `compactPromptReport` before dispatch. `frameworkPreserved` must be true, and high-stakes generation requires empty `omittedExclusions` and `truncatedSections`. Otherwise use the full prompt, reduce the shot safely, or pass omitted safeguards through a supported separate negative field.
 
 ## Manual Flow-style smoke
 
@@ -26,12 +30,50 @@ For a single-shot video workflow:
 
 1. set the configured duration to the shot's `durationSeconds` when available;
 2. set the packet's aspect ratio;
-3. paste `videoPrompt`, or `compactVideoPrompt` when the provider field needs a concise handoff, into the creation field;
+3. paste `videoPrompt`; use `compactVideoPrompt` only when the provider field needs it and the compact report proves that no required section or safeguard was lost;
 4. submit one variation first;
 5. evaluate action completion, geometry, physical behavior, identity, audio, and final state;
 6. use `buildRepairPrompt` for one observed defect at a time.
 
+### Fail-closed editor-state gate
+
+Rich-text provider fields can display text that has not entered the application's controlled state. Before spending credits:
+
+1. confirm the opening or continuation reference is visibly attached in the intended slot;
+2. confirm the editor contains a real text leaf, not only a zero-width placeholder;
+3. compare the committed character count or hash with the exact compiled surface;
+4. move focus with a keyboard action or uniquely identified control and confirm the text persists unchanged; never use an unverified fixed-coordinate blur click;
+5. confirm the provider's final create control is enabled without forcing it;
+6. after generation, open the media detail and verify the recorded prompt contains the expected manifest version, framework ID, and exact dialogue.
+
+A visible paste, enabled-looking shell, or generated asset title is not prompt-provenance evidence. If the media detail records only a seed character, an empty prompt, or a different route, exclude the asset from framework validation even when the pixels look useful. Never force a disabled extension control. If native extension is unavailable, a new reference-first clip may use an accepted saved boundary frame, but label it as a chained clip rather than native-extension proof.
+
+## Sequential extension
+
+Do not compile an extension from the planned shot alone. First inspect the actual final frame of the accepted render, then encode that evidence in a continuation contract:
+
+```bash
+npx auteur-frameworks continue examples/continuation.json --out continuation-prompt.json
+```
+
+The compiler front-loads a frame-zero match instruction and a single-camera-path guard. These attempt to preserve the accepted boundary and require every later composition to be reached through visible camera motion rather than a hidden coverage cut. They are instructions, not provider guarantees: the tested Flow extension restaged frame zero in one cycle even though later motion continuity improved. Inspect every returned boundary before accepting or extending it again.
+
+When speech is required, attach a `dialogueCue` with a time window, speaker, delivery, and mix priority. The compiler quotes the line exactly once and forbids paraphrase, repetition, substitution, and generated subtitles. Verify intelligibility from the returned audio; stream presence alone is not dialogue proof.
+
+The contract requires:
+
+- the exact observed final frame and preserved visible state;
+- one irreversible motion that begins inside the first two seconds;
+- the source geometry, transition mechanism, destination geometry, and physical camera path;
+- physics invariants and a new final-frame handoff.
+
+Submit only `prompt` from the compiled result through the provider's supported extension control. If the provider repeats the boundary, cuts, dissolves, teleports, or morphs into the destination, record `CONTINUATION_BRIDGE_BREAK` and repair the first motion or spatial bridge without redesigning the later shot.
+
 Provider models, controls, costs, and capabilities change. Treat the interface shown at runtime as provider evidence for that session, not as a permanent compiler rule.
+
+Text-only mode is not the default for every shot. The route advisor isolates delayed terminal inventory into a terminal-free pre-reveal pass and a render-observed continuation; marks causal contact and precise assembly for first/last-frame workflows; sends exact fluid counts to split passes; and routes identity or blank-surface control to reference-first workflows. If the selected provider cannot support that route, keep capability `UNKNOWN`, warn the user, and do not silently claim the prompt can enforce it.
+
+For `DELAYED_TERMINAL_REVEAL`, do not dispatch the original shot prompt. Dispatch `buildDelayedRevealSplitPlan(...).preReveal.prompts.videoPrompt` first and verify that neither the prompt nor any returned frame contains terminal-only inventory. Only after that render passes may the host describe its actual last frame and call `compileContinuationPrompt` for the reveal extension.
 
 ## Result review
 
@@ -48,3 +90,5 @@ Record:
 - repair decision.
 
 Never place credentials, account identifiers, private source paths, or customer media inside the Universal Packet.
+
+For A-roll, call `planARollPostflight` after transcript, identity, fine lip-sync, terminal-frame, and loudness inspection. Failed exact dialogue, identity, or fine lip sync requires regeneration. A failed terminal boundary may be salvaged only when a consecutive post-speech stable span of at least three decoded frames is proven; one transient closed-mouth frame is not continuation evidence. The returned trim time preserves the full floating-point duration of the last stable frame at the observed frame rate. A timestamp too close to the clip end to preserve that frame routes to manual review instead of being silently clamped. Loudness repair is deterministic mastering, followed by a new integrated-LUFS and true-peak measurement. `SALVAGE_AND_REVIEW` never authorizes continuation by itself: re-audit the finished asset first.

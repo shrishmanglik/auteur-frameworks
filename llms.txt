@@ -1,6 +1,6 @@
 # AUTEUR Frameworks
 
-Provider-neutral TypeScript framework for turning production intent into a Universal Packet, storyboard panels, prompt packages, pre-flight QC, and constrained repair prompts.
+Provider-neutral TypeScript framework for turning production intent into a complete production kit: story, storyboards, assets, prompts, routing, continuity, QC, and repair.
 
 Install:
 npm install github:shrishmanglik/auteur-frameworks#main
@@ -10,32 +10,42 @@ Primary CLI flow:
 2. Send systemInstruction, userBrief, and responseSchema to a structured-output LLM.
 3. Save the returned Universal Packet as production.json.
 4. auteur-frameworks validate production.json
-5. auteur-frameworks preflight production.json
-6. auteur-frameworks storyboard production.json --out storyboard.json
-7. auteur-frameworks compile production.json --out prompt-package.json
+5. auteur-frameworks kit production.json --out production-kit.json
+6. Resolve pre-flight errors and required high-risk reference assets.
+7. After inspecting a real final frame, auteur-frameworks continue continuation.json --out continuation-prompt.json
 
 Rules for agents:
 - Treat model output as untrusted until validate and preflight pass.
 - Structured data is the source; prompts and storyboards are projections.
 - Do not invent provider limits, pricing, audio support, or API behavior.
 - Keep global exclusions and continuity locks attached to every shot.
+- Declare shot characterIds and generationRisks explicitly; preserve missing cast ownership as UNKNOWN.
+- Submit the framework-native videoPrompt by default. Use compactVideoPrompt only when compactPromptReport confirms frameworkPreserved=true with no truncated sections or omitted safeguards.
+- Follow each shot's route advice; do not force high-risk assembly, contact, or exact fluid counts through text-only mode.
 - Use one constrained repair per observed defect.
+- Compile extensions from observed final-frame state, a first-motion deadline, and a physical spatial bridge.
 - Never place credentials, private paths, customer media, or private prompts in packets.
 
 Documentation:
 - README.md
 - docs/quickstart.md
 - docs/architecture.md
+- docs/framework-architectures.md
 - docs/llm-integration.md
 - docs/provider-handoff.md
 - docs/evaluation.md
 - docs/research-boundary.md
+- skills/auteur-flow-a-roll-validation/SKILL.md
 
 Public API modules:
 - src/schemas.ts
 - src/frameworks.ts
+- src/framework-prompt.ts
 - src/development.ts
 - src/compiler.ts
+- src/continuation.ts
 - src/storyboard.ts
+- src/production-kit.ts
+- src/route-advisor.ts
 - src/qc.ts
 - src/repair.ts

@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "1.0.0",
+  "observedAt": "2026-07-22",
+  "scope": "Six unique eight-second A-roll provider returns from one bounded avatar lineage",
+  "evidenceClass": "AUTHENTICATED_PROVIDER_RENDER_PLUS_LOCAL_MEASUREMENT",
+  "privacyBoundary": "Aggregate measurements only; no raw corpus prompts, private identifiers, or provider credentials",
+  "method": {
+    "mediaIntegrity": "ffprobe on every unique file",
+    "dialogue": "VAD-enabled faster-whisper base.en transcription",
+    "visual": "one-frame-per-second contact sheets plus four-frame terminal sheets from 7.00-8.00 seconds",
+    "audio": "ffmpeg loudnorm full-clip measurement; return 6 was independently cross-checked with ebur128",
+    "pitch": "band-limited autocorrelation estimate; approximate, not biometric identification",
+    "fineLipSync": "UNKNOWN; no validated fine audiovisual alignment measurement was available"
+  },
+  "aggregate": {
+    "uniqueRenders": 6,
+    "durationSecondsEach": 8,
+    "resolution": "1280x720",
+    "frameRateFps": 24,
+    "exactCurrentDialoguePasses": 2,
+    "broadIdentityAndSetStabilityPasses": 6,
+    "terminalMouthReopenFailures": 6,
+    "fineLipSyncStatus": "UNKNOWN",
+    "integratedLufsRange": [-19.84, -15.46],
+    "truePeakDbfsRange": [-3.03, -0.14],
+    "approximateMedianPitchHzRange": [108.1, 124.0],
+    "audioReconciliation": "The earlier -22.59 LUFS / -2.84 dBFS note for return 6 is superseded. Full-clip remeasurement of the same source produced loudnorm input -19.52 LUFS / -2.79 dBTP and an independent ebur128 cross-check of -19.1 LUFS / -2.8 dBTP."
+  },
+  "runs": [
+    {"id": "a-roll-01", "speechEndSeconds": 7.22, "integratedLufs": -16.26, "truePeakDbfs": -0.14, "medianPitchHzApprox": 108.1, "terminalMouthReopened": true},
+    {"id": "a-roll-02", "speechEndSeconds": 6.90, "integratedLufs": -15.46, "truePeakDbfs": -0.38, "medianPitchHzApprox": 119.4, "terminalMouthReopened": true},
+    {"id": "a-roll-03", "speechEndSeconds": 6.42, "integratedLufs": -16.27, "truePeakDbfs": -0.15, "medianPitchHzApprox": 115.9, "terminalMouthReopened": true},
+    {"id": "a-roll-04", "speechEndSeconds": 6.83, "integratedLufs": -17.75, "truePeakDbfs": -3.03, "medianPitchHzApprox": 124.0, "terminalMouthReopened": true},
+    {"id": "a-roll-05", "speechEndSeconds": 6.16, "integratedLufs": -19.84, "truePeakDbfs": -0.36, "medianPitchHzApprox": 122.1, "terminalMouthReopened": true},
+    {"id": "a-roll-06", "speechEndSeconds": 5.72, "integratedLufs": -19.52, "truePeakDbfs": -2.79, "medianPitchHzApprox": 115.9, "terminalMouthReopened": true, "boundedHandGestureObserved": true}
+  ],
+  "decision": {
+    "promptOnlyTerminalRepair": "STOPPED",
+    "rawContinuationAllowed": false,
+    "salvageRule": "Require at least three consecutive post-speech stable frames, then trim after the last proven stable frame, master audio, and re-audit",
+    "remainingUnknowns": ["fine audiovisual lip sync", "subjective voice match", "provider adherence after derived trim/master"]
+  }
+}

@@ -5,7 +5,7 @@ import path from "node:path";
 
 const root = process.cwd();
 const npmCli = process.env.npm_execpath;
-const allowedRoots = ["dist/", "docs/", "examples/", "schemas/", "src/"];
+const allowedRoots = ["dist/", "docs/", "examples/", "schemas/", "skills/", "src/"];
 const allowedRootFiles = new Set([
   "CONTRIBUTING.md",
   "CHANGELOG.md",
@@ -25,8 +25,12 @@ const requiredFiles = new Set([
   "dist/cli.js",
   "dist/index.d.ts",
   "dist/index.js",
+  "dist/production-kit.js",
+  "dist/route-advisor.js",
   "CITATION.cff",
   "docs/quickstart.md",
+  "docs/production-kit.md",
+  "docs/evidence/flow-rapid-matrix-2026-07-21.json",
   "docs/llm-integration.md",
   "examples/a-roll.json",
   "examples/product-film.json",
@@ -34,6 +38,7 @@ const requiredFiles = new Set([
   "examples/vertical-reel.json",
   "GOVERNANCE.md",
   "llms.txt",
+  "skills/auteur-flow-a-roll-validation/SKILL.md",
   "SUPPORT.md",
 ]);
 const bannedExtensions = new Set([
@@ -106,6 +111,18 @@ for (const entry of packedFiles) {
 
 for (const required of requiredFiles) {
   if (!packedPaths.has(required)) errors.push(`${required}: required package entrypoint is missing`);
+}
+
+const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
+const citation = fs.readFileSync(path.join(root, "CITATION.cff"), "utf8");
+const citationVersion = citation.match(/^version:\s*([^\s]+)\s*$/m)?.[1];
+const sourceVersion = fs.readFileSync(path.join(root, "src", "version.ts"), "utf8")
+  .match(/PACKAGE_VERSION\s*=\s*"([^"]+)"/)?.[1];
+if (citationVersion !== packageJson.version) {
+  errors.push(`CITATION.cff: version ${citationVersion ?? "missing"} does not match package ${packageJson.version}`);
+}
+if (sourceVersion !== packageJson.version) {
+  errors.push(`src/version.ts: version ${sourceVersion ?? "missing"} does not match package ${packageJson.version}`);
 }
 
 const license = fs.readFileSync(path.join(root, "LICENSE"), "utf8");

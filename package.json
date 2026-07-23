@@ -1,7 +1,7 @@
 {
   "name": "auteur-frameworks",
-  "version": "0.2.0",
-  "description": "Provider-neutral frameworks and deterministic tooling for cinematic AI content planning, prompt compilation, continuity, QC, and repair.",
+  "version": "0.9.1",
+  "description": "Provider-neutral AI video production framework for story, storyboards, assets, prompts, routing, continuity, QC, and repair.",
   "type": "module",
   "license": "Apache-2.0",
   "engines": {
@@ -24,6 +24,7 @@
     "schemas",
     "docs",
     "examples",
+    "skills",
     "CHANGELOG.md",
     "CITATION.cff",
     "CODE_OF_CONDUCT.md",

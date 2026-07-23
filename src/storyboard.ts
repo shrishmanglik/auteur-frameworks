@@ -7,6 +7,9 @@ export interface StoryboardPanel {
   sceneId: string;
   title: string;
   durationSeconds: number;
+  openingFramePrompt: string;
+  terminalFramePrompt: string;
+  /** Back-compatible alias for openingFramePrompt. */
   framePrompt: string;
   action: string;
   camera: string;
@@ -28,6 +31,8 @@ export function buildStoryboard(input: unknown): StoryboardPanel[] {
       sceneId: shot.sceneId,
       title: shot.title,
       durationSeconds: shot.durationSeconds,
+      openingFramePrompt: compiled.openingFramePrompt,
+      terminalFramePrompt: compiled.terminalFramePrompt,
       framePrompt: compiled.framePrompt,
       action: shot.action,
       camera: shot.camera.shotType + "; " + shot.camera.movement,

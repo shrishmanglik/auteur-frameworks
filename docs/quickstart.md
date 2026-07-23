@@ -20,18 +20,18 @@ The Git dependency builds itself during installation. No global package install 
 ## Compile a known-good production
 
 ```bash
-npx auteur-frameworks preflight \
-  node_modules/auteur-frameworks/examples/product-film.json
-
-npx auteur-frameworks compile \
+npx auteur-frameworks kit \
   node_modules/auteur-frameworks/examples/product-film.json \
-  --out prompt-package.json
+  --out production-kit.json
 ```
 
-Open `prompt-package.json`. Each shot contains:
+Open `production-kit.json`. It contains the full story-to-repair handoff. Prompt surfaces live under `shotList[n].prompts`:
 
 - `videoPrompt`
-- `framePrompt`
+- `compactVideoPrompt`
+- `compactPromptReport`
+- `openingFramePrompt` (`framePrompt` is its backwards-compatible alias)
+- `terminalFramePrompt`
 - `audioPrompt`
 - `negativePrompt`
 - `qcIssues`
@@ -48,9 +48,7 @@ Send the contract's `systemInstruction`, `userBrief`, and `responseSchema` to a 
 
 ```bash
 npx auteur-frameworks validate production.json
-npx auteur-frameworks preflight production.json
-npx auteur-frameworks storyboard production.json --out storyboard.json
-npx auteur-frameworks compile production.json --out prompt-package.json
+npx auteur-frameworks kit production.json --out production-kit.json
 ```
 
 Do not skip pre-flight. A successful schema parse proves shape; pre-flight checks relationships, timing, production duration, continuity, audio, and known generation risks.
@@ -58,12 +56,11 @@ Do not skip pre-flight. A successful schema parse proves shape; pre-flight check
 ## Use from TypeScript
 
 ```ts
-import { compilePacket, parseUniversalPacket, preflightPacket } from "auteur-frameworks";
+import { buildProductionKit, parseUniversalPacket } from "auteur-frameworks";
 
 const packet = parseUniversalPacket(input);
-const report = preflightPacket(packet);
-if (!report.passed) throw new Error(JSON.stringify(report.issues));
-const compiled = compilePacket(packet);
+const kit = buildProductionKit(packet);
+if (!kit.preflight.passed) throw new Error(JSON.stringify(kit.preflight.issues));
 ```
 
 ## Next

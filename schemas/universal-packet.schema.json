@@ -83,10 +83,7 @@
         "aspectRatio",
         "targetDurationSeconds",
         "audience",
-        "tone",
-        "providerTarget",
-        "continuityStrictness",
-        "audioRequired"
+        "tone"
       ],
       "additionalProperties": false
     },
@@ -180,8 +177,7 @@
           "id",
           "name",
           "role",
-          "identityLock",
-          "wardrobeLock"
+          "identityLock"
         ],
         "additionalProperties": false
       }
@@ -250,6 +246,34 @@
             "type": "string",
             "minLength": 1
           },
+          "characterIds": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "generationRisks": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "CAUSAL_CONTACT_CHOREOGRAPHY",
+                "PRECISE_MECHANICAL_ASSEMBLY",
+                "MULTI_SUBJECT_DYNAMICS",
+                "PRECISE_SPATIAL_CLEARANCE",
+                "EXACT_FLUID_COUNT",
+                "BRAND_OR_TEXT_CONTROL",
+                "IDENTITY_OR_PERFORMANCE",
+                "DELAYED_TERMINAL_REVEAL",
+                "TRANSFORMATION_PHASES",
+                "EXACT_DIALOGUE_AUDIO",
+                "AUDIO_ACTION_SYNCHRONIZATION"
+              ]
+            }
+          },
           "durationSeconds": {
             "type": "number",
             "exclusiveMinimum": 0,
@@ -270,6 +294,147 @@
           "environment": {
             "type": "string",
             "minLength": 1
+          },
+          "frameStates": {
+            "default": {},
+            "type": "object",
+            "properties": {
+              "opening": {
+                "type": "object",
+                "properties": {
+                  "subject": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "action": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "environment": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "visibleInventory": {
+                    "default": [],
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "lighting": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "paletteBase": {
+                    "default": [],
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "materials": {
+                    "default": [],
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "imperfectionAnchors": {
+                    "default": [],
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "continuityLocks": {
+                    "default": [],
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                },
+                "required": [
+                  "subject",
+                  "action",
+                  "environment"
+                ],
+                "additionalProperties": false
+              },
+              "terminal": {
+                "type": "object",
+                "properties": {
+                  "subject": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "action": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "environment": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "visibleInventory": {
+                    "default": [],
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "lighting": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "paletteBase": {
+                    "default": [],
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "materials": {
+                    "default": [],
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "imperfectionAnchors": {
+                    "default": [],
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "continuityLocks": {
+                    "default": [],
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                },
+                "required": [
+                  "subject",
+                  "action",
+                  "environment"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
           },
           "camera": {
             "type": "object",
@@ -323,6 +488,39 @@
                   "subjectDistanceMeters"
                 ],
                 "additionalProperties": false
+              },
+              "capture": {
+                "default": {},
+                "type": "object",
+                "properties": {
+                  "sensorFormat": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "recordingFormat": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "rig": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "frameRateFps": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "maximum": 1000
+                  },
+                  "shutterAngleDegrees": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "maximum": 360
+                  },
+                  "resolutionIntent": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "additionalProperties": false
               }
             },
             "required": [
@@ -365,9 +563,7 @@
             "required": [
               "primarySource",
               "motivation",
-              "paletteBase",
-              "isDesaturated",
-              "isCrushedBlacks"
+              "paletteBase"
             ],
             "additionalProperties": false
           },
@@ -430,6 +626,233 @@
               "minLength": 1
             }
           },
+          "performance": {
+            "default": {},
+            "type": "object",
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "restrained-stillness",
+                  "facial-only",
+                  "single-gesture",
+                  "posture-shift",
+                  "object-interaction"
+                ]
+              },
+              "basePosture": {
+                "type": "string",
+                "minLength": 1
+              },
+              "eyeLine": {
+                "type": "string",
+                "minLength": 1
+              },
+              "deliveryStyle": {
+                "type": "string",
+                "minLength": 1
+              },
+              "lipArticulationStyle": {
+                "type": "string",
+                "minLength": 1
+              },
+              "headMovementMaxDegrees": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 45
+              },
+              "jawMovementMaxDeviationMm": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 25
+              },
+              "emotionalExpressionSource": {
+                "type": "string",
+                "minLength": 1
+              },
+              "facialBiomechanics": {
+                "type": "object",
+                "properties": {
+                  "jawBehavior": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "lipBehavior": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "cheekBehavior": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "teethBehavior": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "blinkBehavior": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "skinBehavior": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "hairBehavior": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "additionalProperties": false
+              },
+              "freezePadFramesAtEnd": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 240
+              },
+              "gestureBounds": {
+                "type": "object",
+                "properties": {
+                  "handsEnabled": {
+                    "type": "boolean"
+                  },
+                  "amplitudeDegreesMax": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 30
+                  },
+                  "ratePer8SecondsMax": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 12
+                  },
+                  "style": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "additionalProperties": false
+              },
+              "headMotion": {
+                "type": "object",
+                "properties": {
+                  "yawDegreesMax": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 45
+                  },
+                  "pitchDegreesMax": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 45
+                  },
+                  "nodsMax": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 12
+                  }
+                },
+                "additionalProperties": false
+              },
+              "bodyMotion": {
+                "type": "object",
+                "properties": {
+                  "postureShift": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "breathingPattern": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "breathsPerMinute": {
+                    "type": "number",
+                    "minimum": 4,
+                    "maximum": 40
+                  }
+                },
+                "additionalProperties": false
+              },
+              "gestureCues": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "timeSeconds": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 300
+                    },
+                    "keyword": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "hand": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "type": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "scale": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "durationSeconds": {
+                      "type": "number",
+                      "exclusiveMinimum": 0,
+                      "maximum": 4
+                    },
+                    "purpose": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "timeSeconds",
+                    "type"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "microExpressionCues": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "timeSeconds": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 300
+                    },
+                    "keyword": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "action": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "intensity": {
+                      "default": "restrained",
+                      "type": "string",
+                      "enum": [
+                        "barely-perceptible",
+                        "restrained",
+                        "visible"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "timeSeconds",
+                    "action"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false
+          },
           "audioTrack": {
             "default": {
               "soundDesignDirectives": []
@@ -439,6 +862,24 @@
               "spokenText": {
                 "type": "string",
                 "minLength": 1
+              },
+              "spokenWindow": {
+                "type": "object",
+                "properties": {
+                  "startSeconds": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "endSeconds": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": [
+                  "startSeconds",
+                  "endSeconds"
+                ],
+                "additionalProperties": false
               },
               "soundDesignDirectives": {
                 "default": [],
@@ -451,11 +892,152 @@
               "musicDirective": {
                 "type": "string",
                 "minLength": 1
+              },
+              "voiceProfileId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "language": {
+                "type": "string",
+                "minLength": 1
+              },
+              "paceWpm": {
+                "type": "number",
+                "minimum": 60,
+                "maximum": 240
+              },
+              "deliveryStyle": {
+                "type": "string",
+                "minLength": 1
+              },
+              "accent": {
+                "type": "string",
+                "minLength": 1
+              },
+              "basePitchHz": {
+                "type": "number",
+                "minimum": 40,
+                "maximum": 600
+              },
+              "pitchRangeHz": {
+                "type": "object",
+                "properties": {
+                  "min": {
+                    "type": "number",
+                    "minimum": 40,
+                    "maximum": 600
+                  },
+                  "max": {
+                    "type": "number",
+                    "minimum": 40,
+                    "maximum": 600
+                  }
+                },
+                "required": [
+                  "min",
+                  "max"
+                ],
+                "additionalProperties": false
+              },
+              "speechRateTolerancePercent": {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 25
+              },
+              "vocalDynamicsDb": {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 30
+              },
+              "breathPattern": {
+                "type": "string",
+                "minLength": 1
+              },
+              "personaTone": {
+                "type": "string",
+                "minLength": 1
+              },
+              "cadenceStyle": {
+                "type": "string",
+                "minLength": 1
+              },
+              "articulation": {
+                "type": "string",
+                "minLength": 1
+              },
+              "intonationNotes": {
+                "type": "string",
+                "minLength": 1
+              },
+              "timbre": {
+                "type": "string",
+                "minLength": 1
+              },
+              "micStyle": {
+                "type": "string",
+                "minLength": 1
+              },
+              "roomTone": {
+                "type": "string",
+                "minLength": 1
+              },
+              "emphasisCues": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "word": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "pitchBoostPercent": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 25
+                    },
+                    "stress": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "word"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "phonemeToleranceMs": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 250
+              },
+              "lipSyncConfidenceMin": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "mix": {
+                "type": "object",
+                "properties": {
+                  "integratedLufs": {
+                    "type": "number",
+                    "minimum": -70,
+                    "maximum": 0
+                  },
+                  "truePeakDbfsMax": {
+                    "type": "number",
+                    "minimum": -20,
+                    "maximum": 0
+                  },
+                  "stereoWidth": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "additionalProperties": false
               }
             },
-            "required": [
-              "soundDesignDirectives"
-            ],
+            "required": [],
             "additionalProperties": false
           },
           "dialogue": {
@@ -491,12 +1073,8 @@
           "camera",
           "lighting",
           "physics",
-          "materials",
           "beats",
           "continuityLocks",
-          "imperfectionAnchors",
-          "audioTrack",
-          "exclusions",
           "frameworkId"
         ],
         "additionalProperties": false
@@ -523,11 +1101,9 @@
     "schemaVersion",
     "metadata",
     "story",
-    "characters",
     "scenes",
     "shots",
-    "globalStyle",
-    "globalExclusions"
+    "globalStyle"
   ],
   "additionalProperties": false
 }

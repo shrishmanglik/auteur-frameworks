@@ -1,0 +1,6 @@
+interface:
+  display_name: "AUTEUR Flow A-roll Validation"
+  short_description: "Audit and chain evidence-bound A-roll shots"
+  default_prompt: "Use $auteur-flow-a-roll-validation to dispatch and audit one framework-native A-roll segment before continuing."
+policy:
+  allow_implicit_invocation: true
