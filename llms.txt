@@ -14,6 +14,13 @@ Primary CLI flow:
 6. Resolve pre-flight errors and required high-risk reference assets.
 7. After inspecting a real final frame, auteur-frameworks continue continuation.json --out continuation-prompt.json
 
+MCP (preferred for agent runtimes):
+Attach the stdio server with {"command": "npx", "args": ["auteur-frameworks", "mcp"]}.
+Protocol 2024-11-05. Tools: auteur_frameworks, auteur_develop, auteur_validate,
+auteur_preflight, auteur_storyboard, auteur_compile, auteur_kit, auteur_continue,
+auteur_score_render, auteur_compare_renders. Failures return isError with the
+field-level validation message; correct the packet and retry.
+
 Rules for agents:
 - Treat model output as untrusted until validate and preflight pass.
 - Structured data is the source; prompts and storyboards are projections.

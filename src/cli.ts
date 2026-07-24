@@ -12,6 +12,7 @@ import { PACKAGE_VERSION } from "./version.js";
 import { compareRenderCycles, scoreRender } from "./evaluation.js";
 import { compileContinuationPrompt } from "./continuation.js";
 import { buildProductionKit } from "./production-kit.js";
+import { runMcpServer } from "./mcp.js";
 
 export interface CliIo {
   stdout: (value: string) => void;
@@ -42,6 +43,7 @@ Commands:
   continue <input.json>   Compile a render-observed extension prompt
   score-render <observation.json>  Score an observed provider result
   compare-renders <before.json> <after.json>  Measure cycle improvement
+  mcp                     Start the MCP stdio server for agent runtimes
   help                    Show this guide
   version                 Print the package version
 
@@ -92,6 +94,12 @@ export function runCli(args: string[], io: CliIo = defaultIo): number {
   try {
     if (command === "frameworks") {
       writeJson(FRAMEWORKS, outputPath, io);
+      return 0;
+    }
+
+    if (command === "mcp") {
+      // Long-running stdio loop; it owns the process until stdin closes.
+      runMcpServer(process.stdin, io);
       return 0;
     }
 

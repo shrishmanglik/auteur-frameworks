@@ -13,3 +13,4 @@ export * from "./evaluation.js";
 export * from "./route-advisor.js";
 export * from "./reveal-plan.js";
 export * from "./production-kit.js";
+export * from "./mcp.js";
