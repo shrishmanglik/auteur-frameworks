@@ -47,6 +47,33 @@ The output includes the creative brief, story, scene plan, character and world b
 
 > npm registry publication is intentionally deferred while the public API stabilizes. Git installs run the package build automatically.
 
+## Calling AUTEUR from agents (MCP)
+
+AUTEUR ships a dependency-free MCP stdio server, so any MCP-capable client (Claude Code,
+Cursor, Codex, custom orchestrators) can call the projections directly instead of shelling
+out and managing temporary files:
+
+```jsonc
+// .mcp.json in your project
+{
+  "mcpServers": {
+    "auteur": {
+      "command": "npx",
+      "args": ["auteur-frameworks", "mcp"]
+    }
+  }
+}
+```
+
+Exposed tools: `auteur_frameworks`, `auteur_develop`, `auteur_validate`,
+`auteur_preflight`, `auteur_storyboard`, `auteur_compile`, `auteur_kit`,
+`auteur_continue`, `auteur_score_render`, `auteur_compare_renders`.
+
+Every tool wraps the same function the CLI uses, so the two surfaces cannot drift.
+Validation failures are returned as `isError: true` results carrying the field-level
+message, so an agent can correct the packet and retry. The server still never calls an
+LLM or a generation provider.
+
 ## Start from a raw idea
 
 Use a development request to create a schema-bound contract for any structured-output LLM:
