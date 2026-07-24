@@ -29,9 +29,50 @@ for (const relative of markdownFiles) {
   }
 }
 
+// Framework-count drift guard.
+// The README badge, the README framework table, and the FRAMEWORKS registry must agree.
+// The badge is the first thing a visitor reads, so a stale number there is a public defect.
+const frameworkSource = fs.readFileSync(path.join(root, "src", "frameworks.ts"), "utf8");
+const registryCount = [...frameworkSource.matchAll(/^ {4}id: "/gm)].length;
+
+const readme = fs.readFileSync(path.join(root, "README.md"), "utf8");
+const badgeMatch = readme.match(/!\[Frameworks: (\d+)\]\(https:\/\/img\.shields\.io\/badge\/frameworks-(\d+)-/);
+
+if (registryCount === 0) {
+  errors.push("frameworks.ts: could not count registry entries; update the drift guard in check-doc-links.mjs");
+} else if (!badgeMatch) {
+  errors.push("README.md: framework count badge not found or its format changed");
+} else {
+  const [, badgeLabel, badgeValue] = badgeMatch;
+  if (badgeLabel !== badgeValue) {
+    errors.push(`README.md: framework badge label (${badgeLabel}) and image value (${badgeValue}) disagree`);
+  }
+  if (Number(badgeValue) !== registryCount) {
+    errors.push(
+      `README.md: framework badge says ${badgeValue} but src/frameworks.ts defines ${registryCount} frameworks`
+    );
+  }
+
+  // Bound the section at the next h2 so later tables in the README are not counted.
+  const afterHeading = readme.split(/^## Frameworks$/m)[1] ?? "";
+  const tableSection = afterHeading.split(/^## /m)[0] ?? "";
+  const tableRows = [...tableSection.matchAll(/^\| (?!---)(?!Framework \|)/gm)].length;
+  if (tableRows !== registryCount) {
+    errors.push(
+      `README.md: framework table lists ${tableRows} rows but src/frameworks.ts defines ${registryCount} frameworks`
+    );
+  }
+}
+
 if (errors.length) {
   console.error(JSON.stringify({ passed: false, errors }, null, 2));
   process.exit(1);
 }
 
-console.log(JSON.stringify({ passed: true, markdownFiles: markdownFiles.length, linksChecked }, null, 2));
+console.log(
+  JSON.stringify(
+    { passed: true, markdownFiles: markdownFiles.length, linksChecked, frameworkCount: registryCount },
+    null,
+    2
+  )
+);

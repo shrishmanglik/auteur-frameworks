@@ -1,9 +1,9 @@
-# AUTEUR Frameworks
+﻿# AUTEUR Frameworks
 
 [![CI](https://github.com/shrishmanglik/auteur-frameworks/actions/workflows/ci.yml/badge.svg)](https://github.com/shrishmanglik/auteur-frameworks/actions/workflows/ci.yml)
 [![Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Node 20+](https://img.shields.io/badge/node-%3E%3D20-339933.svg)](package.json)
-[![Frameworks: 10](https://img.shields.io/badge/frameworks-10-F59E0B.svg)](#frameworks)
+[![Frameworks: 11](https://img.shields.io/badge/frameworks-11-F59E0B.svg)](#frameworks)
 
 **Turn an idea into one complete AI-video production kit: story, scenes, shot list, storyboard, references, sound, prompts, route decisions, pre-flight, and repair.**
 
