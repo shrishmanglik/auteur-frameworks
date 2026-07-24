@@ -31,8 +31,8 @@ Development requests accept and deterministically route every current AUTEUR for
 Requirements: Node.js 20 or newer.
 
 ```bash
-# Install directly from the public GitHub repository.
-npm install github:shrishmanglik/auteur-frameworks#main
+# Install directly from the public GitHub repository, pinned to a released tag.
+npm install github:shrishmanglik/auteur-frameworks#v0.9.1
 
 # See every command.
 npx auteur-frameworks help
@@ -46,6 +46,10 @@ npx auteur-frameworks kit \
 The output includes the creative brief, story, scene plan, character and world bibles, style bible, visual storyboard, shot list, sound plan, continuity matrix, reference-asset manifest, route advice, generation prompts, pre-flight, repair catalog, and export manifest.
 
 > npm registry publication is intentionally deferred while the public API stabilizes. Git installs run the package build automatically.
+>
+> **Pin a tag.** `#v0.9.1` is immutable and reproducible. `#main` tracks unreleased work and
+> can change under you — use it only when you specifically want the development tip.
+> Published tags are listed under [releases](https://github.com/shrishmanglik/auteur-frameworks/tags).
 
 ## Calling AUTEUR from agents (MCP)
 
