@@ -1,6 +1,6 @@
 ﻿# AUTEUR Frameworks
 
-[![CI](https://github.com/shrishmanglik/auteur-frameworks/actions/workflows/ci.yml/badge.svg)](https://github.com/shrishmanglik/auteur-frameworks/actions/workflows/ci.yml)
+[![CI](https://github.com/shrishmanglik/auteur-frameworks/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/shrishmanglik/auteur-frameworks/actions/workflows/ci.yml?query=branch%3Amain+event%3Apush)
 [![Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Node 20+](https://img.shields.io/badge/node-%3E%3D20-339933.svg)](package.json)
 [![Frameworks: 11](https://img.shields.io/badge/frameworks-11-F59E0B.svg)](#frameworks)
