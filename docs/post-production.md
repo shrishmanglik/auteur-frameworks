@@ -109,5 +109,7 @@ The full-speed playback is not redundant with frame inspection. It answers wheth
 - Captions generated inside source footage are difficult to correct. Add them externally.
 - A technically valid high-motion edit can still feel chaotic. Motion needs narrative purpose.
 - A presentation upscale can look cleaner on a 4K canvas, but it cannot restore detail that never existed.
+- A review status without a reviewer identity is not independent review.
+- A clean schema can still hide overlapping source segments unless the timeline join is checked.
 
 See the sanitized [case-study receipt](evidence/bwz-production-distillation-2026-08-06.json) for the evidence boundary behind these rules.

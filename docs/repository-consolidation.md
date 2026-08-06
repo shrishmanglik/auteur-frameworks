@@ -17,6 +17,9 @@ The earlier `auteur-os` repository is an application prototype and research surf
 | Web UI and desktop shell | `APP_ONLY` | not part of provider-neutral core; preserved in archived history |
 | Local state vault and persistence layer | `APP_ONLY` | host application responsibility, not core framework state |
 | Provider model router | `APP_ONLY` | provider capability belongs to the host and remains unknown in core |
+| Deterministic Director, route detector, screenplay and blueprint generator | `RETIRED` | the schema-bound `buildDevelopmentContract` and framework selector supersede the fixed-lens generator; the old surface mixes formulaic creative lenses, corpus-brain input and provider-specific defaults |
+| Corpus-backed safety lexicon and selector | `PRIVATE_RESEARCH_EXCLUDED` | no raw lexicon or corpus-derived selector enters the public package; safety remains explicit in packet exclusions, QC and host policy |
+| Imperfection-anchor bank and selector | `PRIVATE_RESEARCH_EXCLUDED` | the public schema, compiler and QC retain caller-authored imperfection anchors; the private bank and selector are not copied |
 | Private prompt and render brains | `PRIVATE_RESEARCH_EXCLUDED` | generalized methods only; no raw corpus, prompts, mappings or media |
 | Generated media and visual assets | `PRIVATE_RESEARCH_EXCLUDED` | no binary media in the public package |
 | Conflicting proprietary README language | `RETIRED` | canonical repository uses the verified Apache-2.0 license |

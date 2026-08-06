@@ -16,6 +16,7 @@ All notable public changes are recorded here. The project follows semantic versi
 
 - Updated the A-roll validation skill to use the smallest verified provider duration, script-once prompts, one performance cue and a separate external-edit contract.
 - Declared `auteur-frameworks` the canonical public source. Application-only and private research surfaces from the earlier repository are classified rather than raw-merged.
+- Added fail-closed joins for independent reviewer identity, terminal-failure disposition and overlapping A-roll timeline segments.
 
 ### Evidence
 

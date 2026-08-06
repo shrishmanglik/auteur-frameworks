@@ -45,6 +45,33 @@ describe("post-production contract", () => {
     expect(() => PostProductionPlanSchema.parse(bad)).toThrow(/must differ from author/);
   });
 
+  it("rejects an independent pass with no reviewer identity", () => {
+    const bad = clone();
+    delete bad.reviews.independentReviewerSessionId;
+    expect(() => PostProductionPlanSchema.parse(bad)).toThrow(/requires a different reviewer/);
+  });
+
+  it("rejects a failed terminal state mislabeled as accepted", () => {
+    const bad = clone();
+    bad.sources[0].terminalStatus = "failed";
+    bad.sources[0].disposition = "accepted";
+    expect(() => PostProductionPlanSchema.parse(bad)).toThrow(/requires regeneration/);
+  });
+
+  it("rejects overlapping A-roll timeline segments", () => {
+    const bad = clone();
+    bad.timeline.push({
+      id: "segment-02",
+      sourceClipId: "clip-01",
+      timelineStartSeconds: 5.2,
+      timelineEndSeconds: 5.4,
+      sourceInSeconds: 5.2,
+      sourceOutSeconds: 5.4,
+      phraseBoundaryStatus: "verified",
+    });
+    expect(() => PostProductionPlanSchema.parse(bad)).toThrow(/timeline overlaps/);
+  });
+
   it("rejects missing colour source and out-of-range timeline references", () => {
     const badColour = clone();
     badColour.picture.colourReferenceSourceId = "missing";

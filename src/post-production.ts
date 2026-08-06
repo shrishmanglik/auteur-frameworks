@@ -118,6 +118,7 @@ export const PostProductionPlanSchema = z.object({
     const materialFailure = source.identityStatus === "failed"
       || source.lipSyncStatus === "failed"
       || source.dialogueStatus === "failed"
+      || source.terminalStatus === "failed"
       || normalizedObserved !== normalizedApproved
       || occurrenceCount !== 1;
     if (materialFailure && source.disposition !== "regenerate") {
@@ -125,6 +126,13 @@ export const PostProductionPlanSchema = z.object({
         code: "custom",
         path: ["sources", index, "disposition"],
         message: "material identity, lip-sync, dialogue, or repetition failure requires regeneration",
+      });
+    }
+    if (source.terminalStatus === "repairable" && source.disposition === "accepted") {
+      ctx.addIssue({
+        code: "custom",
+        path: ["sources", index, "disposition"],
+        message: "a repairable terminal defect must use salvage and be re-audited",
       });
     }
   }
@@ -145,6 +153,20 @@ export const PostProductionPlanSchema = z.object({
     }
     if (segment.timelineEndSeconds > plan.outputDurationSeconds) {
       ctx.addIssue({ code: "custom", path: ["timeline", index, "timelineEndSeconds"], message: "timeline segment exceeds output duration" });
+    }
+  }
+  const orderedTimeline = plan.timeline
+    .map((segment, index) => ({ segment, index }))
+    .sort((a, b) => a.segment.timelineStartSeconds - b.segment.timelineStartSeconds);
+  for (let index = 1; index < orderedTimeline.length; index += 1) {
+    const previous = orderedTimeline[index - 1]!;
+    const current = orderedTimeline[index]!;
+    if (current.segment.timelineStartSeconds < previous.segment.timelineEndSeconds) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["timeline", current.index],
+        message: `A-roll timeline overlaps segment ${previous.segment.id}`,
+      });
     }
   }
   for (const [index, overlay] of plan.overlays.entries()) {
@@ -200,6 +222,13 @@ export const PostProductionPlanSchema = z.object({
       code: "custom",
       path: ["reviews", "independentReviewerSessionId"],
       message: "independent reviewer session must differ from author session",
+    });
+  }
+  if (plan.reviews.independentCraft === "passed" && !reviewer) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["reviews", "independentReviewerSessionId"],
+      message: "an independent craft pass requires a different reviewer session id",
     });
   }
 });
