@@ -2,10 +2,14 @@ import fs from "node:fs";
 import path from "node:path";
 import { z } from "zod";
 import { ContinuationInputSchema, UniversalPacketSchema } from "../src/schemas.js";
+import { SpokenClipPlanInputSchema } from "../src/spoken-clip.js";
+import { PostProductionPlanSchema } from "../src/post-production.js";
 
 const outputs = [
   ["universal-packet.schema.json", UniversalPacketSchema],
   ["continuation-input.schema.json", ContinuationInputSchema],
+  ["spoken-clip-plan-input.schema.json", SpokenClipPlanInputSchema],
+  ["post-production-plan.schema.json", PostProductionPlanSchema],
 ] as const;
 
 const makeDefaultedPropertiesOptional = (value: unknown): void => {

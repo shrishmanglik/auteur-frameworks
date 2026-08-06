@@ -19,16 +19,16 @@ Run one segment at a time. Never queue the next segment before the current retur
 
 1. Run toolkit validation and pre-flight. Require `compactPromptReport.frameworkPreserved === true`, no omitted exclusions, and no truncated sections.
 2. Inspect the A-Roll JSON 2.1 performance contract before dispatch:
-   - run `planARollSpeechWindow`; never stretch a short line to an arbitrary minimum duration;
+   - run `planSpokenClip` with caller-verified provider duration options; use the smallest supported container that fits the audible words and terminal settle;
+   - require the compiled prompt to contain the approved script exactly once and one performance cue;
+   - keep cadence connected while preserving sentence and paragraph thought boundaries;
+   - do not add unsupported seed, phoneme-confidence, exact-pause or provider-mix pseudo-controls;
    - require the planned window to match declared pace within the packet's tolerance while preserving terminal settle;
    - preserve lower-face proportions and phoneme-driven jaw/lip/cheek motion; never impose a low fixed jaw cap;
    - lock teeth/gums, irregular blinks, muscle-coupled skin folds, hairline, moustache, beard edge, and individual hairs;
    - select exactly one performance mode for the shot;
    - use restrained stillness when no physical action serves the sentence;
-   - allow at most one exact hand gesture in eight seconds;
-   - never encode alternatives such as `pinch or open palm`;
-   - never repeat the previous segment's gesture type;
-   - keep micro-expression cues separate from hand movement.
+   - use a gesture only when it materially serves the sentence; the one performance cue owns delivery instead of a stack of competing micro-controls.
 3. Attach the required identity or accepted boundary frame to the correct start/reference slot.
 4. Set duration and aspect explicitly. Record the provider/model label and visible cost; do not turn session observations into permanent capability claims.
 5. Put exactly one compiled prompt surface into the provider field.
@@ -58,7 +58,7 @@ Download the original asset and record its hash. Measure or inspect:
 - integrated loudness, true peak, and approximate pitch as observations, not biometric identity proof;
 - the final second at frame-level density.
 
-Use `planARollPostflight`. Exact-dialogue, identity, or proven fine-sync failure regenerates. Numeric mix miss routes to deterministic mastering and re-measurement. A terminal defect can be trimmed only when at least three consecutive post-speech frames prove a closed-lip, open-eye stable span. Re-audit the derivative before using it.
+Use `planARollPostflight`. Exact-dialogue, identity, or proven fine-sync failure regenerates. Never hide those failures with B-roll. Numeric mix miss routes to deterministic mastering and re-measurement. A terminal defect can be trimmed only when at least three consecutive post-speech frames prove a closed-lip, open-eye stable span. Re-audit the derivative before using it. Add overlays, B-roll, colour matching and delivery mastering through the separate `auteur-post-production` contract.
 
 ## Continuation gate
 

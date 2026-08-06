@@ -2,6 +2,27 @@
 
 All notable public changes are recorded here. The project follows semantic versioning while the API matures; versions below `1.0.0` may contain documented breaking changes.
 
+## 0.10.0 - 2026-08-06
+
+### Added
+
+- Added `planSpokenClip`, which counts audible words and selects the smallest caller-declared supported container. The compiled A-roll prompt contains the approved script exactly once and one performance cue.
+- Added a typed post-production plan and `auditPostProductionPlan` for content-addressed sources, phrase-safe trims, rendered-pixel overlays, narrative B-roll, transitions, picture, audio, upscale labeling, QC and separate review gates.
+- Added CLI and MCP parity through `plan-spoken`, `audit-edit`, `auteur_plan_spoken` and `auteur_audit_edit`.
+- Added synthetic spoken and post-production fixtures, generated JSON Schemas, negative controls and a detector mutation test.
+- Added the installable `auteur-post-production` skill, post-production guide, repository transfer matrix and sanitized Black & White Zebra learning receipt.
+
+### Changed
+
+- Updated the A-roll validation skill to use the smallest verified provider duration, script-once prompts, one performance cue and a separate external-edit contract.
+- Declared `auteur-frameworks` the canonical public source. Application-only and private research surfaces from the earlier repository are classified rather than raw-merged.
+
+### Evidence
+
+- An accepted application-video lineage established the generation-versus-editing boundary and source-to-delivery checks.
+- A later high-motion edit passed author deterministic QA but failed founder playback. The framework now refuses to transfer machine integrity into a creative approval claim.
+- Later semantic and cinematic experiments remain author-only evidence and are not promoted as defaults.
+
 ## 0.9.1 - 2026-07-22
 
 ### Added

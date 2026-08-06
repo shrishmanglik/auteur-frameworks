@@ -27,9 +27,13 @@ const requiredFiles = new Set([
   "dist/index.js",
   "dist/production-kit.js",
   "dist/route-advisor.js",
+  "dist/spoken-clip.js",
+  "dist/post-production.js",
   "CITATION.cff",
   "docs/quickstart.md",
   "docs/production-kit.md",
+  "docs/post-production.md",
+  "docs/repository-consolidation.md",
   "docs/evidence/flow-rapid-matrix-2026-07-21.json",
   "docs/llm-integration.md",
   "examples/a-roll.json",
@@ -39,6 +43,9 @@ const requiredFiles = new Set([
   "GOVERNANCE.md",
   "llms.txt",
   "skills/auteur-flow-a-roll-validation/SKILL.md",
+  "skills/auteur-post-production/SKILL.md",
+  "schemas/spoken-clip-plan-input.schema.json",
+  "schemas/post-production-plan.schema.json",
   "SUPPORT.md",
 ]);
 const bannedExtensions = new Set([

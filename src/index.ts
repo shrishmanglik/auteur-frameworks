@@ -14,3 +14,5 @@ export * from "./route-advisor.js";
 export * from "./reveal-plan.js";
 export * from "./production-kit.js";
 export * from "./mcp.js";
+export * from "./spoken-clip.js";
+export * from "./post-production.js";

@@ -1,0 +1,505 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "auteur-post-production/1.0"
+    },
+    "projectId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "outputDurationSeconds": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "sources": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "approvedScript": {
+            "type": "string",
+            "minLength": 1
+          },
+          "observedTranscript": {
+            "type": "string",
+            "minLength": 1
+          },
+          "durationSeconds": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "identityStatus": {
+            "type": "string",
+            "enum": [
+              "verified",
+              "failed",
+              "unknown"
+            ]
+          },
+          "lipSyncStatus": {
+            "type": "string",
+            "enum": [
+              "verified",
+              "failed",
+              "unknown"
+            ]
+          },
+          "dialogueStatus": {
+            "type": "string",
+            "enum": [
+              "verified",
+              "failed",
+              "unknown"
+            ]
+          },
+          "terminalStatus": {
+            "type": "string",
+            "enum": [
+              "verified",
+              "repairable",
+              "failed",
+              "unknown"
+            ]
+          },
+          "disposition": {
+            "type": "string",
+            "enum": [
+              "accepted",
+              "salvage",
+              "regenerate",
+              "manual-review"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "sha256",
+          "approvedScript",
+          "observedTranscript",
+          "durationSeconds",
+          "identityStatus",
+          "lipSyncStatus",
+          "dialogueStatus",
+          "terminalStatus",
+          "disposition"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "timeline": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sourceClipId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "timelineStartSeconds": {
+            "type": "number",
+            "minimum": 0
+          },
+          "timelineEndSeconds": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "sourceInSeconds": {
+            "type": "number",
+            "minimum": 0
+          },
+          "sourceOutSeconds": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "phraseBoundaryStatus": {
+            "type": "string",
+            "enum": [
+              "verified",
+              "failed",
+              "unknown"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "sourceClipId",
+          "timelineStartSeconds",
+          "timelineEndSeconds",
+          "sourceInSeconds",
+          "sourceOutSeconds",
+          "phraseBoundaryStatus"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "overlays": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1
+          },
+          "meaningUnit": {
+            "type": "string",
+            "minLength": 1
+          },
+          "startSeconds": {
+            "type": "number",
+            "minimum": 0
+          },
+          "endSeconds": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "safeAreaStatus": {
+            "type": "string",
+            "enum": [
+              "verified",
+              "failed",
+              "unknown"
+            ]
+          },
+          "renderedPixelReview": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "text",
+          "meaningUnit",
+          "startSeconds",
+          "endSeconds",
+          "safeAreaStatus",
+          "renderedPixelReview"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "bRoll": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "startSeconds": {
+            "type": "number",
+            "minimum": 0
+          },
+          "endSeconds": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "sourceKind": {
+            "type": "string",
+            "enum": [
+              "original-capture",
+              "licensed-stock",
+              "generated-image-motion",
+              "html-canvas-motion",
+              "synthetic-3d"
+            ]
+          },
+          "narrativePurpose": {
+            "type": "string",
+            "minLength": 12
+          },
+          "motionIntent": {
+            "type": "string",
+            "minLength": 8
+          },
+          "concealsMaterialARollFailure": {
+            "default": false,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "startSeconds",
+          "endSeconds",
+          "sourceKind",
+          "narrativePurpose",
+          "motionIntent"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "transitions": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "startSeconds": {
+            "type": "number",
+            "minimum": 0
+          },
+          "durationSeconds": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "maximum": 2
+          },
+          "narrativePurpose": {
+            "type": "string",
+            "minLength": 12
+          }
+        },
+        "required": [
+          "id",
+          "startSeconds",
+          "durationSeconds",
+          "narrativePurpose"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "picture": {
+      "type": "object",
+      "properties": {
+        "frameRateFps": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 240
+        },
+        "startsAtZero": {
+          "type": "boolean"
+        },
+        "fullDecodePassed": {
+          "type": "boolean"
+        },
+        "colourReferenceSourceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "colourMatchStatus": {
+          "type": "string",
+          "enum": [
+            "verified",
+            "failed",
+            "unknown"
+          ]
+        }
+      },
+      "required": [
+        "frameRateFps",
+        "startsAtZero",
+        "fullDecodePassed",
+        "colourReferenceSourceId",
+        "colourMatchStatus"
+      ],
+      "additionalProperties": false
+    },
+    "audio": {
+      "type": "object",
+      "properties": {
+        "sampleRateHz": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "channels": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "measuredIntegratedLufs": {
+          "type": "number",
+          "minimum": -70,
+          "maximum": 0
+        },
+        "measuredTruePeakDbtp": {
+          "type": "number",
+          "minimum": -20,
+          "maximum": 0
+        },
+        "targetIntegratedLufs": {
+          "default": -16,
+          "type": "number",
+          "minimum": -70,
+          "maximum": 0
+        },
+        "targetTruePeakDbtpMax": {
+          "default": -1,
+          "type": "number",
+          "minimum": -20,
+          "maximum": 0
+        },
+        "fullDecodePassed": {
+          "type": "boolean"
+        },
+        "clockSyncPassed": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "sampleRateHz",
+        "channels",
+        "measuredIntegratedLufs",
+        "measuredTruePeakDbtp",
+        "fullDecodePassed",
+        "clockSyncPassed"
+      ],
+      "additionalProperties": false
+    },
+    "delivery": {
+      "type": "object",
+      "properties": {
+        "sourceWidth": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "sourceHeight": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "outputWidth": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "outputHeight": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "resolutionClaim": {
+          "type": "string",
+          "enum": [
+            "native",
+            "presentation-upscale",
+            "same-resolution"
+          ]
+        },
+        "comparedToApprovedMaster": {
+          "type": "boolean"
+        },
+        "audioTrackHashPreserved": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "sourceWidth",
+        "sourceHeight",
+        "outputWidth",
+        "outputHeight",
+        "resolutionClaim",
+        "comparedToApprovedMaster",
+        "audioTrackHashPreserved"
+      ],
+      "additionalProperties": false
+    },
+    "qualityControl": {
+      "type": "object",
+      "properties": {
+        "perSecondInspectionCompleted": {
+          "type": "boolean"
+        },
+        "declaredBoundaryInspectionCompleted": {
+          "type": "boolean"
+        },
+        "fullSpeedPlaybackCompleted": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "perSecondInspectionCompleted",
+        "declaredBoundaryInspectionCompleted",
+        "fullSpeedPlaybackCompleted"
+      ],
+      "additionalProperties": false
+    },
+    "reviews": {
+      "type": "object",
+      "properties": {
+        "authorSessionId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "authorDeterministic": {
+          "type": "string",
+          "enum": [
+            "passed",
+            "failed",
+            "unknown",
+            "pending"
+          ]
+        },
+        "independentReviewerSessionId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "independentCraft": {
+          "type": "string",
+          "enum": [
+            "passed",
+            "failed",
+            "unknown",
+            "pending"
+          ]
+        },
+        "founderAcceptance": {
+          "type": "string",
+          "enum": [
+            "passed",
+            "failed",
+            "unknown",
+            "pending"
+          ]
+        }
+      },
+      "required": [
+        "authorSessionId",
+        "authorDeterministic",
+        "independentCraft",
+        "founderAcceptance"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "projectId",
+    "outputDurationSeconds",
+    "sources",
+    "timeline",
+    "picture",
+    "audio",
+    "delivery",
+    "qualityControl",
+    "reviews"
+  ],
+  "additionalProperties": false
+}

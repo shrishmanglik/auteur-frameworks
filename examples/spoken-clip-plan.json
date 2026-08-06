@@ -1,0 +1,9 @@
+{
+  "script": "Give me one process break and I will trace the system behind it.",
+  "performanceCue": "Dryly self-aware, connected founder cadence with restrained confidence.",
+  "supportedDurationsSeconds": [4, 6, 8, 10],
+  "paceWpm": 170,
+  "leadInSeconds": 0.15,
+  "terminalSettleSeconds": 0.55,
+  "timingSlackPercent": 8
+}

@@ -2,7 +2,7 @@
 
 The roadmap is ordered by creator and integrator value, not infrastructure novelty.
 
-## Current: 0.4
+## Current: 0.10
 
 - Universal Packet schema and JSON Schema
 - Ten production frameworks
@@ -12,6 +12,9 @@ The roadmap is ordered by creator and integrator value, not infrastructure novel
 - Multi-persona fixtures and evaluation suite
 - Git installation, CLI, TypeScript API, and agent integration guide
 - Publication-boundary and packed-consumer gates
+- Audible-word spoken-clip duration selection with caller-declared provider capability
+- Deterministic post-production plans with separate machine, independent craft and founder gates
+- Canonical repository consolidation and sanitized production-learning receipts
 
 ## Next: public API stabilization
 
