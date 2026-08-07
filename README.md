@@ -71,7 +71,8 @@ out and managing temporary files:
 
 Exposed tools: `auteur_frameworks`, `auteur_develop`, `auteur_validate`,
 `auteur_preflight`, `auteur_storyboard`, `auteur_compile`, `auteur_kit`,
-`auteur_continue`, `auteur_score_render`, `auteur_compare_renders`.
+`auteur_continue`, `auteur_score_render`, `auteur_compare_renders`,
+`auteur_plan_spoken`, `auteur_audit_edit`.
 
 Every tool wraps the same function the CLI uses, so the two surfaces cannot drift.
 Validation failures are returned as `isError: true` results carrying the field-level
@@ -116,6 +117,8 @@ auteur-frameworks kit <packet.json> [--out result.json]
 auteur-frameworks continue <continuation.json> [--out result.json]
 auteur-frameworks score-render <observation.json> [--out result.json]
 auteur-frameworks compare-renders <before.json> <after.json> [--out result.json]
+auteur-frameworks plan-spoken <input.json> [--out result.json]
+auteur-frameworks audit-edit <plan.json> [--out result.json]
 auteur-frameworks help
 auteur-frameworks version
 ```
@@ -168,6 +171,8 @@ const extension = compileContinuationPrompt(yourRenderObservedContinuation);
 - **Pre-flight QC** for temporal coverage, production duration, scene ownership, continuity, audio, typography risk, and realism anchors.
 - **Repair engine** for identity drift, anatomy, topology, object loss, broken physics, lip sync, branding, material drift, and other recurring defects.
 - **Measured refinement loop** with a typed render-observation schema, weighted scoring, a relative-improvement gate, fail-closed audio and lip-sync verification, deterministic A-roll speech-window planning, facial-biomechanics locks, and a post-flight planner that distinguishes regeneration from deterministic trim/master salvage.
+- **Spoken clip planner** that counts audible words, accepts caller-declared duration capability, selects the smallest fitting container, compiles the approved script once, and keeps one performance cue.
+- **Post-production contract** for content-addressed source clips, phrase-safe trims, selective overlays, narrative B-roll, purposeful transitions, colour matching, audio mastering, honest upscale labels, frame inspection, full-speed playback and separate human verdicts.
 - **Evidence receipts** that bind prompt and returned-media fingerprints to the observed score, normalized failure state, post-flight decision, decision reasons, field-level changes, review mode, and explicit limitations without publishing private prompts or media.
 - **Render-observed continuation compiler** with a match-frame instruction, first-motion deadline, physical spatial bridge, single-camera-path guard, time-boxed dialogue cue, and final-frame handoff. Provider output must still be audited; the instruction is not a frame-match guarantee.
 - **Four executable creator fixtures** covering a product film, short film, vertical reel, and A-roll monologue.
@@ -303,6 +308,8 @@ Runtime dependencies are audited separately in CI.
 | [`src/continuation.ts`](src/continuation.ts) | Render-observed extension compiler |
 | [`src/storyboard.ts`](src/storyboard.ts) | Storyboard panel projection |
 | [`src/production-kit.ts`](src/production-kit.ts) | Complete production-kit projection |
+| [`src/spoken-clip.ts`](src/spoken-clip.ts) | Audible-word duration selection and script-once A-roll prompt |
+| [`src/post-production.ts`](src/post-production.ts) | Deterministic source-to-delivery edit-plan audit |
 | [`src/route-advisor.ts`](src/route-advisor.ts) | Risk-aware generation-route and asset advice |
 | [`src/qc.ts`](src/qc.ts) | Pre-flight checks and corrective actions |
 | [`src/repair.ts`](src/repair.ts) | Constrained failure repair |
@@ -318,6 +325,8 @@ Runtime dependencies are audited separately in CI.
 - [LLM integration](docs/llm-integration.md)
 - [Provider handoff](docs/provider-handoff.md)
 - [Production kit](docs/production-kit.md)
+- [Spoken A-roll and post-production](docs/post-production.md)
+- [Repository consolidation](docs/repository-consolidation.md)
 - [Evaluation methodology](docs/evaluation.md)
 - [Research and publication boundary](docs/research-boundary.md)
 - [Contributing](CONTRIBUTING.md)
@@ -334,7 +343,7 @@ Start with [CONTRIBUTING.md](CONTRIBUTING.md) or open a [framework proposal](htt
 
 ## Status
 
-Version `0.9.1` is an early public API. Provider adapters and commercial execution remain outside core. Breaking changes will be documented in [CHANGELOG.md](CHANGELOG.md) until the API reaches `1.0.0`.
+Version `0.10.0` on `main` is an early public API. The latest immutable release tag remains `v0.9.1` until a maintainer publishes a reviewed release. Provider adapters and commercial execution remain outside core. Breaking changes will be documented in [CHANGELOG.md](CHANGELOG.md) until the API reaches `1.0.0`.
 
 ## License and citation
 

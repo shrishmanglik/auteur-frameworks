@@ -1,0 +1,133 @@
+{
+  "schema": "auteur-sanitized-production-distillation/1.0",
+  "project": "Black & White Zebra application response video",
+  "evidenceBoundary": {
+    "included": [
+      "generalized production decisions",
+      "accepted-versus-rejected review states",
+      "deterministic gate classes"
+    ],
+    "excluded": [
+      "raw prompts",
+      "spoken script bodies",
+      "generated media",
+      "private filesystem paths",
+      "provider account identifiers"
+    ]
+  },
+  "sourceRegistry": [
+    {
+      "id": "BWZ-S01",
+      "sourceClass": "accepted-v4.1-automated-qa-receipt",
+      "sha256": "ebab5b12b8b48e4759dc09eb9e79ccdb11cef723aed3dcf2f7f462cb072d22a9",
+      "disclosure": "digest-only"
+    },
+    {
+      "id": "BWZ-S02",
+      "sourceClass": "founder-acceptance-instruction-normalized-utf8",
+      "sha256": "dba35eb8d68b8691d5e8c8d5c7ade292fc656a1e67b95d13f7953235d2f843d0",
+      "disclosure": "digest-only",
+      "normalization": "Exact founder instruction, trimmed, UTF-8, no trailing newline. The private instruction body is excluded from this public receipt."
+    },
+    {
+      "id": "BWZ-S03",
+      "sourceClass": "v5-author-qa-receipt",
+      "sha256": "cd58d813fdafc228063fcac2d4711232d86086f4db117f550c7f78f1f5917bd3",
+      "disclosure": "digest-only"
+    },
+    {
+      "id": "BWZ-S04",
+      "sourceClass": "founder-instruction-normalized-utf8",
+      "sha256": "7dea17649c9b74efc8d70ee2ccd9d5f83dd92128eec50439515a580b85c4dcb0",
+      "disclosure": "digest-only",
+      "normalization": "Exact founder instruction, trimmed, UTF-8, no trailing newline. The private instruction body is excluded from this public receipt."
+    },
+    {
+      "id": "BWZ-S05",
+      "sourceClass": "corrected-source-regeneration-policy",
+      "sha256": "0c00c37b898f80568c9b08580597d544b5230e68ed6326c770cc86d9779a7d79",
+      "disclosure": "digest-only"
+    },
+    {
+      "id": "BWZ-S06",
+      "sourceClass": "founder-heard-dialogue-correction-pack",
+      "sha256": "43499fb5b7dc639ab9f26ac10efd0e6e6f5dfc192d906a8e6f1e7683f5bbe06e",
+      "disclosure": "digest-only"
+    },
+    {
+      "id": "BWZ-S07",
+      "sourceClass": "accepted-v4.1-edit-plan",
+      "sha256": "2fa268e2cbbd4103e70b93db119ddcd791272dde14fdaa6f491d4c0422a1d1be",
+      "disclosure": "digest-only"
+    },
+    {
+      "id": "BWZ-S08",
+      "sourceClass": "accepted-v4.1-source-set-receipt",
+      "sha256": "4afee1a028d85d0a9ebb0d3871cfaadf8e657ea3171f8fde6d72abab2605f73b",
+      "disclosure": "digest-only"
+    },
+    {
+      "id": "BWZ-S09",
+      "sourceClass": "current-source-authority-receipt",
+      "sha256": "1583614142e50823b0bfdb748ad8557fd642bda698dd5a5d73828903f81e46bd",
+      "disclosure": "digest-only"
+    },
+    {
+      "id": "BWZ-S10",
+      "sourceClass": "v6-author-qa-receipt",
+      "sha256": "d368c8300c0ad5dacb18c6d2718e822848b3a5358c6a66c48f0c2c2e66636e5e",
+      "disclosure": "digest-only"
+    },
+    {
+      "id": "BWZ-S11",
+      "sourceClass": "v7-author-qa-receipt",
+      "sha256": "b876af13f2dafd1f82cdefd5487b10a12b2a86e21e2f1ff816c73a71a0fe9d17",
+      "disclosure": "digest-only"
+    }
+  ],
+  "observations": [
+    {
+      "id": "BWZ-D01",
+      "status": "VERIFIED",
+      "observation": "An externally assembled source set passed technical gates after phrase-safe trims, restrained overlays, colour matching, audio mastering and delivery checks; the founder then accepted the edit and requested a final 4K check.",
+      "frameworkEffect": "Generation and deterministic post-production are separate contracts.",
+      "sourceRefs": ["BWZ-S01", "BWZ-S02", "BWZ-S07"]
+    },
+    {
+      "id": "BWZ-D02",
+      "status": "VERIFIED",
+      "observation": "A later high-motion edit passed author deterministic QA, then a founder instruction rejected that edit layer and required a rebuild from the accepted v4.1 sources.",
+      "frameworkEffect": "Machine integrity, independent craft review and founder acceptance are separate release gates.",
+      "sourceRefs": ["BWZ-S03", "BWZ-S04"]
+    },
+    {
+      "id": "BWZ-D03",
+      "status": "VERIFIED",
+      "observation": "Source clips with dialogue, identity or material lip-sync failure required regeneration; clean gaps, terminal tails and mix differences could be edited only with re-audit.",
+      "frameworkEffect": "The post-flight decision distinguishes regeneration from bounded salvage.",
+      "sourceRefs": ["BWZ-S05", "BWZ-S06"]
+    },
+    {
+      "id": "BWZ-D04",
+      "status": "VERIFIED",
+      "observation": "A single-line overlay clipped its final word despite looking acceptable in summary views and was repaired as a balanced multi-line composition.",
+      "frameworkEffect": "Overlay acceptance requires rendered-pixel review at output resolution.",
+      "sourceRefs": ["BWZ-S07"]
+    },
+    {
+      "id": "BWZ-D05",
+      "status": "VERIFIED",
+      "observation": "Source identity could not be trusted to filename order because generated downloads used inconsistent names.",
+      "frameworkEffect": "Source identity is transcript plus SHA-256 plus stable source ID.",
+      "sourceRefs": ["BWZ-S08", "BWZ-S09"]
+    },
+    {
+      "id": "BWZ-D06",
+      "status": "AUTHOR_ONLY_NOT_PROMOTED",
+      "observation": "Later semantic and cinematic B-roll experiments passed author checks but did not receive independent and founder approval.",
+      "frameworkEffect": "They remain failure and exploration evidence, not recommended defaults.",
+      "sourceRefs": ["BWZ-S10", "BWZ-S11"]
+    }
+  ],
+  "claimCeiling": "This receipt supports framework controls for one production lineage. It does not claim universal provider compliance or audience-performance improvement."
+}

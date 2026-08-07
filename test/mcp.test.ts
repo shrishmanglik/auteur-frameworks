@@ -4,6 +4,8 @@ import { handleMcpMessage, MCP_PROTOCOL_VERSION, TOOLS } from "../src/mcp.js";
 import { FRAMEWORKS } from "../src/frameworks.js";
 
 const productFilm = JSON.parse(readFileSync("examples/product-film.json", "utf8"));
+const spokenClip = JSON.parse(readFileSync("examples/spoken-clip-plan.json", "utf8"));
+const postProduction = JSON.parse(readFileSync("examples/post-production-plan.json", "utf8"));
 
 function call(name: string, args: Record<string, unknown> = {}) {
   return handleMcpMessage({
@@ -63,6 +65,14 @@ describe("mcp tools mirror the CLI surface", () => {
   it("auteur_preflight runs checks over a packet", () => {
     const report = payload(call("auteur_preflight", { packet: productFilm })) as Record<string, unknown>;
     expect(report).toHaveProperty("passed");
+  });
+
+  it("auteur_plan_spoken and auteur_audit_edit mirror their CLI functions", () => {
+    const spoken = payload(call("auteur_plan_spoken", { input: spokenClip })) as Record<string, unknown>;
+    expect(spoken.selectedDurationSeconds).toBe(6);
+
+    const edit = payload(call("auteur_audit_edit", { plan: postProduction })) as Record<string, unknown>;
+    expect(edit.releaseDecision).toBe("ACCEPT");
   });
 });
 

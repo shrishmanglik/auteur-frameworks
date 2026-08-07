@@ -20,6 +20,7 @@ Protocol 2024-11-05. Tools: auteur_frameworks, auteur_develop, auteur_validate,
 auteur_preflight, auteur_storyboard, auteur_compile, auteur_kit, auteur_continue,
 auteur_score_render, auteur_compare_renders. Failures return isError with the
 field-level validation message; correct the packet and retry.
+For spoken editing, also use auteur_plan_spoken and auteur_audit_edit.
 
 Rules for agents:
 - Treat model output as untrusted until validate and preflight pass.
@@ -40,9 +41,12 @@ Documentation:
 - docs/framework-architectures.md
 - docs/llm-integration.md
 - docs/provider-handoff.md
+- docs/post-production.md
+- docs/repository-consolidation.md
 - docs/evaluation.md
 - docs/research-boundary.md
 - skills/auteur-flow-a-roll-validation/SKILL.md
+- skills/auteur-post-production/SKILL.md
 
 Public API modules:
 - src/schemas.ts
@@ -53,6 +57,8 @@ Public API modules:
 - src/continuation.ts
 - src/storyboard.ts
 - src/production-kit.ts
+- src/spoken-clip.ts
+- src/post-production.ts
 - src/route-advisor.ts
 - src/qc.ts
 - src/repair.ts

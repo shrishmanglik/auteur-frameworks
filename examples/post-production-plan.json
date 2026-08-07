@@ -1,0 +1,98 @@
+{
+  "schemaVersion": "auteur-post-production/1.0",
+  "projectId": "synthetic-founder-application",
+  "outputDurationSeconds": 5.4,
+  "sources": [
+    {
+      "id": "clip-01",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "approvedScript": "Give me one process break and I will trace the system behind it.",
+      "observedTranscript": "Give me one process break and I will trace the system behind it.",
+      "durationSeconds": 6,
+      "identityStatus": "verified",
+      "lipSyncStatus": "verified",
+      "dialogueStatus": "verified",
+      "terminalStatus": "repairable",
+      "disposition": "salvage"
+    }
+  ],
+  "timeline": [
+    {
+      "id": "segment-01",
+      "sourceClipId": "clip-01",
+      "timelineStartSeconds": 0,
+      "timelineEndSeconds": 5.4,
+      "sourceInSeconds": 0.1,
+      "sourceOutSeconds": 5.5,
+      "phraseBoundaryStatus": "verified"
+    }
+  ],
+  "overlays": [
+    {
+      "id": "overlay-01",
+      "text": "TRACE THE SYSTEM",
+      "meaningUnit": "The speaker moves from a local defect to its system boundary.",
+      "startSeconds": 1.2,
+      "endSeconds": 2.4,
+      "safeAreaStatus": "verified",
+      "renderedPixelReview": true
+    }
+  ],
+  "bRoll": [
+    {
+      "id": "broll-01",
+      "startSeconds": 2.4,
+      "endSeconds": 4.4,
+      "sourceKind": "html-canvas-motion",
+      "narrativePurpose": "Reveal the process break expanding into an observable system map.",
+      "motionIntent": "Nodes assemble from the failure point outward, then resolve.",
+      "concealsMaterialARollFailure": false
+    }
+  ],
+  "transitions": [
+    {
+      "id": "transition-01",
+      "startSeconds": 2.3,
+      "durationSeconds": 0.15,
+      "narrativePurpose": "The cut follows the spoken shift from process to system scope."
+    }
+  ],
+  "picture": {
+    "frameRateFps": 24,
+    "startsAtZero": true,
+    "fullDecodePassed": true,
+    "colourReferenceSourceId": "clip-01",
+    "colourMatchStatus": "verified"
+  },
+  "audio": {
+    "sampleRateHz": 48000,
+    "channels": 2,
+    "measuredIntegratedLufs": -16.1,
+    "measuredTruePeakDbtp": -1.2,
+    "targetIntegratedLufs": -16,
+    "targetTruePeakDbtpMax": -1,
+    "fullDecodePassed": true,
+    "clockSyncPassed": true
+  },
+  "delivery": {
+    "sourceWidth": 1920,
+    "sourceHeight": 1080,
+    "outputWidth": 3840,
+    "outputHeight": 2160,
+    "resolutionClaim": "presentation-upscale",
+    "comparedToApprovedMaster": true,
+    "audioTrackHashPreserved": true
+  },
+  "qualityControl": {
+    "perSecondInspectionCompleted": true,
+    "declaredBoundaryInspectionCompleted": true,
+    "fullSpeedPlaybackCompleted": true
+  },
+  "reviews": {
+    "authorSessionId": "author-session-synthetic",
+    "authorDeterministic": "passed",
+    "independentReviewerSessionId": "review-session-synthetic",
+    "independentCraft": "passed",
+    "founderAcceptance": "passed"
+  }
+}

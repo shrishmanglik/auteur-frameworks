@@ -13,6 +13,8 @@ import { compareRenderCycles, scoreRender } from "./evaluation.js";
 import { compileContinuationPrompt } from "./continuation.js";
 import { buildProductionKit } from "./production-kit.js";
 import { runMcpServer } from "./mcp.js";
+import { planSpokenClip } from "./spoken-clip.js";
+import { auditPostProductionPlan } from "./post-production.js";
 
 export interface CliIo {
   stdout: (value: string) => void;
@@ -43,6 +45,8 @@ Commands:
   continue <input.json>   Compile a render-observed extension prompt
   score-render <observation.json>  Score an observed provider result
   compare-renders <before.json> <after.json>  Measure cycle improvement
+  plan-spoken <input.json>  Select the smallest caller-supported spoken-clip duration
+  audit-edit <plan.json>    Audit a deterministic post-production plan and review gates
   mcp                     Start the MCP stdio server for agent runtimes
   help                    Show this guide
   version                 Print the package version
@@ -111,6 +115,8 @@ export function runCli(args: string[], io: CliIo = defaultIo): number {
       "kit",
       "preflight",
       "score-render",
+      "plan-spoken",
+      "audit-edit",
       "storyboard",
       "validate",
     ]);
@@ -145,6 +151,8 @@ export function runCli(args: string[], io: CliIo = defaultIo): number {
     else if (command === "kit") output = buildProductionKit(input);
     else if (command === "preflight") output = preflightPacket(parseUniversalPacket(input));
     else if (command === "score-render") output = scoreRender(input);
+    else if (command === "plan-spoken") output = planSpokenClip(input);
+    else if (command === "audit-edit") output = auditPostProductionPlan(input);
     else if (command === "storyboard") output = buildStoryboard(input);
     else output = parseUniversalPacket(input);
     writeJson(output, outputPath, io);

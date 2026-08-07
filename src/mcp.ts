@@ -18,6 +18,8 @@ import { preflightPacket } from "./qc.js";
 import { parseUniversalPacket } from "./schemas.js";
 import { buildStoryboard } from "./storyboard.js";
 import { PACKAGE_VERSION } from "./version.js";
+import { planSpokenClip } from "./spoken-clip.js";
+import { auditPostProductionPlan } from "./post-production.js";
 
 export const MCP_PROTOCOL_VERSION = "2024-11-05";
 export const MCP_SERVER_NAME = "auteur-frameworks";
@@ -124,6 +126,28 @@ export const TOOLS: ToolDefinition[] = [
       required: ["observation"],
     },
     run: (args) => scoreRender(requireObject(args, "observation")),
+  },
+  {
+    name: "auteur_plan_spoken",
+    description:
+      "Count audible words, select the smallest caller-declared supported duration, and compile a script-once A-roll prompt with one performance cue.",
+    inputSchema: {
+      type: "object",
+      properties: { input: { type: "object", description: "A spoken-clip planning input object." } },
+      required: ["input"],
+    },
+    run: (args) => planSpokenClip(requireObject(args, "input")),
+  },
+  {
+    name: "auteur_audit_edit",
+    description:
+      "Audit source identity, phrase-safe trims, overlays, B-roll purpose, picture, audio, upscale labeling, QC, and separate human review gates.",
+    inputSchema: {
+      type: "object",
+      properties: { plan: { type: "object", description: "An AUTEUR post-production plan object." } },
+      required: ["plan"],
+    },
+    run: (args) => auditPostProductionPlan(requireObject(args, "plan")),
   },
   {
     name: "auteur_compare_renders",

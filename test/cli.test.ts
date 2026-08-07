@@ -20,6 +20,8 @@ describe("CLI", () => {
     expect(runCli(["help"], help.io)).toBe(0);
     expect(help.output().stdout).toContain("develop <request.json>");
     expect(help.output().stdout).toContain("kit <packet.json>");
+    expect(help.output().stdout).toContain("plan-spoken <input.json>");
+    expect(help.output().stdout).toContain("audit-edit <plan.json>");
 
     const version = capture();
     expect(runCli(["version"], version.io)).toBe(0);
@@ -53,6 +55,16 @@ describe("CLI", () => {
     expect(kitResult.exportManifest.deliverables).toContain("visual storyboard");
     expect(kitResult.shotList[0].prompts.promptFidelity).toBe("FRAMEWORK_NATIVE");
     expect(kitResult.shotList[0].prompts.videoPrompt).toContain("PREMISE:");
+
+    const spokenPath = fileURLToPath(new URL("../examples/spoken-clip-plan.json", import.meta.url));
+    const spoken = capture();
+    expect(runCli(["plan-spoken", spokenPath], spoken.io)).toBe(0);
+    expect(JSON.parse(spoken.output().stdout).selectedDurationSeconds).toBe(6);
+
+    const editPath = fileURLToPath(new URL("../examples/post-production-plan.json", import.meta.url));
+    const edit = capture();
+    expect(runCli(["audit-edit", editPath], edit.io)).toBe(0);
+    expect(JSON.parse(edit.output().stdout).releaseDecision).toBe("ACCEPT");
   });
 
   it("returns an actionable error for bad commands and malformed packets", () => {
