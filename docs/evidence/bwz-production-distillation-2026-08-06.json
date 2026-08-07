@@ -24,9 +24,10 @@
     },
     {
       "id": "BWZ-S02",
-      "sourceClass": "founder-accepted-v4.1-delivery-report",
-      "sha256": "9e94e4e3200a8cfc428cf41c4ead4b56b3e70e4f9e21674a49d0a4262c33c167",
-      "disclosure": "digest-only"
+      "sourceClass": "founder-acceptance-instruction-normalized-utf8",
+      "sha256": "dba35eb8d68b8691d5e8c8d5c7ade292fc656a1e67b95d13f7953235d2f843d0",
+      "disclosure": "digest-only",
+      "normalization": "Exact founder instruction, trimmed, UTF-8, no trailing newline. The private instruction body is excluded from this public receipt."
     },
     {
       "id": "BWZ-S03",
@@ -88,7 +89,7 @@
     {
       "id": "BWZ-D01",
       "status": "VERIFIED",
-      "observation": "An externally assembled source set passed technical gates and founder playback after phrase-safe trims, restrained overlays, colour matching, audio mastering and delivery checks.",
+      "observation": "An externally assembled source set passed technical gates after phrase-safe trims, restrained overlays, colour matching, audio mastering and delivery checks; the founder then accepted the edit and requested a final 4K check.",
       "frameworkEffect": "Generation and deterministic post-production are separate contracts.",
       "sourceRefs": ["BWZ-S01", "BWZ-S02", "BWZ-S07"]
     },
