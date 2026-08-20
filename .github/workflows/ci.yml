@@ -11,8 +11,11 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-\${{ github.workflow }}-\${{ github.ref }}
-  cancel-in-progress: true
+  # Escaped as \${{ }} this was a constant string, so every run in the repo shared
+  # one group and each new run cancelled all the others regardless of branch.
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  # Never cancel on main: every commit there must keep its own green record.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   validate:
