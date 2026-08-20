@@ -1,4 +1,6 @@
 import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { runCli } from "../src/cli.js";
@@ -65,6 +67,17 @@ describe("CLI", () => {
     const edit = capture();
     expect(runCli(["audit-edit", editPath], edit.io)).toBe(0);
     expect(JSON.parse(edit.output().stdout).releaseDecision).toBe("ACCEPT");
+  });
+
+  it("confirms an --out write on stderr while keeping stdout machine-clean", () => {
+    const packetPath = fileURLToPath(new URL("../examples/product-film.json", import.meta.url));
+    const outPath = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "auteur-cli-")), "production-kit.json");
+    const kit = capture();
+    expect(runCli(["kit", packetPath, "--out", outPath], kit.io)).toBe(0);
+    expect(kit.output().stdout).toBe("");
+    expect(kit.output().stderr).toContain(`AUTEUR_OK: wrote ${outPath}`);
+    const written = JSON.parse(fs.readFileSync(outPath, "utf8"));
+    expect(written.exportManifest.deliverables).toContain("visual storyboard");
   });
 
   it("returns an actionable error for bad commands and malformed packets", () => {
