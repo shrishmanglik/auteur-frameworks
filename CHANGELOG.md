@@ -2,6 +2,12 @@
 
 All notable public changes are recorded here. The project follows semantic versioning while the API matures; versions below `1.0.0` may contain documented breaking changes.
 
+## Unreleased
+
+### Changed
+
+- CLI commands invoked with `--out` now confirm the write on stderr (`AUTEUR_OK: wrote <path> (<bytes>).`). Previously a successful `--out` run produced no output at all, so the quickstart's final command ended in silence. stdout is unchanged and stays machine-clean for piping.
+
 ## 0.10.0 - 2026-08-06
 
 ### Added

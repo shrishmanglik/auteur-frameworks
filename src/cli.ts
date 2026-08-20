@@ -59,7 +59,11 @@ Examples:
 
 function writeJson(value: unknown, outputPath: string | undefined, io: CliIo): void {
   const serialized = JSON.stringify(value, null, 2) + "\n";
-  if (outputPath) fs.writeFileSync(outputPath, serialized, "utf8");
+  if (outputPath) {
+    fs.writeFileSync(outputPath, serialized, "utf8");
+    // Confirmation goes to stderr so piped stdout stays machine-clean.
+    io.stderr(`AUTEUR_OK: wrote ${outputPath} (${Buffer.byteLength(serialized, "utf8")} bytes).\n`);
+  }
   else io.stdout(serialized);
 }
 
