@@ -167,9 +167,11 @@ export function runCli(args: string[], io: CliIo = defaultIo): number {
     const input = readJson(inputPath);
     let output: unknown;
     if (command === "compare-renders") {
-      const inputPaths = rest.filter((value, index) => (
-        value !== "--out" && !(outIndex >= 0 && index === outIndex + 1)
-      ));
+      // Use the same consumed-index set as the single-input commands. This used to filter
+      // only --out, so any other value flag left its value in the list and the second
+      // "input path" became the flag's argument - the exact failure the registry exists to
+      // prevent, reproduced inside the one command that opted out of it.
+      const inputPaths = rest.filter((_value, index) => !consumed.has(index));
       if (inputPaths.length < 2) {
         io.stderr("AUTEUR_ERROR: compare-renders requires before and after observation files.\nACTION: Pass two render-observation JSON paths.\n");
         return 2;
