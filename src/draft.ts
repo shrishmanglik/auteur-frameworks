@@ -145,13 +145,24 @@ export function parseIdea(idea: string): ParsedIdea {
     || semantic.split(" ").slice(0, 3).join(" ")
     || "the subject";
 
+  // "in/at/on" introduces a place about as often as it introduces a temporal clause, and the
+  // capture runs to the next comma either way. On "On her last night shift before the tower is
+  // automated, ..." the old version produced the world "her last night shift before the", which
+  // reached the kit as the scene location "her last night shift before the interior, controlled
+  // light". Broken English in a generated document is worse than a plainer correct phrase.
   const rawLocation = clean.match(/\b(?:in|inside|at|on)\s+(?:an?\s+|the\s+)?([^.,;]{3,80})/i)?.[1];
-  // A location capture runs to the next comma, which can swallow the whole clause. Six
-  // words is enough to name a place and short enough to read as one.
-  const location = rawLocation
-    ? rawLocation.split(/\s+/).slice(0, 6).join(" ").replace(/\s+(?:is|are|was|were)$/i, "")
-    : undefined;
-  const world = location || content.slice(0, 3).join(" ") || "its world";
+  const clauseLike = rawLocation
+    ? /^(?:her|his|their|my|our|your|its)\b/i.test(rawLocation.trim())
+      || /\b(?:is|are|was|were|has|have|will|keeps?|before|after|while)\b/i.test(rawLocation)
+    : true;
+  const trimmed = rawLocation && !clauseLike
+    ? rawLocation.split(/\s+/).slice(0, 6).join(" ")
+      // A word cap can end on a function word and leave a dangling phrase.
+      .replace(/\s+(?:the|a|an|of|in|on|at|to|for|and|or|before|after|is|are|was|were)$/i, "")
+    : "";
+  // Falling back to the subject reads plainly. It is not a place, and the drafter does not
+  // pretend it is: no downstream text asserts that the world was extracted from the idea.
+  const world = trimmed || subject || "its world";
   return {
     clean: clean || "an untitled idea",
     subject: titleCase(subject),
@@ -408,6 +419,15 @@ const FORMAT_ARC: Record<ContentFormat, keyof typeof ARCS> = {
   other: "advertising",
 };
 
+// Read against beat position, so a five-beat arc does not stamp one sentence five times.
+const BEAT_TURNS: ReadonlyArray<(mood: string) => string> = [
+  (mood) => `the ${mood} is established before anything is explained`,
+  (mood) => `the ${mood} tightens as the want becomes specific`,
+  (mood) => `the ${mood} turns costly and the easy option closes`,
+  (mood) => `the ${mood} breaks into a decision that cannot be taken back`,
+  (mood) => `the ${mood} settles into what the decision left behind`,
+];
+
 const CAST_NAMES = ["MARA", "DEV", "JUNE", "OKAFOR", "LENA", "SAUL", "PRIYA", "COLE"];
 
 // ---------- drafting ----------
@@ -500,7 +520,9 @@ export function draftPacket(input: unknown, options: DraftOptions = {}): DraftRe
   const characters = cast.map((name, index) => ({
     id: name.toLowerCase(),
     name: titleCase(name.toLowerCase()),
-    role: index === 0 ? `principal in ${idea.world}` : `counterpart in ${idea.world}`,
+    // Deliberately not `principal in ${world}`: world is a best-effort extraction, and
+    // splicing it here turned one bad parse into a bad character role as well.
+    role: index === 0 ? "principal" : "counterpart",
     identityLock: [
       pick(rng, ["a person in their early thirties", "a person in their forties", "a person in their late twenties"]),
       pick(rng, ["dark hair pinned flat", "close-cropped grey hair", "shoulder-length hair tied back"]),
@@ -674,7 +696,9 @@ export function draftPacket(input: unknown, options: DraftOptions = {}): DraftRe
         id: `beat-${index + 1}`,
         title: beat.name,
         purpose: beat.intent,
-        emotionalTurn: `${concept.mood.toLowerCase()} sharpens as the beat resolves`,
+        // Varying by position rather than repeating one line on every beat. An arc that
+        // states the identical turn five times is visibly generated, and says nothing.
+        emotionalTurn: BEAT_TURNS[Math.min(index, BEAT_TURNS.length - 1)]!(concept.mood.toLowerCase()),
       })),
     },
     characters,
