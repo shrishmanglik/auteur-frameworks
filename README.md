@@ -32,7 +32,7 @@ Requirements: Node.js 20 or newer.
 
 ```bash
 # Install directly from the public GitHub repository, pinned to a released tag.
-npm install github:shrishmanglik/auteur-frameworks#v0.9.1
+npm install github:shrishmanglik/auteur-frameworks#v0.10.0
 
 # See every command.
 npx auteur-frameworks help
@@ -47,7 +47,7 @@ The output includes the creative brief, story, scene plan, character and world b
 
 > npm registry publication is intentionally deferred while the public API stabilizes. Git installs run the package build automatically.
 >
-> **Pin a tag.** `#v0.9.1` is immutable and reproducible. `#main` tracks unreleased work and
+> **Pin a tag.** `#v0.10.0` is immutable and reproducible. `#main` tracks unreleased work and
 > can change under you — use it only when you specifically want the development tip.
 > Published tags are listed under [releases](https://github.com/shrishmanglik/auteur-frameworks/tags).
 
@@ -343,7 +343,7 @@ Start with [CONTRIBUTING.md](CONTRIBUTING.md) or open a [framework proposal](htt
 
 ## Status
 
-Version `0.10.0` on `main` is an early public API. The latest immutable release tag remains `v0.9.1` until a maintainer publishes a reviewed release. Provider adapters and commercial execution remain outside core. Breaking changes will be documented in [CHANGELOG.md](CHANGELOG.md) until the API reaches `1.0.0`.
+Version `0.10.0` on `main` is an early public API, and `v0.10.0` is the matching immutable release tag. Provider adapters and commercial execution remain outside core. Breaking changes will be documented in [CHANGELOG.md](CHANGELOG.md) until the API reaches `1.0.0`.
 
 ## License and citation
 
