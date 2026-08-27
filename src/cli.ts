@@ -4,6 +4,7 @@ import { pathToFileURL } from "node:url";
 import { ZodError } from "zod";
 import { compilePacket } from "./compiler.js";
 import { buildDevelopmentContract } from "./development.js";
+import { draftPacket } from "./draft.js";
 import { FRAMEWORKS } from "./frameworks.js";
 import { preflightPacket } from "./qc.js";
 import { parseUniversalPacket } from "./schemas.js";
@@ -37,6 +38,8 @@ Usage:
 Commands:
   frameworks              List the eleven production frameworks
   develop <request.json>  Build an LLM-ready development contract
+  draft <request.json>    Draft a complete Universal Packet deterministically, no LLM
+                          [--seed N] [--concept 0|1|2]
   validate <packet.json>  Validate a Universal Packet
   preflight <packet.json> Run continuity, timing, audio, and realism checks
   storyboard <packet.json> Project ordered storyboard panels
@@ -52,6 +55,7 @@ Commands:
   version                 Print the package version
 
 Examples:
+  auteur-frameworks draft examples/requests/short-film.json --out production.json
   auteur-frameworks develop examples/requests/short-film.json
   auteur-frameworks preflight examples/short-film.json
   auteur-frameworks kit examples/product-film.json --out production-kit.json
@@ -93,11 +97,33 @@ export function runCli(args: string[], io: CliIo = defaultIo): number {
     return 0;
   }
 
-  const outIndex = rest.indexOf("--out");
-  const outputPath = outIndex >= 0 ? rest[outIndex + 1] : undefined;
-  const inputPath = rest.find((value, index) => (
-    value !== "--out" && !(outIndex >= 0 && index === outIndex + 1)
-  ));
+  // Every value flag is registered here so the positional input path is whatever is left
+  // over. Adding a flag without registering it would silently make its value look like the
+  // input file.
+  const VALUE_FLAGS = ["--out", "--seed", "--concept"] as const;
+  const flagIndex = (flag: string): number => rest.indexOf(flag);
+  const flagValue = (flag: string): string | undefined => {
+    const index = flagIndex(flag);
+    return index >= 0 ? rest[index + 1] : undefined;
+  };
+  const consumed = new Set<number>();
+  for (const flag of VALUE_FLAGS) {
+    const index = flagIndex(flag);
+    if (index >= 0) { consumed.add(index); consumed.add(index + 1); }
+  }
+  const outIndex = flagIndex("--out");
+  const outputPath = flagValue("--out");
+  const inputPath = rest.find((_value, index) => !consumed.has(index));
+
+  const readIntFlag = (flag: string): number | undefined => {
+    const raw = flagValue(flag);
+    if (raw === undefined) return undefined;
+    const parsed = Number(raw);
+    if (!Number.isInteger(parsed) || parsed < 0) {
+      throw new Error(`${flag} requires a non-negative integer, received "${raw}".`);
+    }
+    return parsed;
+  };
 
   try {
     if (command === "frameworks") {
@@ -116,6 +142,7 @@ export function runCli(args: string[], io: CliIo = defaultIo): number {
       "compile",
       "continue",
       "develop",
+      "draft",
       "kit",
       "preflight",
       "score-render",
@@ -152,6 +179,12 @@ export function runCli(args: string[], io: CliIo = defaultIo): number {
     else if (command === "compile") output = compilePacket(input);
     else if (command === "continue") output = compileContinuationPrompt(input);
     else if (command === "develop") output = buildDevelopmentContract(input);
+    else if (command === "draft") {
+      output = draftPacket(input, {
+        ...(readIntFlag("--seed") === undefined ? {} : { seed: readIntFlag("--seed")! }),
+        ...(readIntFlag("--concept") === undefined ? {} : { conceptIndex: readIntFlag("--concept")! }),
+      }).packet;
+    }
     else if (command === "kit") output = buildProductionKit(input);
     else if (command === "preflight") output = preflightPacket(parseUniversalPacket(input));
     else if (command === "score-render") output = scoreRender(input);

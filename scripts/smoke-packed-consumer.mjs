@@ -37,9 +37,21 @@ try {
   const example = path.join(installedRoot, "examples", "product-film.json");
   const help = execFileSync(process.execPath, [cli, "help"], { cwd: temp, encoding: "utf8" });
   const compiled = JSON.parse(execFileSync(process.execPath, [cli, "compile", example], { cwd: temp, encoding: "utf8" }));
+  // The deterministic bridge is the headline path, so prove it survives packing: a raw
+  // request must reach a validated packet, twice identically, with no model in the loop.
+  const request = path.join(installedRoot, "examples", "requests", "short-film.json");
+  const draftOnce = execFileSync(process.execPath, [cli, "draft", request], { cwd: temp, encoding: "utf8" });
+  const draftTwice = execFileSync(process.execPath, [cli, "draft", request], { cwd: temp, encoding: "utf8" });
+  if (draftOnce !== draftTwice) throw new Error("Packed draft is not deterministic across runs");
+  const draftedPath = path.join(temp, "drafted.json");
+  fs.writeFileSync(draftedPath, draftOnce);
+  const draftedKit = JSON.parse(execFileSync(process.execPath, [cli, "kit", draftedPath], { cwd: temp, encoding: "utf8" }));
+  if (!draftedKit.preflight.passed || draftedKit.shotList.length < 1) {
+    throw new Error("Packed draft did not produce a preflight-clean, kit-able packet");
+  }
   const kit = JSON.parse(execFileSync(process.execPath, [cli, "kit", example], { cwd: temp, encoding: "utf8" }));
 
-  if (!help.includes("develop <request.json>") || !help.includes("continue <input.json>") || !help.includes("kit <packet.json>") || compiled.shots.length !== 1 || !compiled.preflight.passed || kit.shotList.length !== 1 || !kit.preflight.passed) {
+  if (!help.includes("develop <request.json>") || !help.includes("continue <input.json>") || !help.includes("kit <packet.json>") || !help.includes("draft <request.json>") || compiled.shots.length !== 1 || !compiled.preflight.passed || kit.shotList.length !== 1 || !kit.preflight.passed) {
     throw new Error("Packed CLI smoke returned an unexpected result");
   }
 
@@ -62,6 +74,8 @@ try {
     frameworks: Number(importProof),
     compiledShots: compiled.shots.length,
     productionKitShots: kit.shotList.length,
+    draftedShots: draftedKit.shotList.length,
+    draftDeterministic: true,
     packedReadmeLinks: localLinks.length,
   }));
 } finally {
