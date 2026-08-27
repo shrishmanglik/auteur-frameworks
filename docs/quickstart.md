@@ -11,7 +11,7 @@
 mkdir auteur-quickstart
 cd auteur-quickstart
 npm init -y
-npm install github:shrishmanglik/auteur-frameworks#v0.9.1
+npm install github:shrishmanglik/auteur-frameworks#v0.10.0
 npx auteur-frameworks help
 ```
 

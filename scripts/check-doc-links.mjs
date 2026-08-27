@@ -64,6 +64,36 @@ if (registryCount === 0) {
   }
 }
 
+
+// Release-pin drift guard.
+// The docs tell a reader to install an immutable tag. If package.json moves and no matching
+// tag is cut, that instruction silently hands out an older package: before v0.10.0 existed,
+// the README documented plan-spoken and audit-edit while pinning v0.9.1, which does not have
+// them. This does not prove the tag exists on the remote - that needs a network call - it
+// proves the docs and package.json agree on which version a reader is being sent to.
+const pkgVersion = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8")).version;
+const pinFiles = ["README.md", "llms.txt", path.join("docs", "quickstart.md"), path.join("docs", "llm-integration.md")];
+let pinsChecked = 0;
+for (const relative of pinFiles) {
+  const full = path.join(root, relative);
+  if (!fs.existsSync(full)) continue;
+  const text = fs.readFileSync(full, "utf8");
+  for (const match of text.matchAll(/auteur-frameworks#v([0-9][0-9A-Za-z.\-]*)/g)) {
+    pinsChecked += 1;
+    if (match[1] !== pkgVersion) {
+      errors.push(
+        `${relative}: install pin names v${match[1]} but package.json is ${pkgVersion}; ` +
+        "cut the matching tag or correct the pin"
+      );
+    }
+  }
+}
+// A suspicious zero is a broken instrument until shown otherwise: if the pattern stops
+// matching, this guard would pass vacuously while the pins rot.
+if (pinsChecked === 0) {
+  errors.push("no install pins found in the documented surfaces; update the pin guard in check-doc-links.mjs");
+}
+
 if (errors.length) {
   console.error(JSON.stringify({ passed: false, errors }, null, 2));
   process.exit(1);
@@ -71,7 +101,7 @@ if (errors.length) {
 
 console.log(
   JSON.stringify(
-    { passed: true, markdownFiles: markdownFiles.length, linksChecked, frameworkCount: registryCount },
+    { passed: true, markdownFiles: markdownFiles.length, linksChecked, frameworkCount: registryCount, pinsChecked, releaseVersion: pkgVersion },
     null,
     2
   )
