@@ -808,6 +808,23 @@ describe("compiler", () => {
     expect(result.wasCompacted).toBe(true);
   });
 
+  it("refuses a compact prompt that truncated away the approved spoken line", () => {
+    // Compaction clips whole sections, and the audio section is clippable like any
+    // other. Before the guard this returned success with the dialogue silently gone,
+    // so the defect was only caught after the render. Fails on pre-fix source: the
+    // 2000-character call returned a prompt containing the line zero times.
+    const shot = structuredClone(UniversalPacketSchema.parse(example).shots[0]!);
+    const line = "Of course there is another floor.";
+    shot.dialogue = `Mara, under her breath: ${line}`;
+
+    expect(() => compileCompactVideoPromptWithReport(shot, [], [], { maxCharacters: 2000 }))
+      .toThrow(/lost the approved spoken line/);
+
+    // Clean control: with room to fit, the same shot compiles and keeps the line once.
+    const roomy = compileCompactVideoPromptWithReport(shot, [], [], { maxCharacters: 10000 });
+    expect(roomy.prompt.split(line)).toHaveLength(2);
+  });
+
   it("compiles a complete package with a passing preflight", () => {
     const twoShotExample = structuredClone(example);
     const secondShot = structuredClone(twoShotExample.shots[0]);
@@ -839,6 +856,27 @@ describe("compiler", () => {
 });
 
 describe("storyboard and QC", () => {
+  it("compiles storyboard frame prompts identically to the prompt package", () => {
+    // Both surfaces are projections of one packet, so a frame prompt that differs
+    // between them means the packet is no longer the single source. Pinned after
+    // buildStoryboard was found calling compileShot with no globalStyle, which
+    // dropped the "Style: ..." clause from every panel while the prompt package
+    // kept it. Fails on pre-fix source: panels carried no globalStyle term.
+    const board = buildStoryboard(example);
+    const compiled = compilePacket(example);
+    expect(board).toHaveLength(compiled.shots.length);
+    for (const [index, panel] of board.entries()) {
+      const shot = compiled.shots[index]!;
+      expect(panel.openingFramePrompt).toBe(shot.openingFramePrompt);
+      expect(panel.terminalFramePrompt).toBe(shot.terminalFramePrompt);
+      expect(panel.framePrompt).toBe(shot.framePrompt);
+    }
+    for (const style of example.globalStyle) {
+      expect(board[0]?.openingFramePrompt).toContain(style);
+      expect(board[0]?.terminalFramePrompt).toContain(style);
+    }
+  });
+
   it("projects shots into useful storyboard panels", () => {
     const board = buildStoryboard(example);
     expect(board[0]).toMatchObject({ shotId: "shot-1", durationSeconds: 8 });

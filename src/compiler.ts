@@ -7,6 +7,37 @@ import {
 import { getFramework } from "./frameworks.js";
 import { opticsToProse } from "./optics.js";
 import { preflightPacket, preflightShot, type PreflightIssue } from "./qc.js";
+import { countExactOccurrences } from "./spoken-clip.js";
+
+// Mutation target. Flipping this to false must make the suite fail; see
+// scripts/mutation-test-compact-spoken-line.mjs.
+const SPOKEN_LINE_SURVIVAL_GUARD = true;
+
+/**
+ * Compaction clips whole sections to fit a caller-supplied budget, and the audio
+ * section is clippable like any other. The approved spoken line can therefore be
+ * truncated away while the function still reports success: `frameworkPreserved`
+ * and `truncatedSections` describe what compaction DID, never whether the line
+ * survived, which is the question that matters before dispatch.
+ *
+ * The same invariant is already enforced at both ends of the pipeline - a spoken
+ * clip prompt must contain its script exactly once (spoken-clip.ts), and a
+ * rendered clip is rejected unless its transcript matches exactly once
+ * (post-production.ts). It was missing only in the middle, so a mangled prompt
+ * was caught after the render instead of before it.
+ */
+function assertSpokenLineSurvived(shot: Shot, prompt: string, toolkitBudget: number): void {
+  if (!SPOKEN_LINE_SURVIVAL_GUARD) return;
+  const spokenText = shot.dialogue ?? shot.audioTrack.spokenText;
+  if (!spokenText) return;
+  const occurrences = countExactOccurrences(prompt, spokenText);
+  if (occurrences === 1) return;
+  throw new Error(
+    "Compact prompt lost the approved spoken line for shot " + shot.id + ": expected it exactly once, found "
+      + occurrences + " at a " + toolkitBudget + "-character budget. ACTION: raise maxCharacters or shorten the"
+      + " shot contract; never dispatch a prompt whose dialogue was truncated.",
+  );
+}
 
 export { depthOfFieldCharacter, opticsToProse } from "./optics.js";
 
@@ -111,6 +142,7 @@ export function compileCompactVideoPromptWithReport(
 
   const allOptionalPrompt = compileWith(candidateExclusions);
   if (allOptionalPrompt.length <= toolkitBudget) {
+    assertSpokenLineSurvived(shot, allOptionalPrompt, toolkitBudget);
     return {
       prompt: allOptionalPrompt,
       toolkitBudget,
@@ -160,6 +192,7 @@ export function compileCompactVideoPromptWithReport(
     }
   }
 
+  assertSpokenLineSurvived(shot, prompt, toolkitBudget);
   return {
     prompt,
     toolkitBudget,

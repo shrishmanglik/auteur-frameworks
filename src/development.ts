@@ -39,7 +39,12 @@ export function buildDevelopmentContract(input: unknown): DevelopmentContract {
     "Build humor, emotion, and originality through observable behavior, reversals, timing, and consequences.",
     "Each shot must have one dominant action, a complete temporal plan, physical behavior, optics, lighting motivation, continuity locks, realism anchors, audio intent, and exclusions.",
     "Assign explicit characterIds to every shot; use an empty list only when no cast member appears.",
-    "Declare generationRisks when a shot depends on causal contact, mechanical assembly, multi-subject dynamics, precise spatial clearance, exact fluid counts, brand or text control, identity or performance, transformation phases, exact dialogue audio, or frame-accurate audio/action synchronization.",
+    // Name every token verbatim, not just the concept behind it. A caller that passes only
+    // these prose fields without constraining generation to responseSchema has to infer the
+    // token, and a measured run inferred FRAME_ACCURATE_SYNC from the words "frame-accurate
+    // audio/action synchronization" and had the packet rejected. scripts/audit-contract-vocabulary.mjs
+    // fails the build if any accepted enum value stops appearing here.
+    "Declare generationRisks using these exact token spellings: CAUSAL_CONTACT_CHOREOGRAPHY when a shot depends on causal contact; PRECISE_MECHANICAL_ASSEMBLY for mechanical assembly; MULTI_SUBJECT_DYNAMICS for multi-subject dynamics; PRECISE_SPATIAL_CLEARANCE for precise spatial clearance; EXACT_FLUID_COUNT for exact fluid counts; BRAND_OR_TEXT_CONTROL for brand or text control; IDENTITY_OR_PERFORMANCE for identity or performance; TRANSFORMATION_PHASES for transformation phases; EXACT_DIALOGUE_AUDIO for exact dialogue audio; AUDIO_ACTION_SYNCHRONIZATION for frame-accurate audio/action synchronization.",
     "Use references as craft properties, never as instructions to imitate a living artist.",
     "Do not invent provider capabilities, duration limits, prices, or API behavior.",
     "Primary framework route: " + framework.name + ". Required blocks: " + framework.requiredBlocks.join(", ") + ".",

@@ -35,7 +35,8 @@ export function countAudibleWords(script: string): number {
   return script.match(/[\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*/gu)?.length ?? 0;
 }
 
-function countExactOccurrences(haystack: string, needle: string): number {
+/** Shared with the compact-prompt guard in compiler.ts; kept here as the single copy. */
+export function countExactOccurrences(haystack: string, needle: string): number {
   if (!needle) return 0;
   let count = 0;
   let offset = 0;
