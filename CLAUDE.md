@@ -33,8 +33,9 @@ The rules that must not be missed, repeated inline:
 ```
 
 Speaks MCP protocol `2024-11-05` and exposes `auteur_frameworks`, `auteur_develop`,
-`auteur_validate`, `auteur_preflight`, `auteur_storyboard`, `auteur_compile`,
-`auteur_kit`, `auteur_continue`, `auteur_score_render`, and `auteur_compare_renders`.
+`auteur_draft`, `auteur_validate`, `auteur_preflight`, `auteur_storyboard`,
+`auteur_compile`, `auteur_kit`, `auteur_continue`, `auteur_score_render`, and
+`auteur_compare_renders`.
 Tool failures come back as `isError: true` results with readable validation messages.
 
 Everything else is in [`AGENTS.md`](AGENTS.md).

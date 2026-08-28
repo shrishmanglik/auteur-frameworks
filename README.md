@@ -69,7 +69,7 @@ out and managing temporary files:
 }
 ```
 
-Exposed tools: `auteur_frameworks`, `auteur_develop`, `auteur_validate`,
+Exposed tools: `auteur_frameworks`, `auteur_develop`, `auteur_draft`, `auteur_validate`,
 `auteur_preflight`, `auteur_storyboard`, `auteur_compile`, `auteur_kit`,
 `auteur_continue`, `auteur_score_render`, `auteur_compare_renders`,
 `auteur_plan_spoken`, `auteur_audit_edit`.
@@ -80,6 +80,32 @@ message, so an agent can correct the packet and retry. The server still never ca
 LLM or a generation provider.
 
 ## Start from a raw idea
+
+There are two ways to get from an idea to a Universal Packet. Both take the same development
+request; they differ in whether a model is involved.
+
+### Deterministically, with no model (`draft`)
+
+```bash
+npx auteur-frameworks draft   node_modules/auteur-frameworks/examples/requests/short-film.json   --out production.json
+
+npx auteur-frameworks kit production.json --out production-kit.json
+```
+
+`draft` builds a complete, validated packet from a rule system: a seeded creative lens picks
+the angle, a per-format narrative arc lays out the beats, and a shot grammar turns each beat
+into a fully specified shot. The same request and seed always produce the same packet, so a
+draft is reproducible, diffable, and reviewable before any provider is involved. Pass
+`--seed` to explore a different reading of the idea and `--concept 0|1|2` to build one of the
+three concepts it considered.
+
+**What it is and is not.** It gets you a runnable, preflight-clean packet with no credentials,
+no spend, and no network. It does not write like a screenwriter: loglines and titles are
+derived from the request rather than authored, and the drafter deliberately writes no dialogue
+unless `hasDialogue` is set. Treat a draft as a structured first pass to edit, or as a
+scaffold to hand to a model, not as finished creative work.
+
+### Through a model you control (`develop`)
 
 Use a development request to create a schema-bound contract for any structured-output LLM:
 
@@ -109,6 +135,7 @@ The toolkit does not call an LLM or generation provider for you. This keeps cred
 ```text
 auteur-frameworks frameworks
 auteur-frameworks develop <request.json> [--out result.json]
+auteur-frameworks draft <request.json> [--seed N] [--concept 0|1|2] [--out result.json]
 auteur-frameworks validate <packet.json> [--out result.json]
 auteur-frameworks preflight <packet.json> [--out result.json]
 auteur-frameworks storyboard <packet.json> [--out result.json]

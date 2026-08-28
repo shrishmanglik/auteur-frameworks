@@ -17,6 +17,45 @@ const capture = () => {
 };
 
 describe("CLI", () => {
+  it("keeps every value flag out of positional inputs, including for compare-renders", () => {
+    // The flag registry is what stops a flag's value being read as a filename. compare-renders
+    // takes TWO positionals and used to re-derive them with an --out-only filter, so an
+    // unregistered flag's argument became the second input path. Fails on pre-fix source with
+    // ENOENT on a file literally named "1".
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "auteur-cli-flags-"));
+    try {
+      const observation = (cycleId: string, score: number) => {
+        const file = path.join(dir, `${cycleId}.json`);
+        fs.writeFileSync(file, JSON.stringify({
+          cycleId, packetVersion: "1.0.0", shotId: "shot-1",
+          provider: "p", modelLabel: "m",
+          scores: { promptAdherence: score, temporalCompletion: score, continuity: score,
+            physicalMaterialRealism: score, cinematography: score, audio: score },
+          evidenceNote: "synthetic fixture for a CLI argument test",
+        }));
+        return file;
+      };
+      const before = observation("before", 2);
+      const after = observation("after", 4);
+
+      const withFlag = capture();
+      expect(runCli(["compare-renders", "--seed", "1", before, after], withFlag.io)).toBe(0);
+      expect(withFlag.output().stderr).toBe("");
+      expect(JSON.parse(withFlag.output().stdout).shotId).toBe("shot-1");
+
+      // Control: the two forms that already worked must keep working.
+      const plain = capture();
+      expect(runCli(["compare-renders", before, after], plain.io)).toBe(0);
+      expect(JSON.parse(plain.output().stdout).shotId).toBe("shot-1");
+
+      const tooFew = capture();
+      expect(runCli(["compare-renders", before], tooFew.io)).toBe(2);
+      expect(tooFew.output().stderr).toContain("requires before and after");
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   it("provides help and version without an input file", () => {
     const help = capture();
     expect(runCli(["help"], help.io)).toBe(0);

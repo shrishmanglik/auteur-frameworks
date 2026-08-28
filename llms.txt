@@ -6,6 +6,9 @@ Install:
 npm install github:shrishmanglik/auteur-frameworks#v0.10.0
 
 Primary CLI flow:
+0. auteur-frameworks draft <request.json> --out production.json
+   Deterministic: builds a complete validated packet with no model call. Same request
+   and --seed always produce the same packet. Skip to step 3 if you use it.
 1. auteur-frameworks develop <request.json> --out development-contract.json
 2. Send systemInstruction, userBrief, and responseSchema to a structured-output LLM.
 3. Save the returned Universal Packet as production.json.
@@ -16,7 +19,7 @@ Primary CLI flow:
 
 MCP (preferred for agent runtimes):
 Attach the stdio server with {"command": "npx", "args": ["auteur-frameworks", "mcp"]}.
-Protocol 2024-11-05. Tools: auteur_frameworks, auteur_develop, auteur_validate,
+Protocol 2024-11-05. Tools: auteur_frameworks, auteur_develop, auteur_draft, auteur_validate,
 auteur_preflight, auteur_storyboard, auteur_compile, auteur_kit, auteur_continue,
 auteur_score_render, auteur_compare_renders. Failures return isError with the
 field-level validation message; correct the packet and retry.

@@ -11,6 +11,7 @@ import { ZodError } from "zod";
 import { compilePacket } from "./compiler.js";
 import { compileContinuationPrompt } from "./continuation.js";
 import { buildDevelopmentContract } from "./development.js";
+import { draftPacket } from "./draft.js";
 import { compareRenderCycles, scoreRender } from "./evaluation.js";
 import { FRAMEWORKS } from "./frameworks.js";
 import { buildProductionKit } from "./production-kit.js";
@@ -72,6 +73,26 @@ export const TOOLS: ToolDefinition[] = [
       required: ["request"],
     },
     run: (args) => buildDevelopmentContract(requireObject(args, "request")),
+  },
+  {
+    name: "auteur_draft",
+    description:
+      "Draft a complete, validated Universal Packet directly from a development request, deterministically and without calling any model. Same request and seed always produce the same packet. Use it to reach a runnable packet with no provider in the loop, then refine it or hand it to auteur_kit.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        request: { type: "object", description: "A development request object." },
+        seed: { type: "number", description: "Changes concept selection and every downstream choice. Defaults to 0." },
+        conceptIndex: { type: "number", description: "Which of the three concepts to build: 0, 1, or 2. Defaults to 0." },
+      },
+      required: ["request"],
+    },
+    run: (args) => {
+      const options: { seed?: number; conceptIndex?: number } = {};
+      if (typeof args?.seed === "number") options.seed = args.seed;
+      if (typeof args?.conceptIndex === "number") options.conceptIndex = args.conceptIndex;
+      return draftPacket(requireObject(args, "request"), options);
+    },
   },
   {
     name: "auteur_validate",
