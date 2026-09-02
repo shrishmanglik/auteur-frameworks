@@ -26,6 +26,30 @@ describe("universal packet", () => {
     expect(packet.shots[0]?.camera.capture).toEqual({});
   });
 
+  it("rejects an impossible projected-subject scale lock", () => {
+    const packet = structuredClone(example);
+    packet.shots[0].camera.compositionLock = {
+      maxProjectedSubjectScaleChangePercent: 101,
+      protectedFrameElements: ["full facade"],
+      forbidDigitalZoom: true,
+    };
+    expect(() => UniversalPacketSchema.parse(packet)).toThrow();
+  });
+
+  it("projects a measurable composition lock into the video prompt", () => {
+    const packet = structuredClone(example);
+    packet.shots[0].frameworkId = "cinematic-prose-stack";
+    packet.shots[0].camera.compositionLock = {
+      maxProjectedSubjectScaleChangePercent: 5,
+      protectedFrameElements: ["right architectural wing", "full pool", "wet grass foreground"],
+      forbidDigitalZoom: true,
+    };
+    const prompt = compilePacket(packet).shots[0]!.videoPrompt;
+    expect(prompt).toContain("width and height may change by no more than 5 percent");
+    expect(prompt).toContain("right architectural wing");
+    expect(prompt).toContain("no digital zoom, hidden cut, focal-length substitution, or reframing jump");
+  });
+
   it("ships a distinct provider-neutral framework registry", () => {
     expect(FRAMEWORKS.length).toBeGreaterThanOrEqual(9);
     expect(new Set(FRAMEWORKS.map((item) => item.id)).size).toBe(FRAMEWORKS.length);
@@ -390,6 +414,43 @@ describe("compiler", () => {
     expect(compiled.compactPromptReport.frameworkPreserved).toBe(true);
     expect(compiled.compactPromptReport.omittedExclusions).toEqual([]);
     expect(compiled.compactPromptReport.truncatedSections).toEqual([]);
+  });
+
+  it("projects an optional composition lock into both A-roll JSON surfaces", () => {
+    const packet = JSON.parse(fs.readFileSync(new URL("../examples/a-roll.json", import.meta.url), "utf8"));
+    packet.shots[0].camera.compositionLock = {
+      maxProjectedSubjectScaleChangePercent: 4,
+      protectedFrameElements: ["full face", "both shoulders", "background practical"],
+      forbidDigitalZoom: true,
+    };
+
+    const compiled = compilePacket(packet).shots[0]!;
+    const manifest = JSON.parse(compiled.videoPrompt).project_manifest;
+    const compactManifest = JSON.parse(compiled.compactVideoPrompt).project_manifest;
+    const expectedLock = {
+      max_projected_subject_scale_change_percent: 4,
+      protected_frame_elements: ["full face", "both shoulders", "background practical"],
+      forbid_digital_zoom: true,
+    };
+
+    expect(manifest.layer_iv_scene_blueprint.keyframe_directives["2_cinematography_optics_and_psychology"]
+      .composition_lock).toEqual(expectedLock);
+    expect(compactManifest.scene_blueprint.cinematography_optics_psychology.composition_lock)
+      .toEqual(expectedLock);
+  });
+
+  it("omits an absent composition lock from both A-roll JSON surfaces", () => {
+    const packet = JSON.parse(fs.readFileSync(new URL("../examples/a-roll.json", import.meta.url), "utf8"));
+    delete packet.shots[0].camera.compositionLock;
+
+    const compiled = compilePacket(packet).shots[0]!;
+    const manifest = JSON.parse(compiled.videoPrompt).project_manifest;
+    const compactManifest = JSON.parse(compiled.compactVideoPrompt).project_manifest;
+
+    expect(manifest.layer_iv_scene_blueprint.keyframe_directives["2_cinematography_optics_and_psychology"])
+      .not.toHaveProperty("composition_lock");
+    expect(compactManifest.scene_blueprint.cinematography_optics_psychology)
+      .not.toHaveProperty("composition_lock");
   });
 
   it("keeps the expanded A-roll voice and kinetics controls optional for v1 packets", () => {
@@ -853,6 +914,54 @@ describe("compiler", () => {
       expect(result.shots[0]?.framePrompt).toContain(style);
     }
   });
+
+  it("projects lived performance into every visual framework architecture", () => {
+    const frameworkIds = [
+      "cinematic-prose-stack",
+      "act-shot-master-spec",
+      "json-scene-contract",
+      "temporal-evolution",
+      "timed-social-sequence",
+      "practical-stunt-contract",
+      "continuous-take",
+    ];
+    for (const frameworkId of frameworkIds) {
+      const packet = structuredClone(example);
+      packet.shots[0].frameworkId = frameworkId;
+      packet.shots[0].performance = {
+        basePosture: "grounded at the table without a presentation pose",
+        bodyMotion: {
+          breathingPattern: "quiet breathing continues underneath the visible action",
+        },
+        livedBehavior: {
+          perceptionBeforeAction: "eyes find the hinge before the hand commits",
+          involuntaryContinuity: ["one irregular blink", "breathing never freezes"],
+          asynchronousOverlap: "eyes, breath, fingers, and fabric respond at slightly different moments",
+          recoveryAndSettle: "the hand releases asymmetrically and the shoulder settles after contact",
+        },
+      };
+      const prompt = compilePacket(packet).shots[0]!.videoPrompt;
+      expect(prompt, frameworkId).toContain("eyes find the hinge before the hand commits");
+      expect(prompt, frameworkId).toContain("breathing never freezes");
+      expect(prompt, frameworkId).toContain("respond at slightly different moments");
+      expect(prompt, frameworkId).toContain("shoulder settles after contact");
+    }
+  });
+
+  it("preserves lived performance inside the Avatar A-Roll JSON contract", () => {
+    const packet = JSON.parse(fs.readFileSync(new URL("../examples/a-roll.json", import.meta.url), "utf8"));
+    packet.shots[0].performance.livedBehavior = {
+      perceptionBeforeAction: "eyes land before the thought becomes speech",
+      involuntaryContinuity: ["breathing continues across the full answer"],
+      asynchronousOverlap: "blink, breath, and expression resolve independently",
+      recoveryAndSettle: "the face and shoulders settle after the final word",
+    };
+    const manifest = JSON.parse(compilePacket(packet).shots[0]!.videoPrompt).project_manifest;
+    const kinetics = manifest.layer_iv_scene_blueprint.keyframe_directives["1_subjects_kinetics_and_phenomenology"]
+      .performance_manifest.natural_kinetics;
+    expect(kinetics.lived_behavior.perceptionBeforeAction).toContain("eyes land before");
+    expect(kinetics.lived_behavior.involuntaryContinuity).toContain("breathing continues across the full answer");
+  });
 });
 
 describe("storyboard and QC", () => {
@@ -937,6 +1046,18 @@ describe("storyboard and QC", () => {
     expect(prompt).toContain("PRESERVE");
   });
 
+  it("repairs camera-scale overshoot without redesigning the accepted shot", () => {
+    const prompt = buildRepairPrompt({
+      failure: "CAMERA_SCALE_OVERSHOOT",
+      observedSymptom: "The facade expands by roughly one third and crops the protected environmental wide.",
+      preserve: ["building geometry", "coastal weather", "gust choreography", "material palette"],
+    });
+    expect(prompt).toContain("projected subject scale ceiling");
+    expect(prompt).toContain("protect named frame elements");
+    expect(prompt).toContain("forbid digital zoom");
+    expect(prompt).toContain("PRESERVE: building geometry");
+  });
+
   it("repairs exaggerated performance without redesigning the shot", () => {
     const prompt = buildRepairPrompt({
       failure: "PERFORMANCE_EXAGGERATION",
@@ -945,5 +1066,17 @@ describe("storyboard and QC", () => {
     });
     expect(prompt).toContain("one observable micro-expression");
     expect(prompt).toContain("forbid mugging");
+  });
+
+  it("repairs lifeless synchronized performance through causal human behavior", () => {
+    const prompt = buildRepairPrompt({
+      failure: "LIFELESS_PERFORMANCE",
+      observedSymptom: "The actor remains technically stable but breath, eyes, hands, and posture move as one animation block.",
+      preserve: ["actor identity", "object geometry", "camera path", "lighting"],
+    });
+    expect(prompt).toContain("perception before action");
+    expect(prompt).toContain("involuntary continuity");
+    expect(prompt).toContain("asynchronous overlap");
+    expect(prompt).toContain("recovery and settle");
   });
 });

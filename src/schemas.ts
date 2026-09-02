@@ -78,6 +78,12 @@ export const CaptureSchema = z.object({
   resolutionIntent: z.string().min(1).optional(),
 }).default({});
 
+export const CompositionLockSchema = z.object({
+  maxProjectedSubjectScaleChangePercent: z.number().min(0).max(100),
+  protectedFrameElements: z.array(z.string().min(1)).min(1),
+  forbidDigitalZoom: z.boolean().default(true),
+});
+
 export const CameraSchema = z.object({
   shotType: z.string().min(1),
   movement: z.string().min(1),
@@ -85,6 +91,7 @@ export const CameraSchema = z.object({
   focusBehavior: z.string().min(1),
   optics: OpticsSchema,
   capture: CaptureSchema,
+  compositionLock: CompositionLockSchema.optional(),
 });
 
 export const LightingSchema = z.object({
@@ -118,6 +125,13 @@ const MicroExpressionCueSchema = z.object({
   keyword: z.string().min(1).optional(),
   action: z.string().min(1),
   intensity: z.enum(["barely-perceptible", "restrained", "visible"]).default("restrained"),
+});
+
+const LivedBehaviorSchema = z.object({
+  perceptionBeforeAction: z.string().min(1),
+  involuntaryContinuity: z.array(z.string().min(1)).min(1),
+  asynchronousOverlap: z.string().min(1),
+  recoveryAndSettle: z.string().min(1),
 });
 
 export const PerformanceSchema = z.object({
@@ -155,6 +169,7 @@ export const PerformanceSchema = z.object({
     breathingPattern: z.string().min(1).optional(),
     breathsPerMinute: z.number().min(4).max(40).optional(),
   }).optional(),
+  livedBehavior: LivedBehaviorSchema.optional(),
   gestureCues: z.array(GestureCueSchema).optional(),
   microExpressionCues: z.array(MicroExpressionCueSchema).optional(),
 }).default({});
