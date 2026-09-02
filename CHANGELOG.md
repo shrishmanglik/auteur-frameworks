@@ -4,9 +4,14 @@ All notable public changes are recorded here. The project follows semantic versi
 
 ## Unreleased
 
+- Add a `LIFELESS_PERFORMANCE` constrained-repair code for technically stable but mechanically synchronized human motion. It restores the same perception, involuntary continuity, asynchronous overlap, and recovery layers used by `performance.livedBehavior`.
+- Add an optional structured `camera.compositionLock` that turns protected framing into a measurable opening-to-terminal scale ceiling and explicitly forbids hidden zoom or lens substitution when requested.
+- Add a `CAMERA_SCALE_OVERSHOOT` constrained-repair code so a successful visual concept can keep its accepted building, materials, weather, and action while repairing only excessive camera advance.
+
 ### Changed
 
 - CLI commands invoked with `--out` now confirm the write on stderr (`AUTEUR_OK: wrote <path> (<bytes>).`). Previously a successful `--out` run produced no output at all, so the quickstart's final command ended in silence. stdout is unchanged and stays machine-clean for piping.
+- Added a structured `performance.livedBehavior` contract for perception-before-action, involuntary continuity, asynchronous overlap, and recovery. Every visual compiler now projects it instead of silently dropping non-A-Roll performance data; Avatar A-Roll JSON carries it inside `natural_kinetics`.
 
 ## 0.10.0 - 2026-08-06
 

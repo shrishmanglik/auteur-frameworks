@@ -176,9 +176,56 @@ const cameraContract = (shot: Shot): string => [
   "Shot language: " + shot.camera.shotType + ".",
   "Composition: " + sentence(shot.camera.framing),
   "Movement: " + sentence(shot.camera.movement),
+  shot.camera.compositionLock
+    ? "Composition lock: projected subject width and height may change by no more than "
+      + shot.camera.compositionLock.maxProjectedSubjectScaleChangePercent
+      + " percent from opening frame to terminal frame; protect "
+      + compactList(shot.camera.compositionLock.protectedFrameElements)
+      + " through the terminal frame; "
+      + (shot.camera.compositionLock.forbidDigitalZoom
+        ? "no digital zoom, hidden cut, focal-length substitution, or reframing jump."
+        : "any scale change must remain physically traceable.")
+    : null,
   "Focus: " + sentence(shot.camera.focusBehavior),
   "Cadence: real-time motion with action-matched blur; no unrequested slow motion or speed ramp.",
 ].filter((part): part is string => Boolean(part)).join(" ");
+
+const livedPerformanceContract = (shot: Shot): string | null => {
+  const performance = shot.performance;
+  const lived = performance.livedBehavior;
+  const lines = [
+    performance.basePosture ? "Base posture: " + sentence(performance.basePosture) : null,
+    performance.eyeLine ? "Eye line: " + sentence(performance.eyeLine) : null,
+    lived ? "Perception before action: " + sentence(lived.perceptionBeforeAction) : null,
+    lived ? "Involuntary continuity: " + compactList(lived.involuntaryContinuity) + "." : null,
+    lived ? "Asynchronous overlap: " + sentence(lived.asynchronousOverlap) : null,
+    lived ? "Recovery and settle: " + sentence(lived.recoveryAndSettle) : null,
+    performance.bodyMotion?.breathingPattern
+      ? "Breathing: " + sentence(performance.bodyMotion.breathingPattern)
+      : null,
+    performance.bodyMotion?.postureShift
+      ? "Posture response: " + sentence(performance.bodyMotion.postureShift)
+      : null,
+    performance.facialBiomechanics?.blinkBehavior
+      ? "Blink behavior: " + sentence(performance.facialBiomechanics.blinkBehavior)
+      : null,
+    performance.facialBiomechanics?.skinBehavior
+      ? "Skin response: " + sentence(performance.facialBiomechanics.skinBehavior)
+      : null,
+    performance.facialBiomechanics?.hairBehavior
+      ? "Hair response: " + sentence(performance.facialBiomechanics.hairBehavior)
+      : null,
+    ...(performance.microExpressionCues ?? []).map((cue) => (
+      "Micro-expression at " + cue.timeSeconds + "s: " + sentence(cue.action)
+      + " Intensity: " + cue.intensity + "."
+    )),
+    ...(performance.gestureCues ?? []).map((cue) => (
+      "Gesture at " + cue.timeSeconds + "s: " + sentence(cue.type)
+      + (cue.purpose ? " Purpose: " + sentence(cue.purpose) : "")
+    )),
+  ].filter((line): line is string => Boolean(line));
+  return lines.length ? "LIVED PERFORMANCE CONTRACT:\n" + lines.join("\n") : null;
+};
 
 const expression = (shot: Shot, context: FrameworkPromptContext, exclusions: readonly string[]): string => [
   "Lighting: " + shot.lighting.primarySource + ", motivated by " + shot.lighting.motivation + ".",
@@ -195,6 +242,7 @@ const compileCinematicProse = (
 ): string => {
   const spokenText = spokenTextFor(shot);
   const action = withoutDuplicateDialogue(shot.action, spokenText);
+  const livedPerformance = livedPerformanceContract(shot);
   return [
     "TITLE:\n" + shot.title,
     "PREMISE:\nA single impossible-but-believable cinematic shot built around " + sentence(shot.subject)
@@ -204,6 +252,7 @@ const compileCinematicProse = (
       + contextValue(context.aspectRatio, "aspect ratio set at provider handoff") + ".",
     "SEQUENCE:\n" + timedBeats(shot) + "\n" + temporalBoundaryRule()
       + "\nEND FRAME: " + sentence(finalBeat(shot)),
+    ...(livedPerformance ? [livedPerformance] : []),
     "EXPRESSION AND EXCLUSIONS:\n" + expression(shot, context, exclusions),
   ].join("\n\n");
 };
@@ -224,6 +273,7 @@ const compileActShotMaster = (
 ): string => {
   const spokenText = spokenTextFor(shot);
   const action = withoutDuplicateDialogue(shot.action, spokenText);
+  const livedPerformance = livedPerformanceContract(shot);
   const shotNumber = (context.shotIndex ?? 0) + 1;
   const shotCount = context.shotCount ?? 1;
   return [
@@ -244,6 +294,7 @@ const compileActShotMaster = (
     "CONTINUITY SPINE AND TRANSITION LOGIC:\n" + compactList(shot.continuityLocks)
       + ". The final composition is reached through the declared action and camera move, not a hidden coverage cut."
       + " End frame: " + sentence(finalBeat(shot)),
+    ...(livedPerformance ? [livedPerformance] : []),
     "IMAGE SCIENCE AND AUDIO:\n" + imageBehavior(shot, context) + " AUDIO CONTRACT: " + audioContract(shot),
     "PAYOFF AND DO NOT RENDER:\nPayoff: " + sentence(finalBeat(shot))
       + "\nDO NOT RENDER: " + compactList(exclusions) + ".",
@@ -304,6 +355,15 @@ const compileJsonSceneContract = (
       visible_action: beat.action,
       continuity: shot.continuityLocks,
     })),
+    performance: {
+      base_posture: shot.performance.basePosture,
+      eye_line: shot.performance.eyeLine,
+      lived_behavior: shot.performance.livedBehavior,
+      body_motion: shot.performance.bodyMotion,
+      facial_biomechanics: shot.performance.facialBiomechanics,
+      micro_expression_cues: shot.performance.microExpressionCues ?? [],
+      gesture_cues: shot.performance.gestureCues ?? [],
+    },
     audio: {
       spoken_text: spokenText ?? null,
       sound_design: shot.audioTrack.soundDesignDirectives,
@@ -432,6 +492,7 @@ const compileAvatarARollJson = (
       breathingPattern: "calm, visible diaphragmatic breathing; no frozen torso or breath pumping",
       breathsPerMinute: 12,
     },
+    lived_behavior: performance.livedBehavior,
     micro_expression_cues: microExpressionCues,
     gesture_cues: gestureCues,
   };
@@ -452,6 +513,14 @@ const compileAvatarARollJson = (
       "starting or completing a blink, eye roll, gesture, head bob, or pose change",
     ],
   };
+  const compositionLock = shot.camera.compositionLock
+    ? {
+      max_projected_subject_scale_change_percent:
+        shot.camera.compositionLock.maxProjectedSubjectScaleChangePercent,
+      protected_frame_elements: shot.camera.compositionLock.protectedFrameElements,
+      forbid_digital_zoom: shot.camera.compositionLock.forbidDigitalZoom,
+    }
+    : undefined;
   if (context.compactSurface) {
     const compactContract = {
       project_manifest: {
@@ -511,6 +580,7 @@ const compileAvatarARollJson = (
             subject_distance_m: shot.camera.optics.subjectDistanceMeters,
             movement: shot.camera.movement,
             framing: shot.camera.framing,
+            composition_lock: compositionLock,
             focus: shot.camera.focusBehavior,
           },
           environment_photometry: {
@@ -628,6 +698,7 @@ const compileAvatarARollJson = (
             },
             camera_movement: shot.camera.movement,
             composition: shot.camera.framing,
+            composition_lock: compositionLock,
             focus: shot.camera.focusBehavior,
           },
           "3_environment_photometry_and_atmosphere": {
@@ -699,6 +770,7 @@ const compileTemporalEvolution = (
   const spokenText = spokenTextFor(shot);
   const action = withoutDuplicateDialogue(shot.action, spokenText);
   const first = shot.beats[0]?.action ?? action;
+  const livedPerformance = livedPerformanceContract(shot);
   return [
     "TRANSFORMATION GOAL:\n" + sentence(action) + " The clip succeeds only through visible cause and effect while preserving "
       + compactList(shot.continuityLocks) + ".",
@@ -716,6 +788,7 @@ const compileTemporalEvolution = (
     "PHYSICS AND TEMPORAL RULES:\n" + compactList(shot.physics)
       + ". Each phase begins from the visible result of the previous phase; no reset, teleport, or unexplained substitution. "
       + imageBehavior(shot, context),
+    ...(livedPerformance ? [livedPerformance] : []),
     "AUDIO CONTRACT:\n" + audioContract(shot),
     "FAIL-CLOSED NEGATIVES:\n" + compactList(exclusions) + ".",
   ].join("\n\n");
@@ -727,6 +800,7 @@ const compileTimedSocialSequence = (
   exclusions: readonly string[],
 ): string => {
   const first = shot.beats[0]?.action ?? shot.action;
+  const livedPerformance = livedPerformanceContract(shot);
   return [
     "PLATFORM AND GOAL:\nFormat: " + contextValue(context.contentFormat, "short-form video")
       + ". Audience: " + contextValue(context.audience, "defined by the production brief")
@@ -742,6 +816,7 @@ const compileTimedSocialSequence = (
       + compactList(shot.lighting.paletteBase) + ".",
     "RETENTION, SHARE TRIGGER, AND PAYOFF:\nPattern progression: each timed beat must add new visible information. "
       + "Share trigger: " + sentence(shot.intent) + " End on: " + sentence(finalBeat(shot)),
+    ...(livedPerformance ? [livedPerformance] : []),
     "AUDIO AND EDITING:\n" + audioContract(shot) + " One rhythmic visual progression; no chaotic coverage or dead beat. "
       + imageBehavior(shot, context),
     "NEGATIVES:\n" + compactList(exclusions) + ".",
@@ -755,6 +830,7 @@ const compilePracticalStunt = (
 ): string => {
   const spokenText = spokenTextFor(shot);
   const action = withoutDuplicateDialogue(shot.action, spokenText);
+  const livedPerformance = livedPerformanceContract(shot);
   return [
     "CORE CONCEPT:\nAn " + shot.durationSeconds + "-second practical live-action plate built around "
       + sentence(shot.subject) + " Dominant visible action: " + sentenceStart(action)
@@ -768,6 +844,7 @@ const compilePracticalStunt = (
     "CONTACT, MASS, AND MOMENTUM RULES:\n" + compactList(shot.physics)
       + ". Every reaction begins at visible contact; bodies and objects retain mass, inertia, friction, balance, and recovery time."
       + " No impact without contact and no contact without a physically propagated result.",
+    ...(livedPerformance ? [livedPerformance] : []),
     "CRITICAL IMAGE SCIENCE:\n" + imageBehavior(shot, context)
       + " Preserve operator-scale micro-instability and action-matched motion blur; reject frictionless or polished CGI movement.",
     "SYNCHRONIZED AUDIO LANDSCAPE:\n" + audioContract(shot),
@@ -782,6 +859,7 @@ const compileContinuousTake = (
 ): string => {
   const spokenText = spokenTextFor(shot);
   const action = withoutDuplicateDialogue(shot.action, spokenText);
+  const livedPerformance = livedPerformanceContract(shot);
   const beats = shot.beats.map((beat, index) => {
     const prefix = index === 0 ? "It begins" : index === shot.beats.length - 1 ? "It ends" : "It continues";
     return prefix + " at " + beat.startSeconds + "-" + beat.endSeconds + "s with "
@@ -796,6 +874,7 @@ const compileContinuousTake = (
     "Lighting is " + shot.lighting.primarySource + ", motivated by " + shot.lighting.motivation + "; palette "
       + compactList(shot.lighting.paletteBase) + ". Materials remain " + compactList(shot.materials)
       + ". Physical behavior: " + compactList(shot.physics) + ". " + imageBehavior(shot, context),
+    ...(livedPerformance ? [livedPerformance] : []),
     "AUDIO CONTRACT: " + audioContract(shot),
     "DO NOT RENDER: " + compactList(exclusions) + ".",
   ].join(" ");

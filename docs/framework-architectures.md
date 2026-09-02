@@ -10,6 +10,8 @@ Every timed architecture also compiles the same no-anticipation invariant: a lat
 
 Prompt prose is not the final control layer. Before compilation, the route advisor scores compound constraints. A short shot that combines delayed exact dialogue, multiple temporal stages, strict surface control, identity locks, or high-risk choreography can fail pre-flight and route to a split pass. Split at a stable visual handoff instead of deleting framework blocks or adding repetitive negatives.
 
+`performance.livedBehavior` is the shared human-motion layer for every visual architecture. It records perception before action, involuntary continuity, asynchronous overlap, and recovery after the visible event. Prose architectures compile it as a `LIVED PERFORMANCE CONTRACT`; JSON Scene Contract preserves it as structured performance data; Avatar A-Roll JSON includes it in `natural_kinetics`. Use it to keep breathing, blinking, eye focus, posture, fabric response, and settling causally alive without converting the shot into a list of unrelated micro-movements.
+
 ## Shot compilers
 
 | Framework | Prompt architecture | Use when |
@@ -29,6 +31,7 @@ Prompt prose is not the final control layer. Before compilation, the route advis
 Two frameworks deliberately reject a normal `Shot` input:
 
 - **Constrained Repair Pass** requires an observed defect, an explicit physical correction, a preserve list, and a recurrence ban. Use `buildRepairPrompt`.
+- The `LIFELESS_PERFORMANCE` repair targets a technically coherent person whose breathing, eye focus, hands, posture, and settling are frozen or synchronized. It restores perception before action, involuntary continuity, asynchronous overlap, and recovery without redesigning the shot.
 - **Render-Observed Continuation** requires the accepted render's actual final frame, preserved visible state, first-motion deadline, spatial bridge, physics invariants, and final-frame handoff. Use `compileContinuationPrompt`.
 
 This fail-closed behavior prevents a planned shot from being mislabeled as evidence-led repair or continuation.

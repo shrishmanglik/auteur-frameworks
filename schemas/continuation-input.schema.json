@@ -292,6 +292,33 @@
                 }
               },
               "additionalProperties": false
+            },
+            "compositionLock": {
+              "type": "object",
+              "properties": {
+                "maxProjectedSubjectScaleChangePercent": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "protectedFrameElements": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "forbidDigitalZoom": {
+                  "default": true,
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "maxProjectedSubjectScaleChangePercent",
+                "protectedFrameElements"
+              ],
+              "additionalProperties": false
             }
           },
           "required": [
@@ -541,6 +568,38 @@
                   "maximum": 40
                 }
               },
+              "additionalProperties": false
+            },
+            "livedBehavior": {
+              "type": "object",
+              "properties": {
+                "perceptionBeforeAction": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "involuntaryContinuity": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "asynchronousOverlap": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "recoveryAndSettle": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "perceptionBeforeAction",
+                "involuntaryContinuity",
+                "asynchronousOverlap",
+                "recoveryAndSettle"
+              ],
               "additionalProperties": false
             },
             "gestureCues": {
