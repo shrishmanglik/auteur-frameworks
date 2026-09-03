@@ -317,6 +317,27 @@ describe("compiler", () => {
     expect(() => compileShot(continuationShot)).toThrow("use compileContinuationPrompt");
   });
 
+  it("keeps composition locks structured in JSON scene contracts", () => {
+    const packet = structuredClone(example);
+    packet.shots[0].frameworkId = "json-scene-contract";
+    packet.shots[0].camera.compositionLock = {
+      maxProjectedSubjectScaleChangePercent: 4,
+      protectedFrameElements: ["full face", "both shoulders", "background practical"],
+      forbidDigitalZoom: true,
+    };
+
+    const withLock = JSON.parse(compilePacket(packet).shots[0]!.videoPrompt);
+    expect(withLock.camera.composition_lock).toEqual({
+      max_projected_subject_scale_change_percent: 4,
+      protected_frame_elements: ["full face", "both shoulders", "background practical"],
+      forbid_digital_zoom: true,
+    });
+
+    delete packet.shots[0].camera.compositionLock;
+    const withoutLock = JSON.parse(compilePacket(packet).shots[0]!.videoPrompt);
+    expect(withoutLock.camera).not.toHaveProperty("composition_lock");
+  });
+
   it("emits exact dialogue once even when action and beat text repeat it", () => {
     for (const frameworkId of ["avatar-a-roll-json", "continuous-take", "audio-contract"]) {
       const shot = structuredClone(UniversalPacketSchema.parse(example).shots[0]!);
