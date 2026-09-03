@@ -69,6 +69,28 @@ export function compileContinuationPrompt(input: unknown): CompiledContinuation 
     depthOfFieldCharacter(optics),
     shot.camera.focusBehavior,
   ].join(", ");
+  const compositionLock = shot.camera.compositionLock
+    ? "COMPOSITION LOCK: projected subject width and height may change by no more than "
+      + shot.camera.compositionLock.maxProjectedSubjectScaleChangePercent
+      + " percent from opening frame to terminal frame; protect "
+      + compactList(shot.camera.compositionLock.protectedFrameElements)
+      + " through the terminal frame; "
+      + (shot.camera.compositionLock.forbidDigitalZoom
+        ? "no digital zoom, hidden cut, focal-length substitution, or reframing jump."
+        : "any scale change must remain physically traceable.")
+    : null;
+  const lived = shot.performance.livedBehavior;
+  const livedPerformance = lived
+    ? "LIVED PERFORMANCE: perception before action: "
+      + withoutTerminalPunctuation(lived.perceptionBeforeAction)
+      + ". Involuntary continuity: "
+      + compactList(lived.involuntaryContinuity.map(withoutTerminalPunctuation))
+      + ". Asynchronous overlap: "
+      + withoutTerminalPunctuation(lived.asynchronousOverlap)
+      + ". Recovery and settle: "
+      + withoutTerminalPunctuation(lived.recoveryAndSettle)
+      + "."
+    : null;
 
   const prompt = [
     "FRAME 0 MATCH: " + contract.exactFinalFrame + ". Same subject: " + contract.subjectReference
@@ -76,6 +98,8 @@ export function compileContinuationPrompt(input: unknown): CompiledContinuation 
     "ONE UNBROKEN TAKE: hold camera body, lens, height, axis, and screen direction through first motion.",
     spokenPerformance,
     "LOCK: " + compactList(contract.preservedState) + ".",
+    compositionLock,
+    livedPerformance,
     "BY " + contract.firstMotion.mustBeginBySeconds + "s - FIRST MOTION: "
       + contract.firstMotion.action + " -> " + contract.firstMotion.visibleResult + ".",
     "BY " + contract.spatialBridge.completeBySeconds + "s - PHYSICAL BRIDGE: "

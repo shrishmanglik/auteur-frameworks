@@ -190,6 +190,15 @@ const cameraContract = (shot: Shot): string => [
   "Cadence: real-time motion with action-matched blur; no unrequested slow motion or speed ramp.",
 ].filter((part): part is string => Boolean(part)).join(" ");
 
+const structuredCompositionLock = (shot: Shot) => shot.camera.compositionLock
+  ? {
+    max_projected_subject_scale_change_percent:
+      shot.camera.compositionLock.maxProjectedSubjectScaleChangePercent,
+    protected_frame_elements: shot.camera.compositionLock.protectedFrameElements,
+    forbid_digital_zoom: shot.camera.compositionLock.forbidDigitalZoom,
+  }
+  : undefined;
+
 const livedPerformanceContract = (shot: Shot): string | null => {
   const performance = shot.performance;
   const lived = performance.livedBehavior;
@@ -339,6 +348,7 @@ const compileJsonSceneContract = (
       depth_of_field: depthOfFieldCharacter(shot.camera.optics),
       movement: shot.camera.movement,
       composition: shot.camera.framing,
+      composition_lock: structuredCompositionLock(shot),
       focus: shot.camera.focusBehavior,
       capture: shot.camera.capture,
     },
@@ -513,14 +523,7 @@ const compileAvatarARollJson = (
       "starting or completing a blink, eye roll, gesture, head bob, or pose change",
     ],
   };
-  const compositionLock = shot.camera.compositionLock
-    ? {
-      max_projected_subject_scale_change_percent:
-        shot.camera.compositionLock.maxProjectedSubjectScaleChangePercent,
-      protected_frame_elements: shot.camera.compositionLock.protectedFrameElements,
-      forbid_digital_zoom: shot.camera.compositionLock.forbidDigitalZoom,
-    }
-    : undefined;
+  const compositionLock = structuredCompositionLock(shot);
   if (context.compactSurface) {
     const compactContract = {
       project_manifest: {

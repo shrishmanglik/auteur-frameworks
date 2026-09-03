@@ -34,6 +34,42 @@ describe("render-observed continuation", () => {
     for (const exclusion of withManyExclusions.globalExclusions) expect(completeExclusions.prompt).toContain(exclusion);
   });
 
+  it("carries composition locks into continuation prompts", () => {
+    const withCompositionLock = structuredClone(example);
+    withCompositionLock.shot.camera.compositionLock = {
+      maxProjectedSubjectScaleChangePercent: 4,
+      protectedFrameElements: ["full face", "both shoulders", "background practical"],
+      forbidDigitalZoom: true,
+    };
+
+    const result = compileContinuationPrompt(withCompositionLock);
+
+    expect(result.prompt).toContain("COMPOSITION LOCK:");
+    expect(result.prompt).toContain("no more than 4 percent");
+    expect(result.prompt).toContain("full face; both shoulders; background practical");
+    expect(result.prompt).toContain("no digital zoom");
+  });
+
+  it("carries lived behavior into continuation prompts", () => {
+    const withLivedBehavior = structuredClone(example);
+    withLivedBehavior.shot.performance = {
+      livedBehavior: {
+        perceptionBeforeAction: "eyes find the hinge before the hand commits",
+        involuntaryContinuity: ["one irregular blink", "breathing never freezes"],
+        asynchronousOverlap: "eyes, breath, fingers, and fabric respond at different moments",
+        recoveryAndSettle: "the hand releases asymmetrically and the shoulder settles after contact",
+      },
+    };
+
+    const result = compileContinuationPrompt(withLivedBehavior);
+
+    expect(result.prompt).toContain("LIVED PERFORMANCE:");
+    expect(result.prompt).toContain("eyes find the hinge before the hand commits");
+    expect(result.prompt).toContain("one irregular blink; breathing never freezes");
+    expect(result.prompt).toContain("eyes, breath, fingers, and fabric respond at different moments");
+    expect(result.prompt).toContain("the hand releases asymmetrically and the shoulder settles after contact");
+  });
+
   it("rejects a first-motion deadline that occurs after the bridge", () => {
     const broken = structuredClone(example);
     broken.contract.firstMotion.mustBeginBySeconds = 1.5;
