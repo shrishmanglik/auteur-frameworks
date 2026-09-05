@@ -4,14 +4,24 @@ All notable public changes are recorded here. The project follows semantic versi
 
 ## Unreleased
 
+## 0.11.0 - 2026-09-04
+
+### Added
+
 - Add a `LIFELESS_PERFORMANCE` constrained-repair code for technically stable but mechanically synchronized human motion. It restores the same perception, involuntary continuity, asynchronous overlap, and recovery layers used by `performance.livedBehavior`.
 - Add an optional structured `camera.compositionLock` that turns protected framing into a measurable opening-to-terminal scale ceiling and explicitly forbids hidden zoom or lens substitution when requested.
 - Add a `CAMERA_SCALE_OVERSHOOT` constrained-repair code so a successful visual concept can keep its accepted building, materials, weather, and action while repairing only excessive camera advance.
+- Added the `draft` CLI command and `auteur_draft` MCP tool to build a Universal Packet from a raw idea without a model call. The same request and seed produce byte-stable output. Prose is derived, not authored. (shrishmanglik/auteur-frameworks#12)
 
 ### Changed
 
 - CLI commands invoked with `--out` now confirm the write on stderr (`AUTEUR_OK: wrote <path> (<bytes>).`). Previously a successful `--out` run produced no output at all, so the quickstart's final command ended in silence. stdout is unchanged and stays machine-clean for piping.
 - Added a structured `performance.livedBehavior` contract for perception-before-action, involuntary continuity, asynchronous overlap, and recovery. Every visual compiler now projects it instead of silently dropping non-A-Roll performance data; Avatar A-Roll JSON carries it inside `natural_kinetics`.
+- Repointed the documented install pins to `v0.10.0` and added a release-pin drift guard that checks them against `package.json`. (shrishmanglik/auteur-frameworks#13)
+
+### Fixed
+
+- Closed silent-success paths in compilation: storyboard frame prompts now preserve global style, compact prompts now throw if the approved spoken line isn't preserved exactly once, and the development contract names the accepted `generationRisks` enum tokens. Added a contract-vocabulary audit and a spoken-line detector mutation test, extending mutation coverage from one detector to two. (shrishmanglik/auteur-frameworks#11)
 
 ## 0.10.0 - 2026-08-06
 

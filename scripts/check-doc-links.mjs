@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { spawnSync } from "node:child_process";
 
 const root = process.cwd();
 const markdownFiles = [
@@ -92,6 +93,22 @@ for (const relative of pinFiles) {
 // matching, this guard would pass vacuously while the pins rot.
 if (pinsChecked === 0) {
   errors.push("no install pins found in the documented surfaces; update the pin guard in check-doc-links.mjs");
+}
+
+// Normal development may be ahead of the last release. At publication, the local
+// tag must identify this exact commit; remote existence still needs release readback.
+if (process.argv.includes("--release")) {
+  const expectedTag = `v${pkgVersion}`;
+  const described = spawnSync("git", ["describe", "--tags", "--exact-match", "HEAD"], {
+    cwd: root,
+    encoding: "utf8",
+  });
+  const actualTag = described.stdout?.trim();
+  if (described.error || described.status !== 0 || !actualTag) {
+    errors.push(`release: HEAD must have exact tag ${expectedTag}; git describe failed or returned no tag`);
+  } else if (actualTag !== expectedTag) {
+    errors.push(`release: HEAD is tagged ${actualTag}, expected ${expectedTag} from package.json`);
+  }
 }
 
 if (errors.length) {

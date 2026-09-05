@@ -16,7 +16,7 @@ AUTEUR Frameworks separates creative development from provider execution. Any mo
 Codex, Claude Code, Gemini CLI, and other shell-capable tools can use the CLI directly:
 
 ```text
-Install github:shrishmanglik/auteur-frameworks#v0.10.0 in the current Node project.
+Install github:shrishmanglik/auteur-frameworks#v0.11.0 in the current Node project.
 Read docs/quickstart.md from the installed package.
 Create a DevelopmentRequest JSON for the user's production brief.
 Run auteur-frameworks develop on that request.

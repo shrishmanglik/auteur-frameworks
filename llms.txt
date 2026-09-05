@@ -3,7 +3,7 @@
 Provider-neutral TypeScript framework for turning production intent into a complete production kit: story, storyboards, assets, prompts, routing, continuity, QC, and repair.
 
 Install:
-npm install github:shrishmanglik/auteur-frameworks#v0.10.0
+npm install github:shrishmanglik/auteur-frameworks#v0.11.0
 
 Primary CLI flow:
 0. auteur-frameworks draft <request.json> --out production.json
